@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+body {
+  background-color: #030712;
+  color: #f1f5f9;
+}
+
+.mono {
+  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+}
