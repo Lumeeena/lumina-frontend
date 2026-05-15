@@ -5,7 +5,7 @@ export default function Footer() {
         <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
         <span className="text-xs text-slate-500">Stellar Mainnet · Live</span>
       </div>
-      Lumina &middot; Stellar Event Indexer &middot; Open Source &middot; Drips Wave Contributor &middot; MIT License
+      Lumina &middot; Stellar Event Indexer &middot; Open Source &middot; MIT License
     </footer>
   );
 }
