@@ -55,7 +55,7 @@ async function safeGet<T>(url: string): Promise<T | null> {
   try {
     const res = await fetch(url, { next: { revalidate: 10 } }); // 10-second cache for SSR pages
     if (!res.ok) return null;
-    return res.json() as T;
+    return (await res.json()) as T;
   } catch {
     return null;
   }
