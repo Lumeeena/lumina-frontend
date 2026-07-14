@@ -44,7 +44,7 @@ export default async function Home() {
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <StatCard title="Latest Ledger" value={ledger ? ledger.sequence.toLocaleString() : "—"} subtitle="Stellar Mainnet" />
-            <StatCard title="Txs (last ledger)" value={ledger ? ledger.transaction_count.toLocaleString() : "—"} subtitle="Successful + failed" />
+            <StatCard title="Txs (last ledger)" value={ledger ? (ledger.successful_transaction_count + ledger.failed_transaction_count).toLocaleString() : "—"} subtitle="Successful + failed" />
             <StatCard title="Ops (last ledger)" value={ledger ? ledger.operation_count.toLocaleString() : "—"} subtitle="All operation types" />
             <StatCard title="Ledger Time" value={ledger ? new Date(ledger.closed_at).toLocaleTimeString() : "—"} subtitle="UTC close time" />
           </div>

@@ -47,7 +47,8 @@ export interface HorizonAccount {
 export interface LedgerStats {
   sequence: number;
   closed_at: string;
-  transaction_count: number;
+  successful_transaction_count: number;
+  failed_transaction_count: number;
   operation_count: number;
 }
 
