@@ -1,8 +1,8 @@
 FROM node:20-alpine AS build
 WORKDIR /app
-COPY frontend/package.json frontend/package-lock.json ./
+COPY package.json package-lock.json ./
 RUN npm ci
-COPY frontend ./
+COPY . .
 # NEXT_PUBLIC_* vars are inlined into the client bundle at build time, so this
 # must be a build ARG — setting it as a runtime `environment:` var in compose
 # has no effect on an already-built Next.js app.
