@@ -1,8 +1,6 @@
 'use client';
 
 import { useState } from "react";
-import { Copy, CheckCircle } from "lucide-react";
-
 export default function CopyAddressButton({ address }: { address: string }) {
   const [copied, setCopied] = useState(false);
 
@@ -13,9 +11,8 @@ export default function CopyAddressButton({ address }: { address: string }) {
   }
 
   return (
-    <button onClick={copyAddress} className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-cyan-400 transition-colors shrink-0">
-      {copied ? <CheckCircle size={13} className="text-green-400" /> : <Copy size={13} />}
-      {copied ? "Copied" : "Copy"}
+    <button onClick={copyAddress} className="bg-[#f6f5f8] border border-[#e5e3ea] hover:border-[#c4b5fd] font-semibold text-[11px] px-2.5 py-[5px] rounded-[7px] shrink-0 transition-colors">
+      {copied ? "Copied!" : "Copy"}
     </button>
   );
 }

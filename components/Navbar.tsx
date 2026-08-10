@@ -1,23 +1,49 @@
+'use client';
+
 import Link from "next/link";
-import { Database } from "lucide-react";
+import { usePathname } from "next/navigation";
+
+const NAV_ITEMS = [
+  { href: "/explorer", label: "Explorer" },
+  { href: "/transactions", label: "Transactions" },
+  { href: "/events", label: "Contract Events" },
+  { href: "/graphql", label: "GraphQL" },
+  { href: "/registry", label: "Registry" },
+  { href: "/stats", label: "Stats" },
+];
 
 export default function Navbar() {
+  const pathname = usePathname();
+
   return (
-    <nav className="border-b border-[#162032] bg-[#030712]/90 backdrop-blur sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 font-bold text-lg text-cyan-400 hover:text-cyan-300 transition-colors">
-          <Database size={18} />
-          Lumina
-        </Link>
-        <div className="flex items-center gap-6 text-sm text-slate-400">
-          <Link href="/explorer" className="hover:text-slate-200 hover:underline underline-offset-4 transition-colors">Explorer</Link>
-          <Link href="/transactions" className="hover:text-slate-200 hover:underline underline-offset-4 transition-colors">Transactions</Link>
-          <Link href="/graphql" className="hover:text-slate-200 hover:underline underline-offset-4 transition-colors">GraphQL</Link>
-          <span className="px-2.5 py-1 rounded-full bg-cyan-900/30 border border-cyan-700/50 text-cyan-400 text-xs font-semibold">
-            Stellar Mainnet
-          </span>
-        </div>
-      </div>
+    <nav className="flex items-center gap-1 px-4 sm:px-7 h-[60px] border-b border-[#e5e3ea] bg-white/90 backdrop-blur sticky top-0 z-20 overflow-x-auto">
+      <Link href="/" className="flex items-center gap-2 mr-4 sm:mr-7 shrink-0">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="9" stroke="#7c3aed" strokeWidth="2" />
+          <circle cx="17" cy="7" r="3.4" fill="#8b5cf6" />
+        </svg>
+        <span className="font-extrabold text-[17px] tracking-tight text-[#0e0e12]">Lumina</span>
+      </Link>
+
+      {NAV_ITEMS.map(item => {
+        const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={`px-3.5 py-2 text-[13.5px] font-semibold rounded-lg whitespace-nowrap transition-colors ${
+              active ? "text-[#0e0e12] bg-[#f6f5f8]" : "text-[#6b6975] hover:text-[#0e0e12]"
+            }`}
+          >
+            {item.label}
+          </Link>
+        );
+      })}
+
+      <span className="ml-auto shrink-0 inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-wide px-2.5 py-1.5 rounded-full bg-[#f0fdf4] text-[#16a34a]">
+        <span className="w-1.5 h-1.5 rounded-full bg-[#16a34a]" />
+        MAINNET
+      </span>
     </nav>
   );
 }

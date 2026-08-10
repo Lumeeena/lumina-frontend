@@ -1,9 +1,7 @@
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
 import type { Account } from "@/lib/types";
-import { timeAgo, formatXLM, formatOperationType, getOperationColor } from "@/lib/formatters";
-import TransactionRow from "@/components/TransactionRow";
+import { timeAgo, formatXLM, truncateAddress } from "@/lib/formatters";
 import CopyAddressButton from "@/components/CopyAddressButton";
 
 export const dynamic = 'force-dynamic';
@@ -28,11 +26,6 @@ const ACCOUNT_QUERY = `
         operationCount
         successful
       }
-      operations(limit: 10) {
-        id
-        type
-        createdAt
-      }
     }
   }
 `;
@@ -46,98 +39,92 @@ async function getAccount(address: string): Promise<Account | null> {
   }
 }
 
+const th = "text-left text-[11px] tracking-[0.06em] uppercase text-[#a6a3b0] px-3 py-2.5 border-b border-[#e5e3ea] bg-[#fafafa]";
+const stat = "bg-[#fafafa] border border-[#e5e3ea] rounded-xl p-4";
+const statLabel = "text-[11px] text-[#a6a3b0] uppercase tracking-[0.05em]";
+const statValue = "mono text-sm mt-1";
+
 export default async function AccountPage({ params }: { params: Promise<{ address: string }> }) {
   const { address } = await params;
   const account = await getAccount(address);
 
-  const xlmBalance = account?.balances.find(b => b.assetType === "native");
+  const flagTags = account
+    ? [
+        account.flags.authRequired && "Auth Required",
+        account.flags.authRevocable && "Auth Revocable",
+        account.flags.authImmutable && "Auth Immutable",
+        account.flags.authClawbackEnabled && "Clawback Enabled",
+      ].filter((f): f is string => Boolean(f))
+    : [];
+  if (account && flagTags.length === 0) flagTags.push("No Special Flags");
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-      <Link href="/explorer" className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-300 mb-8 transition-colors">
-        <ArrowLeft size={14} /> Back to Explorer
+    <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
+      <Link href="/explorer" className="inline-block text-[13px] font-semibold text-[#7c3aed] hover:text-[#6d28d9] mb-[18px]">
+        &larr; Back to Explorer
       </Link>
-
       {!account ? (
-        <div className="p-8 rounded-xl bg-[#0c1222] border border-red-900/50 text-center">
-          <p className="text-red-400 font-semibold mb-2">Account Not Found</p>
-          <p className="text-slate-500 text-sm max-w-md mx-auto">The address <span className="mono text-slate-300 break-all">{address}</span> does not exist on Stellar Mainnet, or has never been funded.</p>
+        <div className="p-8 rounded-xl border border-[#fecaca] text-center">
+          <p className="text-[#dc2626] font-semibold mb-2">Account Not Found</p>
+          <p className="text-[#a6a3b0] text-sm max-w-md mx-auto">The address <span className="mono text-[#6b6975] break-all">{address}</span> does not exist on Stellar Mainnet, or has never been funded.</p>
         </div>
       ) : (
-        <div className="flex flex-col gap-6">
-          <div className="p-5 rounded-xl bg-[#0c1222] border border-[#162032]">
-            <div className="flex items-start justify-between gap-4 mb-4">
-              <div><div className="text-sm text-slate-500 mb-1">Account</div><div className="mono text-sm text-white break-all">{address}</div></div>
-              <CopyAddressButton address={address} />
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-              <div><div className="text-slate-500 text-xs mb-1">XLM Balance</div><div className="text-white font-semibold">{formatXLM(xlmBalance?.balance ?? "0")} XLM</div></div>
-              <div><div className="text-slate-500 text-xs mb-1">Sequence</div><div className="text-white mono text-xs">{account.sequence}</div></div>
-              <div><div className="text-slate-500 text-xs mb-1">Subentries</div><div className="text-white">{account.subentryCount}</div></div>
-              <div><div className="text-slate-500 text-xs mb-1">Trustlines</div><div className="text-white">{account.balances.filter(b => b.assetType !== "native").length}</div></div>
-            </div>
+        <div>
+          <div className="flex items-center gap-3 mb-1.5 flex-wrap">
+            <h1 className="mono font-bold text-[22px] break-all text-[#0e0e12]">{account.address}</h1>
+            <CopyAddressButton address={address} />
+          </div>
+          <p className="text-[#a6a3b0] text-[13px] mb-6">Last modified at ledger {account.lastModifiedLedger.toLocaleString()}</p>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div className={stat}><div className={statLabel}>Sequence</div><div className={statValue}>{account.sequence}</div></div>
+            <div className={stat}><div className={statLabel}>Subentries</div><div className={statValue}>{account.subentryCount}</div></div>
+            <div className={stat}><div className={statLabel}>Sponsoring</div><div className={statValue}>{account.numSponsoring}</div></div>
+            <div className={stat}><div className={statLabel}>Sponsored</div><div className={statValue}>{account.numSponsored}</div></div>
           </div>
 
-          <div className="p-5 rounded-xl bg-[#0c1222] border border-[#162032]">
-            <h2 className="font-semibold text-white mb-3">Flags</h2>
-            <div className="flex gap-3 flex-wrap">
-              {[
-                { label: "Auth Required", value: account.flags.authRequired },
-                { label: "Auth Revocable", value: account.flags.authRevocable },
-                { label: "Auth Immutable", value: account.flags.authImmutable },
-              ].map(flag => (
-                <span key={flag.label} className={`text-xs px-2.5 py-1 rounded-full border ${flag.value ? "bg-amber-900/30 border-amber-700 text-amber-300" : "bg-[#162032] border-[#1e2d40] text-slate-500"}`}>
-                  {flag.label}: {flag.value ? "On" : "Off"}
-                </span>
-              ))}
-            </div>
+          <div className="flex gap-2 flex-wrap mb-8">
+            {flagTags.map(f => (
+              <span key={f} className="text-[11px] font-semibold rounded-full bg-[#f3effe] text-[#6d28d9] px-3 py-1">{f}</span>
+            ))}
           </div>
 
-          {account.balances.length > 0 && (
-            <div className="p-5 rounded-xl bg-[#0c1222] border border-[#162032]">
-              <h2 className="font-semibold text-white mb-4">Asset Balances</h2>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead><tr className="text-xs text-slate-500 text-left border-b border-[#162032] uppercase"><th className="pb-2 pr-6">Asset</th><th className="pb-2 pr-6">Balance</th><th className="pb-2">Limit</th></tr></thead>
-                  <tbody>
-                    {account.balances.map((b, i) => (
-                      <tr key={i} className="border-b border-[#0f1a28] last:border-0">
-                        <td className="py-2 pr-6 font-semibold text-white">{b.assetType === "native" ? "XLM" : b.assetCode}</td>
-                        <td className="py-2 pr-6 mono text-slate-300">{formatXLM(b.balance)}</td>
-                        <td className="py-2 mono text-slate-500 text-xs">{b.limit ? formatXLM(b.limit) : "—"}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {account.transactions.length > 0 && (
-            <div className="p-5 rounded-xl bg-[#0c1222] border border-[#162032]">
-              <h2 className="font-semibold text-white mb-4">Recent Transactions</h2>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead><tr className="text-left text-xs text-slate-500 border-b border-[#162032] uppercase"><th className="pb-2 w-6" /><th className="pb-2 pr-4">Hash</th><th className="pb-2 pr-4">Ledger</th><th className="pb-2 pr-4">Source</th><th className="pb-2 pr-4">Ops</th><th className="pb-2 pr-4">Fee</th><th className="pb-2">Time</th></tr></thead>
-                  <tbody>{account.transactions.map(tx => <TransactionRow key={tx.hash} tx={tx} />)}</tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {account.operations.length > 0 && (
-            <div className="p-5 rounded-xl bg-[#0c1222] border border-[#162032]">
-              <h2 className="font-semibold text-white mb-4">Recent Operations</h2>
-              <div className="flex flex-col gap-2">
-                {account.operations.map(op => (
-                  <div key={op.id} className="flex items-center gap-3 p-3 rounded-lg bg-[#060d18] border border-[#162032]">
-                    <span className={`text-xs font-semibold ${getOperationColor(op.type.toLowerCase())}`}>{formatOperationType(op.type.toLowerCase())}</span>
-                    <span className="text-xs text-slate-500 mono ml-auto">{timeAgo(op.createdAt)}</span>
-                  </div>
+          <h2 className="font-extrabold text-base mb-3 text-[#0e0e12]">Balances</h2>
+          <div className="rounded-xl border border-[#e5e3ea] overflow-hidden mb-9">
+            <table className="w-full text-sm border-collapse">
+              <thead><tr><th className={th}>Asset</th><th className={th}>Balance</th><th className={th}>Limit</th></tr></thead>
+              <tbody>
+                {account.balances.map((b, i) => (
+                  <tr key={i} className="border-b border-[#f0eff3] last:border-0">
+                    <td className="py-2.5 px-3 font-semibold text-[#0e0e12]">{b.assetType === "native" ? "XLM" : b.assetCode}</td>
+                    <td className="py-2.5 px-3 mono text-[#0e0e12]">{formatXLM(b.balance)}</td>
+                    <td className="py-2.5 px-3 mono text-[#a6a3b0] text-xs">{b.limit ? formatXLM(b.limit) : "—"}</td>
+                  </tr>
                 ))}
-              </div>
-            </div>
-          )}
+              </tbody>
+            </table>
+          </div>
+
+          <h2 className="font-extrabold text-base mb-3 text-[#0e0e12]">Recent Transactions</h2>
+          <div className="rounded-xl border border-[#e5e3ea] overflow-hidden">
+            <table className="w-full text-sm border-collapse">
+              <thead><tr><th className={th}>Hash</th><th className={th}>Ledger</th><th className={th}>Ops</th><th className={th}>Time</th></tr></thead>
+              <tbody>
+                {account.transactions.map(tx => (
+                  <tr key={tx.hash} className="border-b border-[#f0eff3] last:border-0">
+                    <td className="py-2.5 px-3">
+                      <a href={`https://stellar.expert/explorer/public/tx/${tx.hash}`} target="_blank" rel="noopener noreferrer" className="mono text-xs text-[#7c3aed] hover:text-[#6d28d9] hover:underline transition-colors">
+                        {truncateAddress(tx.hash, 6)}
+                      </a>
+                    </td>
+                    <td className="py-2.5 px-3 mono text-xs">{tx.ledger.toLocaleString()}</td>
+                    <td className="py-2.5 px-3 text-xs">{tx.operationCount}</td>
+                    <td className="py-2.5 px-3 text-xs text-[#c3c1cb]">{timeAgo(tx.createdAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

@@ -4,19 +4,21 @@ import { useState } from "react";
 import type { Transaction } from "@/lib/types";
 import TransactionRow from "@/components/TransactionRow";
 
+const th = "text-left text-[11px] tracking-[0.06em] uppercase text-[#a6a3b0] px-3 py-2.5 border-b border-[#e5e3ea] bg-[#fafafa]";
+
 export default function TransactionFilterList({ txs }: { txs: Transaction[] }) {
   const [filter, setFilter] = useState<"all" | "successful" | "failed">("all");
   const filtered = filter === "all" ? txs : txs.filter(t => (filter === "successful") === t.successful);
 
   return (
     <>
-      <div className="flex gap-2 mb-6">
+      <div className="inline-flex border border-[#e5e3ea] rounded-[9px] overflow-hidden mb-6">
         {(["all", "successful", "failed"] as const).map(f => (
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium capitalize transition-colors ${
-              filter === f ? "bg-cyan-600 text-white" : "bg-[#0c1222] border border-[#162032] text-slate-400 hover:border-cyan-800"
+            className={`border-none px-[18px] py-[9px] text-sm font-semibold capitalize transition-colors ${
+              filter === f ? "bg-[#8b5cf6] text-white" : "bg-white text-[#6b6975] hover:bg-[#fafafa]"
             }`}
           >
             {f}
@@ -24,20 +26,20 @@ export default function TransactionFilterList({ txs }: { txs: Transaction[] }) {
         ))}
       </div>
 
-      <div className="rounded-xl bg-[#0c1222] border border-[#162032] overflow-x-auto">
+      <div className="rounded-xl border border-[#e5e3ea] overflow-x-auto">
         {txs.length === 0 ? (
-          <div className="p-8 text-center text-slate-500 text-sm">No transactions indexed yet.</div>
+          <div className="p-8 text-center text-[#a6a3b0] text-sm">No transactions indexed yet.</div>
         ) : (
-          <table className="w-full text-sm">
+          <table className="w-full text-sm border-collapse">
             <thead>
-              <tr className="text-left text-xs text-slate-500 border-b border-[#162032] uppercase tracking-wider">
-                <th className="px-4 py-3 w-6" />
-                <th className="px-4 py-3">Hash</th>
-                <th className="px-4 py-3">Ledger</th>
-                <th className="px-4 py-3">Source</th>
-                <th className="px-4 py-3">Ops</th>
-                <th className="px-4 py-3">Fee</th>
-                <th className="px-4 py-3">Time</th>
+              <tr>
+                <th className={`${th} w-6`} />
+                <th className={th}>Hash</th>
+                <th className={th}>Ledger</th>
+                <th className={th}>Source</th>
+                <th className={th}>Ops</th>
+                <th className={th}>Fee</th>
+                <th className={th}>Time</th>
               </tr>
             </thead>
             <tbody>
@@ -48,7 +50,7 @@ export default function TransactionFilterList({ txs }: { txs: Transaction[] }) {
       </div>
 
       {filtered.length === 0 && txs.length > 0 && (
-        <div className="mt-4 p-8 rounded-xl bg-[#0c1222] border border-[#162032] text-center text-slate-500 text-sm">
+        <div className="mt-4 p-8 rounded-xl border border-[#e5e3ea] text-center text-[#a6a3b0] text-sm">
           No {filter !== "all" ? filter : ""} transactions found in the current batch.
         </div>
       )}

@@ -33,9 +33,8 @@ export default async function TransactionsPage() {
   const txs = await getRecentTransactions(50);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-      <h1 className="text-3xl font-bold text-white mb-2">Transactions</h1>
-      <p className="text-slate-400 mb-8">Recent transactions on the Stellar network, served from the Lumina index.</p>
+    <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
+      <h1 className="font-extrabold text-3xl mb-5 text-[#0e0e12]">Transactions</h1>
       <TransactionFilterList txs={txs} />
     </div>
   );

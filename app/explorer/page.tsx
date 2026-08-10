@@ -1,7 +1,6 @@
 import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
 import type { Transaction } from "@/lib/types";
 import TransactionRow from "@/components/TransactionRow";
-import { Search } from "lucide-react";
 
 export const dynamic = 'force-dynamic';
 
@@ -30,45 +29,45 @@ async function getRecentTransactions(limit: number): Promise<Transaction[]> {
   }
 }
 
+const th = "text-left text-[11px] tracking-[0.06em] uppercase text-[#a6a3b0] px-3 py-2.5 border-b border-[#e5e3ea] bg-[#fafafa]";
+
 export default async function ExplorerPage() {
   const txs = await getRecentTransactions(20);
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-12">
-      <h1 className="text-3xl font-bold text-white mb-2">Explorer</h1>
-      <p className="text-slate-400 mb-8">Search any Stellar account or browse the last 20 transactions on the network in real time.</p>
+    <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
+      <h1 className="font-extrabold text-3xl mb-2 text-[#0e0e12]">Explorer</h1>
+      <p className="text-[#6b6975] mb-8">Search any Stellar account or browse recent transactions in real time.</p>
 
-      {/* Search */}
-      <form action="/accounts" method="get" className="flex gap-2 mb-10">
+      <form action="/accounts" method="get" className="flex gap-2.5 mb-3">
         <input
           name="address"
           placeholder="Enter a Stellar account address (G...)"
-          className="flex-1 bg-[#0c1222] border border-[#162032] text-sm text-slate-200 placeholder-slate-600 rounded-lg px-4 py-2.5 focus:outline-none focus:border-cyan-600 mono"
+          className="flex-1 min-h-[46px] px-3.5 py-2.5 text-[13px] mono bg-[#fafafa] border border-[#e5e3ea] rounded-[9px]"
         />
-        <button type="submit" className="flex items-center gap-2 px-5 py-2.5 bg-cyan-700 hover:bg-cyan-600 text-white rounded-lg text-sm font-semibold transition-colors">
-          <Search size={15} /> Search
+        <button type="submit" className="bg-[#8b5cf6] hover:bg-[#7c3aed] text-white font-bold text-sm px-6 rounded-[9px] transition-colors">
+          Search
         </button>
       </form>
 
-      {/* Recent Transactions */}
-      <h2 className="text-lg font-bold text-white mb-4">Recent Transactions</h2>
-      <div className="rounded-xl bg-[#0c1222] border border-[#162032] overflow-x-auto">
+      <h2 className="font-extrabold text-base mt-7 mb-3 text-[#0e0e12]">Recent Transactions</h2>
+      <div className="rounded-xl border border-[#e5e3ea] overflow-x-auto">
         {txs.length === 0 ? (
-          <div className="p-8 text-center text-slate-500 text-sm">No transactions indexed yet.</div>
+          <div className="p-8 text-center text-[#a6a3b0] text-sm">No transactions indexed yet.</div>
         ) : (
-          <table className="w-full text-sm">
+          <table className="w-full text-sm border-collapse">
             <thead>
-              <tr className="text-left text-xs text-slate-500 border-b border-[#162032] uppercase tracking-wider">
-                <th className="px-4 py-3 w-6" />
-                <th className="px-4 py-3">Hash</th>
-                <th className="px-4 py-3">Ledger</th>
-                <th className="px-4 py-3">Source</th>
-                <th className="px-4 py-3">Ops</th>
-                <th className="px-4 py-3">Fee</th>
-                <th className="px-4 py-3">Time</th>
+              <tr>
+                <th className={`${th} w-6`} />
+                <th className={th}>Hash</th>
+                <th className={th}>Ledger</th>
+                <th className={th}>Source</th>
+                <th className={th}>Ops</th>
+                <th className={th}>Fee</th>
+                <th className={th}>Time</th>
               </tr>
             </thead>
-            <tbody className="px-4">
+            <tbody>
               {txs.map(tx => <TransactionRow key={tx.hash} tx={tx} />)}
             </tbody>
           </table>

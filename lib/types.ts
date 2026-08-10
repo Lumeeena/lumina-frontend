@@ -60,6 +60,17 @@ export interface Account {
   operations: Operation[];
 }
 
+export interface ContractEvent {
+  id: string;
+  type: string;
+  contractId: string;
+  ledger: number;
+  createdAt: string;
+  pagingToken: string;
+  topics: string[];
+  value: string | null;
+}
+
 export interface Ledger {
   sequence: number;
   closedAt: string;

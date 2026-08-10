@@ -46,37 +46,37 @@ export default function LiveFeed() {
   }, [refresh]);
 
   return (
-    <div className="rounded-xl bg-[#0c1222] border border-[#162032] overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[#162032]">
-        <div className="flex items-center gap-2 text-sm font-semibold text-white">
-          <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+    <div className="rounded-xl border border-[#e5e3ea] overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[#e5e3ea] bg-[#fafafa]">
+        <div className="flex items-center gap-2 text-xs font-bold tracking-wide text-[#0e0e12]">
+          <span className="w-[7px] h-[7px] rounded-full bg-[#16a34a] shadow-[0_0_0_3px_rgba(22,163,74,0.15)]" />
           LIVE
         </div>
         {lastUpdated && (
-          <span className="text-xs text-slate-600">Updated {timeAgo(lastUpdated.toISOString())}</span>
+          <span className="text-[11px] text-[#a6a3b0]">Updated {timeAgo(lastUpdated.toISOString())}</span>
         )}
       </div>
 
       {loading ? (
-        <div className="p-6 text-center text-slate-600 text-sm animate-pulse">Fetching live data...</div>
+        <div className="p-6 text-center text-[#a6a3b0] text-sm animate-pulse">Fetching live data...</div>
       ) : txs.length === 0 ? (
-        <div className="p-6 text-center text-slate-600 text-sm">No transactions found.</div>
+        <div className="p-6 text-center text-[#a6a3b0] text-sm">No transactions found.</div>
       ) : (
-        <div className="divide-y divide-[#0f1a28]">
+        <div>
           {txs.map(tx => (
-            <div key={tx.hash} className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#0f1a28] transition-colors">
-              <span className={`w-2 h-2 rounded-full shrink-0 ${tx.successful ? "bg-green-500" : "bg-red-500"}`} />
+            <div key={tx.hash} className="flex items-center gap-3 px-4 py-2.5 border-b border-[#f0eff3] last:border-0">
+              <span className={`w-[7px] h-[7px] rounded-full shrink-0 ${tx.successful ? "bg-[#16a34a]" : "bg-[#dc2626]"}`} />
               <a
                 href={`https://stellar.expert/explorer/public/tx/${tx.hash}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mono text-xs text-cyan-400 hover:text-cyan-300 hover:underline transition-colors"
+                className="mono text-xs text-[#7c3aed] hover:text-[#6d28d9] hover:underline transition-colors"
               >
                 {truncateAddress(tx.hash, 5)}
               </a>
-              <span className="text-xs text-slate-500 mono">{truncateAddress(tx.sourceAccount)}</span>
-              <span className="ml-auto text-xs text-slate-600">{timeAgo(tx.createdAt)}</span>
-              <span className="text-xs bg-[#162032] text-slate-400 px-1.5 py-0.5 rounded">{tx.operationCount} ops</span>
+              <span className="text-xs text-[#a6a3b0] mono">{truncateAddress(tx.sourceAccount)}</span>
+              <span className="ml-auto text-[11px] text-[#c3c1cb]">{timeAgo(tx.createdAt)}</span>
+              <span className="text-[11px] bg-[#f6f5f8] text-[#6b6975] px-1.5 py-0.5 rounded">{tx.operationCount} ops</span>
             </div>
           ))}
         </div>
