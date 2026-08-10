@@ -1,9 +1,9 @@
-import type { HorizonTransaction } from "@/lib/horizon";
+import type { Transaction } from "@/lib/types";
 import { truncateAddress, timeAgo, formatXLM } from "@/lib/formatters";
 import { CheckCircle, XCircle } from "lucide-react";
 
-export default function TransactionRow({ tx }: { tx: HorizonTransaction }) {
-  const fee = (parseInt(tx.fee_charged) / 1e7).toFixed(7);
+export default function TransactionRow({ tx }: { tx: Transaction }) {
+  const fee = (parseInt(tx.feeCharged) / 1e7).toFixed(7);
   return (
     <tr className="border-b border-[#0f1a28] hover:bg-[#0c1222] transition-colors">
       <td className="py-3 pr-4">
@@ -23,12 +23,12 @@ export default function TransactionRow({ tx }: { tx: HorizonTransaction }) {
         </a>
       </td>
       <td className="py-3 pr-4 mono text-xs text-slate-500">{tx.ledger.toLocaleString()}</td>
-      <td className="py-3 pr-4 mono text-xs text-slate-400">{truncateAddress(tx.source_account)}</td>
+      <td className="py-3 pr-4 mono text-xs text-slate-400">{truncateAddress(tx.sourceAccount)}</td>
       <td className="py-3 pr-4">
-        <span className="px-1.5 py-0.5 rounded bg-[#162032] text-xs text-slate-400">{tx.operation_count}</span>
+        <span className="px-1.5 py-0.5 rounded bg-[#162032] text-xs text-slate-400">{tx.operationCount}</span>
       </td>
       <td className="py-3 pr-4 mono text-xs text-slate-500">{formatXLM(fee)} XLM</td>
-      <td className="py-3 text-xs text-slate-600">{timeAgo(tx.created_at)}</td>
+      <td className="py-3 text-xs text-slate-600">{timeAgo(tx.createdAt)}</td>
     </tr>
   );
 }

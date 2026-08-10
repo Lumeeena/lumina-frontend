@@ -3,6 +3,11 @@ WORKDIR /app
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
 COPY frontend ./
+# NEXT_PUBLIC_* vars are inlined into the client bundle at build time, so this
+# must be a build ARG — setting it as a runtime `environment:` var in compose
+# has no effect on an already-built Next.js app.
+ARG NEXT_PUBLIC_GRAPHQL_URL
+ENV NEXT_PUBLIC_GRAPHQL_URL=$NEXT_PUBLIC_GRAPHQL_URL
 RUN npm run build
 
 FROM node:20-alpine

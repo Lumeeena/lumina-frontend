@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { QUERY_EXAMPLES, QueryExample } from "@/lib/queries";
+import { PUBLIC_GRAPHQL_URL } from "@/lib/graphql";
 import { Play } from "lucide-react";
 
 function JsonHighlight({ data }: { data: object }) {
@@ -22,13 +23,38 @@ export default function GraphQLPage() {
   const [selected, setSelected] = useState<QueryExample>(QUERY_EXAMPLES[0]);
   const [query, setQuery] = useState(QUERY_EXAMPLES[0].query);
   const [result, setResult] = useState<object | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [running, setRunning] = useState(false);
 
-  function runQuery() { setResult(selected.mockResult); }
+  async function runQuery() {
+    setRunning(true);
+    setError(null);
+    try {
+      const res = await fetch(PUBLIC_GRAPHQL_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query }),
+      });
+      const body = await res.json();
+      if (body.errors?.length) {
+        setError(body.errors.map((e: { message: string }) => e.message).join("; "));
+        setResult(null);
+      } else {
+        setResult(body.data);
+      }
+    } catch {
+      setError(`Couldn't reach the GraphQL server at ${PUBLIC_GRAPHQL_URL}. Is it running?`);
+      setResult(null);
+    } finally {
+      setRunning(false);
+    }
+  }
 
   function selectExample(ex: QueryExample) {
     setSelected(ex);
     setQuery(ex.query);
     setResult(null);
+    setError(null);
   }
 
   return (
@@ -36,7 +62,7 @@ export default function GraphQLPage() {
       <h1 className="text-3xl font-bold text-white mb-2">GraphQL Playground</h1>
       <div className="flex items-center gap-3 mb-8">
         <p className="text-slate-400 text-sm">Lumina GraphQL endpoint:</p>
-        <span className="mono text-xs px-2.5 py-1 rounded-full bg-amber-900/30 border border-amber-700/50 text-amber-400">Coming soon — testnet deployment in progress</span>
+        <span className="mono text-xs px-2.5 py-1 rounded-full bg-cyan-900/30 border border-cyan-700/50 text-cyan-400">{PUBLIC_GRAPHQL_URL}</span>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6" style={{ minHeight: "600px" }}>
@@ -55,9 +81,8 @@ export default function GraphQLPage() {
           <div className="flex-1 flex flex-col rounded-xl bg-[#0c1222] border border-[#162032] overflow-hidden">
             <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#162032]">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Query Editor</span>
-              <button onClick={runQuery} className="flex items-center gap-2 px-4 py-1.5 bg-cyan-700 hover:bg-cyan-600 text-white text-sm font-semibold rounded-lg transition-colors" title="Run Query (Ctrl+Enter)">
-                <Play size={13} /> Run Query
-                <kbd className="text-xs opacity-60 border border-white/20 rounded px-1">⌘↵</kbd>
+              <button onClick={runQuery} disabled={running} className="flex items-center gap-2 px-4 py-1.5 bg-cyan-700 hover:bg-cyan-600 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors" title="Run Query">
+                <Play size={13} /> {running ? "Running..." : "Run Query"}
               </button>
             </div>
             <textarea value={query} onChange={e => setQuery(e.target.value)}
@@ -67,7 +92,9 @@ export default function GraphQLPage() {
           <div className="rounded-xl bg-[#0c1222] border border-[#162032] overflow-hidden">
             <div className="px-4 py-2.5 border-b border-[#162032]"><span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Response</span></div>
             <div className="p-4 max-h-72 overflow-y-auto">
-              {result === null ? (
+              {error ? (
+                <span className="text-red-400 text-sm">{error}</span>
+              ) : result === null ? (
                 <span className="text-slate-600 text-sm">Click &ldquo;Run Query&rdquo; to see the response.</span>
               ) : (
                 <JsonHighlight data={{ data: result }} />
