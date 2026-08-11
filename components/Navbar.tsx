@@ -39,11 +39,6 @@ export default function Navbar() {
           </Link>
         );
       })}
-
-      <span className="ml-auto shrink-0 inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-wide px-2.5 py-1.5 rounded-full bg-[#f0fdf4] text-[#16a34a]">
-        <span className="w-1.5 h-1.5 rounded-full bg-[#16a34a]" />
-        MAINNET
-      </span>
     </nav>
   );
 }
