@@ -1,41 +1,22 @@
-import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
-import type { Transaction } from "@/lib/types";
-import TransactionFilterList from "@/components/TransactionFilterList";
+import { Suspense } from "react";
+import TransactionExplorer from "@/components/TransactionExplorer";
 
 export const dynamic = 'force-dynamic';
 
-const RECENT_TRANSACTIONS_QUERY = `
-  query RecentTransactions($limit: Int) {
-    transactions(limit: $limit) {
-      items {
-        hash
-        ledger
-        createdAt
-        sourceAccount
-        feeCharged
-        operationCount
-        successful
-      }
-    }
-  }
-`;
-
-async function getRecentTransactions(limit: number): Promise<Transaction[]> {
-  try {
-    const data = await gqlFetch<{ transactions: { items: Transaction[] } }>(GRAPHQL_URL, RECENT_TRANSACTIONS_QUERY, { limit });
-    return data.transactions.items;
-  } catch {
-    return [];
-  }
-}
-
-export default async function TransactionsPage() {
-  const txs = await getRecentTransactions(50);
-
+export default function TransactionsPage() {
   return (
     <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
       <h1 className="font-extrabold text-3xl mb-5 text-[#0e0e12]">Transactions</h1>
-      <TransactionFilterList txs={txs} />
+      {/*
+        The explorer reads filters from the URL with `useSearchParams`, which
+        Next requires to sit inside a Suspense boundary. Fetching moved to the
+        client with it: pagination needs the cursor to live alongside the rows
+        it produced, which a server component re-rendering per request cannot
+        hold.
+      */}
+      <Suspense fallback={<div className="p-8 text-center text-[#a6a3b0] text-sm">Loading transactions…</div>}>
+        <TransactionExplorer />
+      </Suspense>
     </div>
   );
 }
