@@ -3,6 +3,7 @@ import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
 import type { Account } from "@/lib/types";
 import { timeAgo, formatXLM, truncateAddress } from "@/lib/formatters";
 import CopyAddressButton from "@/components/CopyAddressButton";
+import AccountActivityFeed from "@/components/AccountActivityFeed";
 
 export const dynamic = 'force-dynamic';
 
@@ -104,6 +105,8 @@ export default async function AccountPage({ params }: { params: Promise<{ addres
               </tbody>
             </table>
           </div>
+
+          <AccountActivityFeed address={account.address} />
 
           <h2 className="font-extrabold text-base mb-3 text-[#0e0e12]">Recent Transactions</h2>
           <div className="rounded-xl border border-[#e5e3ea] overflow-hidden">
