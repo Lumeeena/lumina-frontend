@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState } from "react";
-import { Contract, nativeToScVal, rpc, TransactionBuilder } from "@stellar/stellar-sdk";
-import { getActiveContracts, NETWORK_PASSPHRASE, REGISTRY_CONTRACT_ID, RegistryEntry, SOROBAN_RPC_URL } from "@/lib/registry";
-import { connectWallet, getConnectedAddress, signWithWallet } from "@/lib/wallet";
+import { useCallback, useEffect, useState } from "react";
+import { getActiveContracts, RegistryEntry } from "@/lib/registry";
+import { connectWallet, getConnectedAddress } from "@/lib/wallet";
 import { truncateAddress } from "@/lib/formatters";
+import RegisterContractForm from "@/components/RegisterContractForm";
+import OwnerContracts from "@/components/OwnerContracts";
 
-type SubmitState = "idle" | "building" | "awaiting-signature" | "submitting" | "success" | "error";
+type Tab = "mine" | "all";
 
 export default function RegistryPage() {
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
@@ -17,29 +18,46 @@ export default function RegistryPage() {
   const [entriesLoading, setEntriesLoading] = useState(true);
   const [entriesError, setEntriesError] = useState<string | null>(null);
 
-  const [regContractId, setRegContractId] = useState("");
-  const [regName, setRegName] = useState("");
-  const [regDescription, setRegDescription] = useState("");
-  const [submitState, setSubmitState] = useState<SubmitState>("idle");
-  const [submitMessage, setSubmitMessage] = useState("");
+  const [tab, setTab] = useState<Tab>("all");
+  // Bumped to make the owner dashboard re-read after a registration.
+  const [ownerRefresh, setOwnerRefresh] = useState(0);
 
-  async function loadEntries() {
-    setEntriesLoading(true);
+  const applyEntries = useCallback((result: RegistryEntry[]) => {
+    setEntries(result);
     setEntriesError(null);
-    try {
-      const result = await getActiveContracts();
-      setEntries(result);
-    } catch (err) {
-      setEntriesError(err instanceof Error ? err.message : "Couldn't reach the registry contract.");
-    } finally {
-      setEntriesLoading(false);
-    }
-  }
+    setEntriesLoading(false);
+  }, []);
+
+  const applyEntriesError = useCallback((err: unknown) => {
+    setEntriesError(err instanceof Error ? err.message : "Couldn't reach the registry contract.");
+    setEntriesLoading(false);
+  }, []);
+
+  const loadEntries = useCallback(
+    () => getActiveContracts().then(applyEntries, applyEntriesError),
+    [applyEntries, applyEntriesError]
+  );
 
   useEffect(() => {
-    loadEntries();
-    getConnectedAddress().then(setWalletAddress);
-  }, []);
+    // The effect body only starts requests; all state lands in promise
+    // handlers, so nothing cascades a render synchronously.
+    let cancelled = false;
+
+    getActiveContracts().then(
+      result => !cancelled && applyEntries(result),
+      err => !cancelled && applyEntriesError(err)
+    );
+
+    getConnectedAddress().then(address => {
+      if (cancelled) return;
+      setWalletAddress(address);
+      if (address) setTab("mine");
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [applyEntries, applyEntriesError]);
 
   async function handleConnect() {
     setConnecting(true);
@@ -49,83 +67,15 @@ export default function RegistryPage() {
       setConnectError(result.error);
     } else {
       setWalletAddress(result.address);
+      setTab("mine");
     }
     setConnecting(false);
   }
 
-  async function handleRegister(e: React.FormEvent) {
-    e.preventDefault();
-    if (!walletAddress || !regContractId || !regName) return;
-
-    setSubmitState("building");
-    setSubmitMessage("");
-    try {
-      const server = new rpc.Server(SOROBAN_RPC_URL);
-      const account = await server.getAccount(walletAddress);
-      const contract = new Contract(REGISTRY_CONTRACT_ID);
-      const tx = new TransactionBuilder(account, { fee: "1000000", networkPassphrase: NETWORK_PASSPHRASE })
-        .addOperation(
-          contract.call(
-            "register_contract",
-            nativeToScVal(walletAddress, { type: "address" }),
-            nativeToScVal(regContractId.trim(), { type: "address" }),
-            nativeToScVal(regName.trim(), { type: "string" }),
-            nativeToScVal(regDescription.trim() || "No description provided.", { type: "string" })
-          )
-        )
-        .setTimeout(60)
-        .build();
-
-      const sim = await server.simulateTransaction(tx);
-      if (rpc.Api.isSimulationError(sim)) {
-        throw new Error(sim.error);
-      }
-      const prepared = rpc.assembleTransaction(tx, sim).build();
-
-      setSubmitState("awaiting-signature");
-      const { signedTxXdr } = await signWithWallet(prepared.toXDR(), {
-        networkPassphrase: NETWORK_PASSPHRASE,
-        address: walletAddress,
-      });
-
-      setSubmitState("submitting");
-      const signedTx = TransactionBuilder.fromXDR(signedTxXdr, NETWORK_PASSPHRASE);
-      const sendResult = await server.sendTransaction(signedTx);
-      if (sendResult.status === "ERROR") {
-        throw new Error("The network rejected the transaction.");
-      }
-
-      let status: string = sendResult.status;
-      for (let i = 0; i < 15 && status === "PENDING"; i++) {
-        await new Promise(r => setTimeout(r, 2000));
-        const polled = await server.getTransaction(sendResult.hash);
-        status = polled.status;
-      }
-      if (status !== "SUCCESS") {
-        throw new Error(`Transaction did not succeed (status: ${status}).`);
-      }
-
-      setSubmitState("success");
-      setSubmitMessage(`${regName} registered — Lumina will begin indexing shortly.`);
-      setRegContractId("");
-      setRegName("");
-      setRegDescription("");
-      loadEntries();
-    } catch (err) {
-      setSubmitState("error");
-      setSubmitMessage(err instanceof Error ? err.message : "Registration failed.");
-    }
+  function handleRegistered() {
+    setOwnerRefresh(n => n + 1);
+    loadEntries();
   }
-
-  const submitting = submitState === "building" || submitState === "awaiting-signature" || submitState === "submitting";
-  const submitLabel: Record<SubmitState, string> = {
-    idle: "Register Contract",
-    building: "Preparing transaction…",
-    "awaiting-signature": "Approve in your wallet…",
-    submitting: "Submitting…",
-    success: "Register Contract",
-    error: "Register Contract",
-  };
 
   return (
     <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
@@ -140,7 +90,7 @@ export default function RegistryPage() {
 
           {!walletAddress ? (
             <div className="flex flex-col gap-3">
-              <p className="text-[13px] text-[#6b6975]">Connect a wallet to register a contract.</p>
+              <p className="text-[13px] text-[#6b6975]">Connect a wallet to register and manage contracts.</p>
               <button
                 onClick={handleConnect}
                 disabled={connecting}
@@ -148,63 +98,38 @@ export default function RegistryPage() {
               >
                 {connecting ? "Connecting…" : "Connect Wallet"}
               </button>
-              {connectError && <div className="text-xs text-[#dc2626] bg-[#fef2f2] rounded-lg px-3 py-2">{connectError}</div>}
+              {connectError && (
+                <div role="alert" className="text-xs text-[#dc2626] bg-[#fef2f2] rounded-lg px-3 py-2">
+                  {connectError}
+                </div>
+              )}
             </div>
           ) : (
-            <form onSubmit={handleRegister} className="flex flex-col gap-3.5">
-              <div className="text-xs text-[#6b6975] bg-white border border-[#e5e3ea] rounded-lg px-3 py-2 mono break-all">
-                Connected: {truncateAddress(walletAddress, 6)}
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-[#6b6975] mb-1.5">Contract ID</label>
-                <input
-                  value={regContractId}
-                  onChange={e => setRegContractId(e.target.value)}
-                  placeholder="CABC...EXAMPLE"
-                  className="w-full min-h-[42px] px-3 py-2 text-[13px] mono bg-white border border-[#e5e3ea] rounded-lg"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-[#6b6975] mb-1.5">Project Name</label>
-                <input
-                  value={regName}
-                  onChange={e => setRegName(e.target.value)}
-                  placeholder="My Protocol"
-                  className="w-full min-h-[42px] px-3 py-2 text-sm bg-white border border-[#e5e3ea] rounded-lg"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-[#6b6975] mb-1.5">Description</label>
-                <textarea
-                  value={regDescription}
-                  onChange={e => setRegDescription(e.target.value)}
-                  rows={3}
-                  placeholder="A DeFi protocol on Stellar"
-                  className="w-full px-3 py-2 text-sm bg-white border border-[#e5e3ea] rounded-lg resize-y"
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={submitting}
-                className="bg-[#8b5cf6] hover:bg-[#7c3aed] disabled:opacity-50 text-white font-bold text-sm py-3 rounded-lg mt-1 transition-colors"
-              >
-                {submitLabel[submitState]}
-              </button>
-              {submitState === "success" && (
-                <div className="text-xs text-[#16a34a] bg-[#f0fdf4] rounded-lg px-3 py-2.5">{submitMessage}</div>
-              )}
-              {submitState === "error" && (
-                <div className="text-xs text-[#dc2626] bg-[#fef2f2] rounded-lg px-3 py-2.5">{submitMessage}</div>
-              )}
-            </form>
+            <RegisterContractForm walletAddress={walletAddress} onRegistered={handleRegistered} />
           )}
         </div>
 
         <div>
-          <h2 className="font-extrabold text-base mb-3.5 text-[#0e0e12]">Recently Registered</h2>
-          {entriesLoading ? (
+          <div className="flex items-center gap-1 mb-3.5" role="tablist">
+            <TabButton active={tab === "mine"} onClick={() => setTab("mine")} disabled={!walletAddress}>
+              My Contracts
+            </TabButton>
+            <TabButton active={tab === "all"} onClick={() => setTab("all")}>
+              Recently Registered
+            </TabButton>
+          </div>
+
+          {tab === "mine" ? (
+            walletAddress ? (
+              <OwnerContracts
+                key={`${walletAddress}:${ownerRefresh}`}
+                walletAddress={walletAddress}
+                onChanged={loadEntries}
+              />
+            ) : (
+              <p className="text-sm text-[#a6a3b0]">Connect a wallet to see the contracts you registered.</p>
+            )
+          ) : entriesLoading ? (
             <p className="text-sm text-[#a6a3b0]">Loading registry entries…</p>
           ) : entriesError ? (
             <p className="text-sm text-[#dc2626]">{entriesError}</p>
@@ -226,5 +151,31 @@ export default function RegistryPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function TabButton({
+  active,
+  disabled,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      role="tab"
+      aria-selected={active}
+      disabled={disabled}
+      onClick={onClick}
+      className={`text-sm font-extrabold px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40 ${
+        active ? "bg-[#f5f3ff] text-[#7c3aed]" : "text-[#6b6975] hover:text-[#0e0e12]"
+      }`}
+    >
+      {children}
+    </button>
   );
 }
