@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Generated test output — istanbul's HTML report ships its own bundled
+    // scripts, which have nothing to do with this codebase's rules.
+    "coverage/**",
+    "playwright-report/**",
+    "test-results/**",
   ]),
 ]);
 
