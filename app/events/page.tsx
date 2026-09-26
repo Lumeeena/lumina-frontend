@@ -2,56 +2,75 @@ import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
 import type { ContractEvent } from "@/lib/types";
 import { timeAgo, truncateAddress } from "@/lib/formatters";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
-// The Lumina Registry deployed on testnet — the only contract with any
-// registered activity right now, used as the default example here.
 const DEFAULT_CONTRACT_ID = "CAYUDQPV3RKPM3EXDFGI3457FV677JLUCJ4OLKWGCUBPRIHYKXK3WFAZ";
 
 const EVENTS_QUERY = `
-  query ContractEvents($contractId: String!, $limit: Int) {
-    events(contractId: $contractId, limit: $limit) {
+  query ContractEvents($contractId: String!, $topic: String, $limit: Int, $cursor: String) {
+    events(contractId: $contractId, topic: $topic, limit: $limit, cursor: $cursor) {
       items {
         id
         type
         contractId
         ledger
         createdAt
+        pagingToken
         topics
         value
+      }
+      pageInfo {
+        hasNextPage
+        cursor
       }
     }
   }
 `;
 
-async function getEvents(contractId: string): Promise<ContractEvent[]> {
+interface EventsPageData {
+  events: {
+    items: ContractEvent[];
+    pageInfo?: { hasNextPage: boolean; cursor: string | null };
+  };
+}
+
+async function getEvents(contractId: string, topic: string, cursor: string): Promise<EventsPageData["events"]> {
   try {
-    const data = await gqlFetch<{ events: { items: ContractEvent[] } }>(GRAPHQL_URL, EVENTS_QUERY, { contractId, limit: 20 });
-    return data.events.items;
+    const data = await gqlFetch<EventsPageData>(GRAPHQL_URL, EVENTS_QUERY, {
+      contractId,
+      topic: topic || null,
+      limit: 20,
+      cursor: cursor || null,
+    });
+    return data.events;
   } catch {
-    return [];
+    return { items: [] };
   }
 }
 
 const th = "text-left text-[11px] tracking-[0.06em] uppercase text-[#a6a3b0] px-3 py-2.5 border-b border-[#e5e3ea] bg-[#fafafa]";
 
-export default async function EventsPage({ searchParams }: { searchParams: Promise<{ contractId?: string }> }) {
-  const { contractId: rawContractId } = await searchParams;
+export default async function EventsPage({ searchParams }: { searchParams: Promise<{ contractId?: string; topic?: string; cursor?: string }> }) {
+  const { contractId: rawContractId, topic: rawTopic, cursor: rawCursor } = await searchParams;
   const contractId = rawContractId?.trim() || DEFAULT_CONTRACT_ID;
-  const events = await getEvents(contractId);
+  const topic = rawTopic?.trim() || "";
+  const cursor = rawCursor?.trim() || "";
+  const page = await getEvents(contractId, topic, cursor);
+  const events = page.items;
+  const nextHref = page.pageInfo?.hasNextPage && page.pageInfo.cursor
+    ? `/events?${new URLSearchParams({ contractId, ...(topic ? { topic } : {}), cursor: page.pageInfo.cursor }).toString()}`
+    : null;
 
   return (
     <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
       <h1 className="font-extrabold text-3xl mb-2 text-[#0e0e12]">Contract Events</h1>
       <p className="text-[#6b6975] mb-7">Soroban contract events indexed via RPC, newest first.</p>
 
-      <form action="/events" method="get" className="flex gap-2.5 mb-7">
-        <input
-          name="contractId"
-          defaultValue={contractId}
-          placeholder="Contract ID (C...)"
-          className="flex-1 min-h-[46px] px-3.5 py-2.5 text-[13px] mono bg-[#fafafa] border border-[#e5e3ea] rounded-[9px]"
-        />
+      <form action="/events" method="get" className="grid grid-cols-1 sm:grid-cols-[1fr_220px_auto] gap-2.5 mb-7">
+        <input name="contractId" defaultValue={contractId} placeholder="Contract ID (C...)"
+          className="min-h-[46px] px-3.5 py-2.5 text-[13px] mono bg-[#fafafa] border border-[#e5e3ea] rounded-[9px]" />
+        <input name="topic" defaultValue={topic} placeholder="Topic (e.g. transfer)"
+          className="min-h-[46px] px-3.5 py-2.5 text-[13px] mono bg-[#fafafa] border border-[#e5e3ea] rounded-[9px]" />
         <button type="submit" className="bg-[#8b5cf6] hover:bg-[#7c3aed] text-white font-bold text-sm px-6 rounded-[9px] transition-colors">
           Filter
         </button>
@@ -93,6 +112,13 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
           </table>
         )}
       </div>
+      {nextHref && (
+        <div className="flex justify-end mt-4">
+          <a href={nextHref} className="bg-white border border-[#e5e3ea] hover:border-[#c4b5fd] text-[#6d28d9] font-bold text-sm px-4 py-2 rounded-lg">
+            Next page →
+          </a>
+        </div>
+      )}
     </div>
   );
 }

@@ -25,6 +25,29 @@ button:focus-visible {
   outline-offset: 2px;
 }
 
+.graphql-editor .cm-editor {
+  min-height: 280px;
+  background: transparent;
+  color: #0e0e12;
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+}
+
+.graphql-editor .cm-scroller {
+  min-height: 280px;
+  line-height: 1.65;
+}
+
+.graphql-editor .cm-gutters {
+  background: #fafafa;
+  border-right: 1px solid #e5e3ea;
+  color: #a6a3b0;
+}
+
+.graphql-editor .cm-activeLine,
+.graphql-editor .cm-activeLineGutter {
+  background: #f8f6ff;
+}
+
 input::placeholder,
 textarea::placeholder {
   color: #a6a3b0;

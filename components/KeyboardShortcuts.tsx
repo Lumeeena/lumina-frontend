@@ -31,7 +31,8 @@ export default function KeyboardShortcuts() {
 
   // localStorage does not exist during the server pass.
   useEffect(() => {
-    setEnabled(readEnabled());
+    const timer = window.setTimeout(() => setEnabled(readEnabled()), 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const toggleEnabled = useCallback((next: boolean) => {
