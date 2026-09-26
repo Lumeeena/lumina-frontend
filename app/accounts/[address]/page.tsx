@@ -2,6 +2,7 @@ import Link from "next/link";
 import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
 import type { Account } from "@/lib/types";
 import { formatXLM } from "@/lib/formatters";
+import { validateStellarAddress } from "@/lib/stellarAddress";
 import CopyAddressButton from "@/components/CopyAddressButton";
 import AccountActivityFeed from "@/components/AccountActivityFeed";
 import AccountTransactionList from "@/components/AccountTransactionList";
@@ -60,7 +61,11 @@ const statValue = "mono text-sm mt-1";
 
 export default async function AccountPage({ params }: { params: Promise<{ address: string }> }) {
   const { address } = await params;
-  const account = await getAccount(address);
+
+  const validation = validateStellarAddress(address);
+
+  // Only hit the API when the address is structurally valid.
+  const account = validation.valid ? await getAccount(address) : null;
 
   const flagTags = account
     ? [
@@ -77,7 +82,17 @@ export default async function AccountPage({ params }: { params: Promise<{ addres
       <Link href="/explorer" className="inline-block text-[13px] font-semibold text-[#7c3aed] hover:text-[#6d28d9] mb-[18px]">
         &larr; Back to Explorer
       </Link>
-      {!account ? (
+
+      {!validation.valid && validation.reason === "malformed" ? (
+        <div className="p-8 rounded-xl border border-[#fde68a] bg-[#fffbeb] text-center">
+          <p className="text-[#b45309] font-semibold mb-2">Invalid Address</p>
+          <p className="text-[#a6a3b0] text-sm max-w-md mx-auto mb-1">
+            <span className="mono text-[#6b6975] break-all">{address}</span> is not a valid Stellar address.
+          </p>
+          <p className="text-[#92400e] text-xs mt-2">{validation.hint}</p>
+          <p className="text-[#a6a3b0] text-xs mt-3">Stellar addresses start with <span className="mono">G</span> and are exactly 56 characters.</p>
+        </div>
+      ) : !account ? (
         <div className="p-8 rounded-xl border border-[#fecaca] text-center">
           <p className="text-[#dc2626] font-semibold mb-2">Account Not Found</p>
           <p className="text-[#a6a3b0] text-sm max-w-md mx-auto">The address <span className="mono text-[#6b6975] break-all">{address}</span> does not exist on Stellar Mainnet, or has never been funded.</p>
