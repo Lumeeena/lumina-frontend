@@ -57,6 +57,7 @@ export interface Account {
   balances: Balance[];
   flags: AccountFlags;
   transactions: Transaction[];
+  /** Seeds the paginated operations list; further pages come from the root `operations` query. */
   operations: Operation[];
 }
 

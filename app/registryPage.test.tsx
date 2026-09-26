@@ -13,8 +13,9 @@ import userEvent from "@testing-library/user-event";
 
 const connectWallet = vi.hoisted(() => vi.fn());
 const getConnectedAddress = vi.hoisted(() => vi.fn());
-const getActiveContracts = vi.hoisted(() => vi.fn());
+const getActiveProfiles = vi.hoisted(() => vi.fn());
 const getContractsByOwner = vi.hoisted(() => vi.fn());
+const getSlashes = vi.hoisted(() => vi.fn());
 
 vi.mock("@/lib/wallet", () => ({
   connectWallet,
@@ -25,7 +26,7 @@ vi.mock("@/lib/wallet", () => ({
 
 vi.mock("@/lib/registry", async () => {
   const actual = await vi.importActual<typeof import("@/lib/registry")>("@/lib/registry");
-  return { ...actual, getActiveContracts, getContractsByOwner };
+  return { ...actual, getActiveProfiles, getContractsByOwner, getSlashes };
 });
 
 vi.mock("@/lib/graphql", () => ({
@@ -39,20 +40,27 @@ import RegistryPage from "./registry/page";
 const OWNER = "GOWNERAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 const C1 = "CCONTRACTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 
-const entry = (name: string) => ({
+const profile = (name: string, reputation: { stake?: bigint; verified?: boolean; slashedTotal?: bigint } = {}) => ({
   contractId: C1,
   owner: OWNER,
   name,
   description: "A DeFi protocol",
   active: true,
   registeredAt: 500,
+  reputation: {
+    stake: reputation.stake ?? BigInt(0),
+    verified: reputation.verified ?? false,
+    slashedTotal: reputation.slashedTotal ?? BigInt(0),
+    withdrawLockedUntil: 0,
+  },
 });
 
 beforeEach(() => {
   vi.clearAllMocks();
   getConnectedAddress.mockResolvedValue(null);
-  getActiveContracts.mockResolvedValue([entry("Global Protocol")]);
-  getContractsByOwner.mockResolvedValue([entry("My Protocol")]);
+  getActiveProfiles.mockResolvedValue([profile("Global Protocol")]);
+  getContractsByOwner.mockResolvedValue([profile("My Protocol")]);
+  getSlashes.mockResolvedValue([]);
 });
 
 afterEach(cleanup);
@@ -65,6 +73,56 @@ describe("RegistryPage", () => {
     expect(await screen.findByText("Global Protocol")).toBeTruthy();
     // Nothing owner-scoped is reachable without a wallet.
     expect(screen.getByRole("tab", { name: /my contracts/i }).hasAttribute("disabled")).toBe(true);
+  });
+
+  it("shows the reputation signal an entry carries: verified and stake", async () => {
+    getActiveProfiles.mockResolvedValue([profile("Staked One", { stake: BigInt(12_500_000_000), verified: true })]);
+
+    render(<RegistryPage />);
+
+    await screen.findByText("Staked One");
+    // Icon *and* text — never colour alone.
+    expect(await screen.findByRole("img", { name: /attested by registry governance/i })).toBeTruthy();
+    expect(screen.getByText("Verified")).toBeTruthy();
+    expect(screen.getByText("Staked 1,250 XLM")).toBeTruthy();
+  });
+
+  it("omits the badges an entry has not earned", async () => {
+    getActiveProfiles.mockResolvedValue([profile("Plain One")]);
+
+    render(<RegistryPage />);
+
+    await screen.findByText("Plain One");
+    expect(screen.queryByText("Verified")).toBeNull();
+    expect(screen.queryByText(/^Staked /)).toBeNull();
+  });
+
+  it("loads slash history on expand and shows reasons with their ledgers", async () => {
+    getActiveProfiles.mockResolvedValue([profile("Slashed One", { slashedTotal: BigInt(100_000_000) })]);
+    getSlashes.mockResolvedValue([
+      { amount: BigInt(100_000_000), reason: "Stale event schema", slashedAt: 9000 },
+    ]);
+
+    render(<RegistryPage />);
+
+    await screen.findByText("Slashed One");
+    // Lazy: the per-contract read happens on expand, not for the whole list.
+    expect(getSlashes).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole("button", { name: /slash history/i }));
+
+    expect(await screen.findByText("Stale event schema")).toBeTruthy();
+    expect(screen.getByText("−10 XLM")).toBeTruthy();
+    expect(screen.getByText(/ledger 9,000/)).toBeTruthy();
+    expect(getSlashes).toHaveBeenCalledWith(C1);
+  });
+
+  it("shows the lifetime slashed total from the profile read, without a per-row fetch", async () => {
+    getActiveProfiles.mockResolvedValue([profile("Slashed One", { slashedTotal: BigInt(250_000_000) })]);
+
+    render(<RegistryPage />);
+
+    await screen.findByText("Slashed One");
+    expect(screen.getByText("Slashed 25 XLM")).toBeTruthy();
   });
 
   it("shows the owner dashboard once a wallet connects", async () => {
@@ -108,7 +166,7 @@ describe("RegistryPage", () => {
   });
 
   it("surfaces a failed registry read on the global list", async () => {
-    getActiveContracts.mockRejectedValue(new Error("Registry simulation failed"));
+    getActiveProfiles.mockRejectedValue(new Error("Registry simulation failed"));
     render(<RegistryPage />);
 
     await waitFor(() => expect(screen.getByText("Registry simulation failed")).toBeTruthy());

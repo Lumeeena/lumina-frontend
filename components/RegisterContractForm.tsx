@@ -10,6 +10,7 @@
  */
 import { useState } from 'react';
 import { nativeToScVal } from '@stellar/stellar-sdk';
+import { REGISTRY_CATEGORIES, type RegistryCategory } from '@/lib/categories';
 import { NETWORK_PASSPHRASE, REGISTRY_CONTRACT_ID, SOROBAN_RPC_URL } from '@/lib/registry';
 import { createStellarDriver, submitContractCall, type TxPhase } from '@/lib/sorobanTx';
 import { truncateAddress } from '@/lib/formatters';
@@ -18,6 +19,7 @@ export interface RegistrationInput {
   contractId: string;
   name: string;
   description: string;
+  categories: RegistryCategory[];
 }
 
 export interface RegisterContractFormProps {
@@ -49,6 +51,16 @@ const defaultRegister = async (
         nativeToScVal(input.contractId, { type: 'address' }),
         nativeToScVal(input.name, { type: 'string' }),
         nativeToScVal(input.description, { type: 'string' }),
+        // The contract's fifth argument: a vec of category symbols. The
+        // per-element type spec is what makes nativeToScVal emit symbols
+        // rather than strings — a Soroban fieldless enum variant is a
+        // symbol on the wire. The contract rejects an empty list
+        // (`NoCategories`), which the form enforces before this runs.
+        //
+        // Ships with the contract upgrade that adds the argument: against the
+        // pre-categories build this invocation fails simulation, so the two
+        // releases are one deploy, not two (see the contract's DEPLOY.md).
+        nativeToScVal(input.categories, { type: input.categories.map(() => 'symbol') }),
       ],
     },
     sign: signWithWallet,
@@ -76,10 +88,19 @@ export default function RegisterContractForm({
   const [contractId, setContractId] = useState('');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [categories, setCategories] = useState<RegistryCategory[]>([]);
+  const [categoryError, setCategoryError] = useState('');
   const [phase, setPhase] = useState<TxPhase>('idle');
   const [message, setMessage] = useState('');
 
   const busy = phase === 'building' || phase === 'awaiting-signature' || phase === 'submitting' || phase === 'confirming';
+
+  function toggleCategory(category: RegistryCategory) {
+    setCategoryError('');
+    setCategories(prev =>
+      prev.includes(category) ? prev.filter(c => c !== category) : [...prev, category]
+    );
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -89,8 +110,15 @@ export default function RegisterContractForm({
       contractId: contractId.trim(),
       name: name.trim(),
       description: description.trim() || 'No description provided.',
+      categories,
     };
     if (!input.contractId || !input.name) return;
+    // The contract rejects an empty category list (`NoCategories`), and a
+    // silent no-op submit would leave the user wondering why nothing happened.
+    if (input.categories.length === 0) {
+      setCategoryError('Select at least one category.');
+      return;
+    }
 
     setMessage('');
     // Enter the busy phase here rather than waiting for `register` to report
@@ -105,6 +133,7 @@ export default function RegisterContractForm({
       setContractId('');
       setName('');
       setDescription('');
+      setCategories([]);
       onRegistered?.();
     } catch (err) {
       setPhase('error');
@@ -159,6 +188,37 @@ export default function RegisterContractForm({
           className="w-full px-3 py-2 text-sm bg-white border border-[#e5e3ea] rounded-lg resize-y"
         />
       </div>
+
+      <fieldset>
+        <legend className="block text-xs font-semibold text-[#6b6975] mb-1.5">
+          Categories <span className="text-[#a6a3b0] font-normal">(pick at least one)</span>
+        </legend>
+        <div className="flex flex-wrap gap-1.5">
+          {REGISTRY_CATEGORIES.map(category => {
+            const selected = categories.includes(category);
+            return (
+              <button
+                key={category}
+                type="button"
+                aria-pressed={selected}
+                onClick={() => toggleCategory(category)}
+                className={`text-xs font-semibold px-2.5 py-1.5 rounded-full border transition-colors ${
+                  selected
+                    ? 'bg-[#f5f3ff] text-[#7c3aed] border-[#c4b5fd]'
+                    : 'bg-white text-[#6b6975] border-[#e5e3ea] hover:border-[#c4b5fd]'
+                }`}
+              >
+                {category}
+              </button>
+            );
+          })}
+        </div>
+        {categoryError && (
+          <p role="alert" className="text-xs text-[#dc2626] mt-1.5">
+            {categoryError}
+          </p>
+        )}
+      </fieldset>
 
       <button
         type="submit"

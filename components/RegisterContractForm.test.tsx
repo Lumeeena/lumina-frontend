@@ -8,11 +8,14 @@ import RegisterContractForm, { type RegistrationInput } from './RegisterContract
 const OWNER = 'GOWNERAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
 const TARGET = 'CCONTRACTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
 
-async function fillForm(description = 'A DeFi protocol') {
+async function fillForm(description = 'A DeFi protocol', categories: string[] = ['DeFi']) {
   await userEvent.type(screen.getByLabelText(/contract id/i), TARGET);
   await userEvent.type(screen.getByLabelText(/project name/i), 'My Protocol');
   if (description) {
     await userEvent.type(screen.getByLabelText(/description/i), description);
+  }
+  for (const category of categories) {
+    await userEvent.click(screen.getByRole('button', { name: category, exact: true }));
   }
 }
 
@@ -25,11 +28,12 @@ describe('RegisterContractForm', () => {
 
     await userEvent.type(screen.getByLabelText(/contract id/i), `  ${TARGET}  `);
     await userEvent.type(screen.getByLabelText(/project name/i), '  My Protocol  ');
+    await userEvent.click(screen.getByRole('button', { name: 'DeFi', exact: true }));
     await userEvent.click(screen.getByRole('button', { name: /register contract/i }));
 
     await waitFor(() => expect(register).toHaveBeenCalled());
-    const [input, owner] = register.mock.calls[0] as [RegistrationInput, string];
-    expect(input).toMatchObject({ contractId: TARGET, name: 'My Protocol' });
+    const [input, owner] = register.mock.calls[0] as unknown as [RegistrationInput, string];
+    expect(input).toMatchObject({ contractId: TARGET, name: 'My Protocol', categories: ['DeFi'] });
     expect(owner).toBe(OWNER);
   });
 
@@ -41,8 +45,59 @@ describe('RegisterContractForm', () => {
     await userEvent.click(screen.getByRole('button', { name: /register contract/i }));
 
     await waitFor(() => expect(register).toHaveBeenCalled());
-    const [input] = register.mock.calls[0] as [RegistrationInput];
+    const [input] = register.mock.calls[0] as unknown as [RegistrationInput];
     expect(input.description).toBe('No description provided.');
+  });
+
+  it('sends every selected category, not just the first', async () => {
+    const register = vi.fn(async () => {});
+    render(<RegisterContractForm walletAddress={OWNER} register={register} />);
+
+    await fillForm('A DeFi protocol', ['DeFi', 'Infrastructure']);
+    await userEvent.click(screen.getByRole('button', { name: /register contract/i }));
+
+    await waitFor(() => expect(register).toHaveBeenCalled());
+    const [input] = register.mock.calls[0] as unknown as [RegistrationInput];
+    expect(input.categories).toEqual(['DeFi', 'Infrastructure']);
+  });
+
+  it('toggles a category off when clicked twice', async () => {
+    const register = vi.fn(async () => {});
+    render(<RegisterContractForm walletAddress={OWNER} register={register} />);
+
+    await fillForm('A DeFi protocol', ['DeFi']);
+    await userEvent.click(screen.getByRole('button', { name: 'DeFi', exact: true }));
+    await userEvent.click(screen.getByRole('button', { name: /register contract/i }));
+
+    // Clicking the only category off leaves the list empty, which the contract
+    // rejects — the form must say so rather than submit nothing.
+    expect(await screen.findByRole('alert')).toBeTruthy();
+    expect(register).not.toHaveBeenCalled();
+  });
+
+  it('refuses to submit without a category and says why', async () => {
+    const register = vi.fn(async () => {});
+    render(<RegisterContractForm walletAddress={OWNER} register={register} />);
+
+    await userEvent.type(screen.getByLabelText(/contract id/i), TARGET);
+    await userEvent.type(screen.getByLabelText(/project name/i), 'My Protocol');
+    await userEvent.click(screen.getByRole('button', { name: /register contract/i }));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toContain('Select at least one category');
+    expect(register).not.toHaveBeenCalled();
+  });
+
+  it('clears the selected categories after a successful registration', async () => {
+    render(
+      <RegisterContractForm walletAddress={OWNER} register={async () => {}} />
+    );
+
+    await fillForm();
+    await userEvent.click(screen.getByRole('button', { name: /register contract/i }));
+
+    await screen.findByRole('status');
+    expect(screen.getByRole('button', { name: 'DeFi', exact: true })).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('reports progress through the wallet phases', async () => {

@@ -21,6 +21,27 @@ export function formatXLM(amount: string): string {
   return num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 7 });
 }
 
+/**
+ * Format an amount given in the stake token's smallest unit (stroops — XLM has
+ * 7 decimals) as a grouped decimal string.
+ *
+ * Registry stake and slash amounts are i128 on-chain, which JSON cannot carry
+ * exactly as a number, so they arrive as bigint/number/string of stroops.
+ * Staking is configured by governance with a SEP-41 token — native XLM via its
+ * Stellar Asset Contract is the expected one, hence 7 decimals.
+ */
+export function formatStroops(stroops: bigint | number | string): string {
+  const value = BigInt(stroops);
+  // BigInt literals need an ES2020 target; this project builds for ES2017.
+  const zero = BigInt(0);
+  const negative = value < zero;
+  const abs = negative ? -value : value;
+  const whole = abs / 10_000_000n;
+  const frac = (abs % 10_000_000n).toString().padStart(7, "0").replace(/0+$/, "");
+  const grouped = whole.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return `${negative ? "-" : ""}${grouped}${frac ? `.${frac}` : ""}`;
+}
+
 export function formatOperationType(type: string): string {
   return type
     .split("_")

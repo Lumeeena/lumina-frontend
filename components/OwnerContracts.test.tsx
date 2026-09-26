@@ -45,6 +45,8 @@ function renderDashboard(props: Partial<React.ComponentProps<typeof OwnerContrac
       loadContracts={async () => [entry()]}
       loadHistory={async () => []}
       loadActivity={async () => new Map()}
+      loadReputations={async () => new Map()}
+      loadSlashes={async () => []}
       deactivate={async () => {}}
       {...props}
     />
@@ -237,5 +239,112 @@ describe('OwnerContracts', () => {
 
     expect(await screen.findByText('My Protocol')).toBeTruthy();
     expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('reads reputation for the owned contracts and shows what it earned', async () => {
+    const loadReputations = vi.fn(
+      async () =>
+        new Map([
+          [
+            C1,
+            {
+              stake: BigInt(25_000_000_000),
+              verified: true,
+              slashedTotal: BigInt(0),
+              withdrawLockedUntil: 0,
+            },
+          ],
+        ])
+    );
+    renderDashboard({ loadReputations });
+
+    await screen.findByText('My Protocol');
+    expect(await screen.findByText('Verified')).toBeTruthy();
+    expect(screen.getByText('Staked 2,500 XLM')).toBeTruthy();
+    expect(loadReputations).toHaveBeenCalledWith([C1]);
+  });
+
+  it('shows no reputation badges when the read comes back empty', async () => {
+    renderDashboard({ loadReputations: async () => new Map() });
+
+    await screen.findByText('My Protocol');
+    expect(screen.queryByText('Verified')).toBeNull();
+    expect(screen.queryByText(/^Staked /)).toBeNull();
+  });
+
+  it('still renders the dashboard when the reputation read fails', async () => {
+    renderDashboard({
+      loadReputations: async () => {
+        throw new Error('rpc down');
+      },
+    });
+
+    expect(await screen.findByText('My Protocol')).toBeTruthy();
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('shows slash history with reasons and ledgers when the section expands', async () => {
+    const loadSlashes = vi.fn(async () => [
+      { amount: BigInt(100_000_000), reason: 'Stale event schema', slashedAt: 9000 },
+    ]);
+    renderDashboard({
+      loadReputations: async () =>
+        new Map([
+          [
+            C1,
+            {
+              stake: BigInt(0),
+              verified: false,
+              slashedTotal: BigInt(100_000_000),
+              withdrawLockedUntil: 9500,
+            },
+          ],
+        ]),
+      loadSlashes,
+    });
+
+    await screen.findByText('My Protocol');
+    // The lifetime total comes from the reputation read — no per-row fetch.
+    expect(await screen.findByText('Slashed 10 XLM')).toBeTruthy();
+    expect(screen.queryByText('Stale event schema')).toBeNull();
+
+    await userEvent.click(screen.getByRole('button', { name: /history \(0\)/i }));
+
+    expect(await screen.findByText('Stale event schema')).toBeTruthy();
+    expect(screen.getByText('−10 XLM')).toBeTruthy();
+    expect(screen.getByText(/ledger 9,000/)).toBeTruthy();
+    // The lifetime total is stated, not just implied by the rows.
+    expect(screen.getByText(/lifetime slashed:/i)).toBeTruthy();
+    expect(loadSlashes).toHaveBeenCalledWith(C1);
+  });
+
+  it('says so when a contract has no slashes', async () => {
+    renderDashboard();
+
+    await screen.findByText('My Protocol');
+    await userEvent.click(screen.getByRole('button', { name: /history \(0\)/i }));
+
+    expect(await screen.findByText(/no slashes recorded/i)).toBeTruthy();
+  });
+
+  it('shows the slash-read failure inside the history section', async () => {
+    const loadSlashes = vi.fn(async () => {
+      throw new Error('rpc down');
+    });
+    renderDashboard({ loadSlashes });
+
+    await screen.findByText('My Protocol');
+    await userEvent.click(screen.getByRole('button', { name: /history \(0\)/i }));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toContain("Couldn't read the slash history");
+
+    // Collapsing and expanding again retries rather than showing a cached failure.
+    await userEvent.click(screen.getByRole('button', { name: /hide history/i }));
+    loadSlashes.mockResolvedValue([]);
+    await userEvent.click(screen.getByRole('button', { name: /history \(0\)/i }));
+
+    expect(await screen.findByText(/no slashes recorded/i)).toBeTruthy();
+    expect(loadSlashes).toHaveBeenCalledTimes(2);
   });
 });

@@ -1,11 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useState } from "react";
-import { getActiveContracts, RegistryEntry } from "@/lib/registry";
+import { getActiveProfiles, type RegistryProfile } from "@/lib/registry";
 import { connectWallet, getConnectedAddress } from "@/lib/wallet";
-import { truncateAddress } from "@/lib/formatters";
 import RegisterContractForm from "@/components/RegisterContractForm";
 import OwnerContracts from "@/components/OwnerContracts";
+import RegistryEntryCard from "@/components/RegistryEntryCard";
 
 type Tab = "mine" | "all";
 
@@ -14,7 +14,7 @@ export default function RegistryPage() {
   const [connecting, setConnecting] = useState(false);
   const [connectError, setConnectError] = useState<string | null>(null);
 
-  const [entries, setEntries] = useState<RegistryEntry[]>([]);
+  const [entries, setEntries] = useState<RegistryProfile[]>([]);
   const [entriesLoading, setEntriesLoading] = useState(true);
   const [entriesError, setEntriesError] = useState<string | null>(null);
 
@@ -22,7 +22,7 @@ export default function RegistryPage() {
   // Bumped to make the owner dashboard re-read after a registration.
   const [ownerRefresh, setOwnerRefresh] = useState(0);
 
-  const applyEntries = useCallback((result: RegistryEntry[]) => {
+  const applyEntries = useCallback((result: RegistryProfile[]) => {
     setEntries(result);
     setEntriesError(null);
     setEntriesLoading(false);
@@ -34,7 +34,7 @@ export default function RegistryPage() {
   }, []);
 
   const loadEntries = useCallback(
-    () => getActiveContracts().then(applyEntries, applyEntriesError),
+    () => getActiveProfiles().then(applyEntries, applyEntriesError),
     [applyEntries, applyEntriesError]
   );
 
@@ -43,7 +43,7 @@ export default function RegistryPage() {
     // handlers, so nothing cascades a render synchronously.
     let cancelled = false;
 
-    getActiveContracts().then(
+    getActiveProfiles().then(
       result => !cancelled && applyEntries(result),
       err => !cancelled && applyEntriesError(err)
     );
@@ -138,13 +138,7 @@ export default function RegistryPage() {
           ) : (
             <div className="flex flex-col gap-2">
               {entries.map(entry => (
-                <div key={entry.contractId} className="border border-[#e5e3ea] rounded-[10px] p-3.5 px-4">
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="font-bold text-sm text-[#0e0e12]">{entry.name}</span>
-                    <span className="mono text-[11px] text-[#a6a3b0]">{truncateAddress(entry.contractId, 5)}</span>
-                  </div>
-                  <p className="text-xs text-[#6b6975] m-0">{entry.description}</p>
-                </div>
+                <RegistryEntryCard key={entry.contractId} profile={entry} />
               ))}
             </div>
           )}

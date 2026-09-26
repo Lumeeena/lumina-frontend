@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   formatOperationType,
+  formatStroops,
   formatXLM,
   getOperationColor,
   timeAgo,
@@ -52,6 +53,30 @@ describe("formatXLM", () => {
 
   it("returns non-numeric input unchanged", () => {
     expect(formatXLM("not-a-number")).toBe("not-a-number");
+  });
+});
+
+describe("formatStroops", () => {
+  it("formats whole stroops without a trailing fraction", () => {
+    expect(formatStroops(BigInt(10_000_000))).toBe("1");
+  });
+
+  it("formats fractional stroops to 7 decimals, trimming trailing zeros", () => {
+    expect(formatStroops(BigInt(1_250_000_000))).toBe("125");
+    expect(formatStroops(BigInt(123_456_789))).toBe("12.3456789");
+  });
+
+  it("groups thousands", () => {
+    expect(formatStroops(BigInt(12_345_678_900_000))).toBe("1,234,567.89");
+  });
+
+  it("accepts number and string input", () => {
+    expect(formatStroops(50_000_000)).toBe("5");
+    expect(formatStroops("50000000")).toBe("5");
+  });
+
+  it("formats zero", () => {
+    expect(formatStroops(BigInt(0))).toBe("0");
   });
 });
 

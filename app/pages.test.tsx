@@ -198,6 +198,9 @@ describe("AccountPage", () => {
     await renderPage(AccountPage({ params: Promise.resolve({ address: ADDRESS }) }));
 
     expect(screen.getAllByText(new RegExp(ADDRESS.slice(0, 6))).length).toBeGreaterThan(0);
+    // Both activity lists render their seed and label it as the complete set.
+    expect(screen.getByText("All 1 transactions")).toBeTruthy();
+    expect(screen.getByText("All 1 operations")).toBeTruthy();
   });
 
   it("renders a not-found state for an unknown account rather than throwing", async () => {

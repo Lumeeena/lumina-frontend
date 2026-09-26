@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
 import type { Account } from "@/lib/types";
-import { timeAgo, formatXLM, truncateAddress } from "@/lib/formatters";
+import { formatXLM } from "@/lib/formatters";
 import CopyAddressButton from "@/components/CopyAddressButton";
 import AccountActivityFeed from "@/components/AccountActivityFeed";
+import AccountTransactionList from "@/components/AccountTransactionList";
+import AccountOperationList from "@/components/AccountOperationList";
 
 export const dynamic = 'force-dynamic';
 
@@ -26,6 +28,17 @@ const ACCOUNT_QUERY = `
         feeCharged
         operationCount
         successful
+      }
+      operations(limit: 10) {
+        id
+        type
+        createdAt
+        transactionHash
+        sourceAccount
+        from
+        to
+        amount
+        asset
       }
     }
   }
@@ -109,25 +122,10 @@ export default async function AccountPage({ params }: { params: Promise<{ addres
           <AccountActivityFeed address={account.address} />
 
           <h2 className="font-extrabold text-base mb-3 text-[#0e0e12]">Recent Transactions</h2>
-          <div className="rounded-xl border border-[#e5e3ea] overflow-hidden">
-            <table className="w-full text-sm border-collapse">
-              <thead><tr><th className={th}>Hash</th><th className={th}>Ledger</th><th className={th}>Ops</th><th className={th}>Time</th></tr></thead>
-              <tbody>
-                {account.transactions.map(tx => (
-                  <tr key={tx.hash} className="border-b border-[#f0eff3] last:border-0">
-                    <td className="py-2.5 px-3">
-                      <a href={`https://stellar.expert/explorer/public/tx/${tx.hash}`} target="_blank" rel="noopener noreferrer" className="mono text-xs text-[#7c3aed] hover:text-[#6d28d9] hover:underline transition-colors">
-                        {truncateAddress(tx.hash, 6)}
-                      </a>
-                    </td>
-                    <td className="py-2.5 px-3 mono text-xs">{tx.ledger.toLocaleString()}</td>
-                    <td className="py-2.5 px-3 text-xs">{tx.operationCount}</td>
-                    <td className="py-2.5 px-3 text-xs text-[#c3c1cb]">{timeAgo(tx.createdAt)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <AccountTransactionList address={account.address} initial={account.transactions} />
+
+          <h2 className="font-extrabold text-base mt-9 mb-3 text-[#0e0e12]">Recent Operations</h2>
+          <AccountOperationList address={account.address} initial={account.operations} />
         </div>
       )}
     </div>
