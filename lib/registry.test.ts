@@ -5,19 +5,30 @@
  * simulation, struct decoding, bigint amounts — is exercised against ScVal
  * shapes exactly as the contract serialises them.
  */
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { Address, Keypair, StrKey, nativeToScVal, scValToNative, xdr } from '@stellar/stellar-sdk';
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  Address,
+  Keypair,
+  StrKey,
+  nativeToScVal,
+  scValToNative,
+  xdr,
+} from "@stellar/stellar-sdk";
 
 const getAccount = vi.hoisted(() => vi.fn());
 const simulateTransaction = vi.hoisted(() => vi.fn());
 
-vi.mock('@stellar/stellar-sdk', async () => {
-  const actual = await vi.importActual<typeof import('@stellar/stellar-sdk')>('@stellar/stellar-sdk');
+vi.mock("@stellar/stellar-sdk", async () => {
+  const actual = await vi.importActual<typeof import("@stellar/stellar-sdk")>(
+    "@stellar/stellar-sdk",
+  );
   return {
     ...actual,
     rpc: {
       ...actual.rpc,
-      Server: vi.fn().mockImplementation(() => ({ getAccount, simulateTransaction })),
+      Server: vi
+        .fn()
+        .mockImplementation(() => ({ getAccount, simulateTransaction })),
     },
   };
 });
@@ -28,14 +39,19 @@ import {
   getContractsByOwner,
   getReputation,
   getSlashes,
-} from './registry';
+} from "./registry";
 
 const CONTRACT = StrKey.encodeContract(Keypair.random().rawPublicKey());
 const OWNER = Keypair.random().publicKey();
 
 /** One struct value with the contract's field names — ScVal structs decode keyed by them. */
 function struct(fields: [string, xdr.ScVal][]): xdr.ScVal {
-  return xdr.ScVal.scvMap(fields.map(([key, val]) => new xdr.ScMapEntry({ key: xdr.ScVal.scvSymbol(key), val })));
+  return xdr.ScVal.scvMap(
+    fields.map(
+      ([key, val]) =>
+        new xdr.ScMapEntry({ key: xdr.ScVal.scvSymbol(key), val }),
+    ),
+  );
 }
 
 interface EntryOverrides {
@@ -46,14 +62,22 @@ interface EntryOverrides {
   active?: boolean;
 }
 
-function entryValuePairs(overrides: EntryOverrides = {}): [string, xdr.ScVal][] {
+function entryValuePairs(
+  overrides: EntryOverrides = {},
+): [string, xdr.ScVal][] {
   return [
-    ['contract_id', new Address(overrides.contract_id ?? CONTRACT).toScVal()],
-    ['owner', new Address(OWNER).toScVal()],
-    ['name', xdr.ScVal.scvString(overrides.name ?? 'My Protocol')],
-    ['description', xdr.ScVal.scvString(overrides.description ?? 'A DeFi protocol')],
-    ['registered_at', nativeToScVal(overrides.registered_at ?? 500, { type: 'u32' })],
-    ['active', xdr.ScVal.scvBool(overrides.active ?? true)],
+    ["contract_id", new Address(overrides.contract_id ?? CONTRACT).toScVal()],
+    ["owner", new Address(OWNER).toScVal()],
+    ["name", xdr.ScVal.scvString(overrides.name ?? "My Protocol")],
+    [
+      "description",
+      xdr.ScVal.scvString(overrides.description ?? "A DeFi protocol"),
+    ],
+    [
+      "registered_at",
+      nativeToScVal(overrides.registered_at ?? 500, { type: "u32" }),
+    ],
+    ["active", xdr.ScVal.scvBool(overrides.active ?? true)],
   ];
 }
 
@@ -61,25 +85,61 @@ function entryStruct(overrides: EntryOverrides = {}): xdr.ScVal {
   return struct(entryValuePairs(overrides));
 }
 
-function reputationStruct(overrides: Partial<{ stake: bigint; verified: boolean; slashed_total: bigint; withdraw_locked_until: number }> = {}): xdr.ScVal {
+function reputationStruct(
+  overrides: Partial<{
+    stake: bigint;
+    verified: boolean;
+    slashed_total: bigint;
+    withdraw_locked_until: number;
+  }> = {},
+): xdr.ScVal {
   return struct([
-    ['stake', nativeToScVal(overrides.stake ?? BigInt(50_000_000), { type: 'i128' })],
-    ['verified', xdr.ScVal.scvBool(overrides.verified ?? false)],
-    ['slashed_total', nativeToScVal(overrides.slashed_total ?? BigInt(25_000_000), { type: 'i128' })],
-    ['withdraw_locked_until', nativeToScVal(overrides.withdraw_locked_until ?? 12_345, { type: 'u32' })],
+    [
+      "stake",
+      nativeToScVal(overrides.stake ?? BigInt(50_000_000), { type: "i128" }),
+    ],
+    ["verified", xdr.ScVal.scvBool(overrides.verified ?? false)],
+    [
+      "slashed_total",
+      nativeToScVal(overrides.slashed_total ?? BigInt(25_000_000), {
+        type: "i128",
+      }),
+    ],
+    [
+      "withdraw_locked_until",
+      nativeToScVal(overrides.withdraw_locked_until ?? 12_345, { type: "u32" }),
+    ],
   ]);
 }
 
 /** A `ContractProfile`: the entry struct with its reputation attached. */
-function profileStruct(entryOverrides: EntryOverrides = {}, reputation: xdr.ScVal = reputationStruct()): xdr.ScVal {
-  return struct([...entryValuePairs(entryOverrides), ['reputation', reputation]]);
+function profileStruct(
+  entryOverrides: EntryOverrides = {},
+  reputation: xdr.ScVal = reputationStruct(),
+): xdr.ScVal {
+  return struct([
+    ...entryValuePairs(entryOverrides),
+    ["reputation", reputation],
+  ]);
 }
 
-function slashStruct(overrides: Partial<{ amount: bigint; reason: string; slashed_at: number }> = {}): xdr.ScVal {
+function slashStruct(
+  overrides: Partial<{
+    amount: bigint;
+    reason: string;
+    slashed_at: number;
+  }> = {},
+): xdr.ScVal {
   return struct([
-    ['amount', nativeToScVal(overrides.amount ?? BigInt(10_000_000), { type: 'i128' })],
-    ['reason', xdr.ScVal.scvString(overrides.reason ?? 'Stale event schema')],
-    ['slashed_at', nativeToScVal(overrides.slashed_at ?? 9_000, { type: 'u32' })],
+    [
+      "amount",
+      nativeToScVal(overrides.amount ?? BigInt(10_000_000), { type: "i128" }),
+    ],
+    ["reason", xdr.ScVal.scvString(overrides.reason ?? "Stale event schema")],
+    [
+      "slashed_at",
+      nativeToScVal(overrides.slashed_at ?? 9_000, { type: "u32" }),
+    ],
   ]);
 }
 
@@ -92,17 +152,21 @@ beforeEach(() => {
   vi.clearAllMocks();
   // TransactionBuilder needs a live-ish account object to build against.
   getAccount.mockResolvedValue({
-    accountId: () => ADDRESS,
-    sequenceNumber: () => '1',
+    accountId: () => OWNER,
+    sequenceNumber: () => "1",
     incrementSequenceNumber: () => {},
   });
 });
 
-describe('getContractsByOwner', () => {
-  it('pages until a short batch comes back, mapping entries', async () => {
+describe("getContractsByOwner", () => {
+  it("pages until a short batch comes back, mapping entries", async () => {
     // PAGE_LIMIT is 50: a full page then a short one.
     simulateTransaction
-      .mockResolvedValueOnce(simResult(xdr.ScVal.scvVec(Array.from({ length: 50 }, () => entryStruct()))))
+      .mockResolvedValueOnce(
+        simResult(
+          xdr.ScVal.scvVec(Array.from({ length: 50 }, () => entryStruct())),
+        ),
+      )
       .mockResolvedValueOnce(simResult(xdr.ScVal.scvVec([entryStruct()])));
 
     const entries = await getContractsByOwner(OWNER);
@@ -111,36 +175,47 @@ describe('getContractsByOwner', () => {
     expect(entries[0]).toMatchObject({
       contractId: CONTRACT,
       owner: OWNER,
-      name: 'My Protocol',
-      description: 'A DeFi protocol',
+      name: "My Protocol",
+      description: "A DeFi protocol",
       active: true,
       registeredAt: 500,
     });
     expect(simulateTransaction).toHaveBeenCalledTimes(2);
   });
 
-  it('throws a readable error when the simulation fails', async () => {
-    simulateTransaction.mockResolvedValue({ error: 'internal error' });
+  it("throws a readable error when the simulation fails", async () => {
+    simulateTransaction.mockResolvedValue({ error: "internal error" });
 
-    await expect(getContractsByOwner(OWNER)).rejects.toThrow('Registry simulation failed');
+    await expect(getContractsByOwner(OWNER)).rejects.toThrow(
+      "Registry simulation failed",
+    );
   });
 });
 
-describe('getActiveContracts', () => {
-  it('reads the first page and maps entries', async () => {
-    simulateTransaction.mockResolvedValue(simResult(xdr.ScVal.scvVec([entryStruct()])));
+describe("getActiveContracts", () => {
+  it("reads the first page and maps entries", async () => {
+    simulateTransaction.mockResolvedValue(
+      simResult(xdr.ScVal.scvVec([entryStruct()])),
+    );
 
     const entries = await getActiveContracts();
 
     expect(entries).toHaveLength(1);
-    expect(entries[0].name).toBe('My Protocol');
+    expect(entries[0].name).toBe("My Protocol");
   });
 });
 
-describe('getActiveProfiles', () => {
-  it('attaches reputation to each entry in the same read', async () => {
+describe("getActiveProfiles", () => {
+  it("attaches reputation to each entry in the same read", async () => {
     simulateTransaction.mockResolvedValue(
-      simResult(xdr.ScVal.scvVec([profileStruct({}, reputationStruct({ stake: BigInt(50_000_000), verified: true }))]))
+      simResult(
+        xdr.ScVal.scvVec([
+          profileStruct(
+            {},
+            reputationStruct({ stake: BigInt(50_000_000), verified: true }),
+          ),
+        ]),
+      ),
     );
 
     const profiles = await getActiveProfiles();
@@ -154,9 +229,13 @@ describe('getActiveProfiles', () => {
     });
   });
 
-  it('reads several pages of profiles before a short batch ends it', async () => {
+  it("reads several pages of profiles before a short batch ends it", async () => {
     simulateTransaction
-      .mockResolvedValueOnce(simResult(xdr.ScVal.scvVec(Array.from({ length: 50 }, () => profileStruct()))))
+      .mockResolvedValueOnce(
+        simResult(
+          xdr.ScVal.scvVec(Array.from({ length: 50 }, () => profileStruct())),
+        ),
+      )
       .mockResolvedValueOnce(simResult(xdr.ScVal.scvVec([profileStruct()])));
 
     const profiles = await getActiveProfiles();
@@ -166,11 +245,19 @@ describe('getActiveProfiles', () => {
   });
 });
 
-describe('getReputation', () => {
-  it('decodes the tolerance read: zeroed values for an unregistered contract', async () => {
+describe("getReputation", () => {
+  it("decodes the tolerance read: zeroed values for an unregistered contract", async () => {
     // The contract returns zeroed values rather than erroring — the truth for
     // a contract that was never registered.
-    simulateTransaction.mockResolvedValue(simResult(reputationStruct({ stake: BigInt(0), slashed_total: BigInt(0), withdraw_locked_until: 0 })));
+    simulateTransaction.mockResolvedValue(
+      simResult(
+        reputationStruct({
+          stake: BigInt(0),
+          slashed_total: BigInt(0),
+          withdraw_locked_until: 0,
+        }),
+      ),
+    );
 
     const reputation = await getReputation(CONTRACT);
 
@@ -182,8 +269,10 @@ describe('getReputation', () => {
     });
   });
 
-  it('decodes bigint amounts and the withdraw lock', async () => {
-    simulateTransaction.mockResolvedValue(simResult(reputationStruct({ stake: BigInt(1_234_567_890) })));
+  it("decodes bigint amounts and the withdraw lock", async () => {
+    simulateTransaction.mockResolvedValue(
+      simResult(reputationStruct({ stake: BigInt(1_234_567_890) })),
+    );
 
     const reputation = await getReputation(CONTRACT);
 
@@ -192,36 +281,64 @@ describe('getReputation', () => {
   });
 });
 
-describe('getSlashes', () => {
-  it('returns every slash with its reason and ledger, oldest first', async () => {
+describe("getSlashes", () => {
+  it("returns every slash with its reason and ledger, oldest first", async () => {
     simulateTransaction.mockResolvedValue(
       simResult(
         xdr.ScVal.scvVec([
-          slashStruct({ amount: BigInt(10_000_000), reason: 'Stale event schema', slashed_at: 9_000 }),
-          slashStruct({ amount: BigInt(5_000_000), reason: 'Indexed wrong contract', slashed_at: 9_100 }),
-        ])
-      )
+          slashStruct({
+            amount: BigInt(10_000_000),
+            reason: "Stale event schema",
+            slashed_at: 9_000,
+          }),
+          slashStruct({
+            amount: BigInt(5_000_000),
+            reason: "Indexed wrong contract",
+            slashed_at: 9_100,
+          }),
+        ]),
+      ),
     );
 
     const slashes = await getSlashes(CONTRACT);
 
     expect(slashes).toEqual([
-      { amount: BigInt(10_000_000), reason: 'Stale event schema', slashedAt: 9_000 },
-      { amount: BigInt(5_000_000), reason: 'Indexed wrong contract', slashedAt: 9_100 },
+      {
+        amount: BigInt(10_000_000),
+        reason: "Stale event schema",
+        slashedAt: 9_000,
+      },
+      {
+        amount: BigInt(5_000_000),
+        reason: "Indexed wrong contract",
+        slashedAt: 9_100,
+      },
     ]);
   });
 
-  it('returns an empty history for a contract that was never slashed', async () => {
+  it("returns an empty history for a contract that was never slashed", async () => {
     simulateTransaction.mockResolvedValue(simResult(xdr.ScVal.scvVec([])));
 
     await expect(getSlashes(CONTRACT)).resolves.toEqual([]);
   });
 });
 
-describe('scValToNative round trip', () => {
-  it('decodes a profile vec the way the mappers expect', () => {
-    const decoded = scValToNative(xdr.ScVal.scvVec([profileStruct()]))[0] as Record<string, unknown>;
-    expect(Object.keys(decoded)).toEqual(['contract_id', 'owner', 'name', 'description', 'registered_at', 'active', 'reputation']);
-    expect(typeof (decoded['reputation'] as Record<string, unknown>)['stake']).toBe('bigint');
+describe("scValToNative round trip", () => {
+  it("decodes a profile vec the way the mappers expect", () => {
+    const decoded = scValToNative(
+      xdr.ScVal.scvVec([profileStruct()]),
+    )[0] as Record<string, unknown>;
+    expect(Object.keys(decoded)).toEqual([
+      "contract_id",
+      "owner",
+      "name",
+      "description",
+      "registered_at",
+      "active",
+      "reputation",
+    ]);
+    expect(
+      typeof (decoded["reputation"] as Record<string, unknown>)["stake"],
+    ).toBe("bigint");
   });
 });

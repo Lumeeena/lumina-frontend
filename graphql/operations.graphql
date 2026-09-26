@@ -1,0 +1,214 @@
+query LatestLedger {
+  latestLedger {
+    sequence
+    closedAt
+    transactionCount
+    operationCount
+  }
+}
+
+query AccountDetail($address: String!) {
+  account(address: $address) {
+    address
+    sequence
+    subentryCount
+    lastModifiedLedger
+    numSponsored
+    numSponsoring
+    balances {
+      assetType
+      assetCode
+      assetIssuer
+      balance
+      limit
+    }
+    flags {
+      authRequired
+      authRevocable
+      authImmutable
+      authClawbackEnabled
+    }
+    transactions(limit: 10) {
+      hash
+      ledger
+      createdAt
+      sourceAccount
+      feeCharged
+      operationCount
+      successful
+      memoType
+      memo
+    }
+    operations(limit: 10) {
+      id
+      type
+      createdAt
+      transactionHash
+      sourceAccount
+      from
+      to
+      amount
+      asset
+      startingBalance
+      funder
+      offerId
+      price
+      selling
+      buying
+    }
+  }
+}
+
+query ContractEvents($contractId: String!, $limit: Int) {
+  events(contractId: $contractId, limit: $limit) {
+    items {
+      id
+      type
+      contractId
+      ledger
+      createdAt
+      pagingToken
+      topics
+      value
+    }
+  }
+}
+
+query Stats($opLimit: Int) {
+  latestLedger {
+    sequence
+    transactionCount
+  }
+  operations(limit: $opLimit) {
+    items {
+      type
+    }
+  }
+}
+
+query TransactionPage($limit: Int, $cursor: String) {
+  transactions(limit: $limit, cursor: $cursor) {
+    items {
+      hash
+      ledger
+      createdAt
+      sourceAccount
+      feeCharged
+      operationCount
+      successful
+      memoType
+      memo
+    }
+    pageInfo {
+      hasNextPage
+      cursor
+    }
+  }
+}
+
+query OwnerContractEvents($contractId: String!, $limit: Int) {
+  events(contractId: $contractId, limit: $limit) {
+    items {
+      id
+      type
+      contractId
+      ledger
+      createdAt
+      pagingToken
+      topics
+      value
+    }
+  }
+}
+
+query AccountOperations($address: String!, $limit: Int, $cursor: String) {
+  operations(account: $address, limit: $limit, cursor: $cursor) {
+    items {
+      id
+      type
+      createdAt
+      transactionHash
+      sourceAccount
+      from
+      to
+      amount
+      asset
+      startingBalance
+      funder
+      offerId
+      price
+      selling
+      buying
+    }
+    pageInfo {
+      hasNextPage
+      cursor
+    }
+  }
+}
+
+query LiveFeedTransactions($limit: Int) {
+  transactions(limit: $limit) {
+    items {
+      hash
+      ledger
+      createdAt
+      sourceAccount
+      feeCharged
+      operationCount
+      successful
+      memoType
+      memo
+    }
+  }
+}
+
+subscription LiveFeedNewTransaction {
+  newTransaction {
+    hash
+    ledger
+    createdAt
+    sourceAccount
+    feeCharged
+    operationCount
+    successful
+    memoType
+    memo
+  }
+}
+
+query AccountTransactions($address: String!, $limit: Int) {
+  account(address: $address) {
+    transactions(limit: $limit) {
+      hash
+      ledger
+      createdAt
+      sourceAccount
+      operationCount
+      feeCharged
+      successful
+      memoType
+      memo
+    }
+  }
+}
+
+subscription AccountActivity($address: String!) {
+  accountActivity(address: $address) {
+    id
+    type
+    createdAt
+    transactionHash
+    sourceAccount
+    from
+    to
+    amount
+    asset
+    startingBalance
+    funder
+    offerId
+    price
+    selling
+    buying
+  }
+}

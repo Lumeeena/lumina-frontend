@@ -19,15 +19,15 @@ Runs against `http://localhost:4000/graphql` by default — start [lumina-backen
 
 ### Environment variables
 
-| Variable | Used by | Default |
-|---|---|---|
-| `GRAPHQL_URL` | Server Components (runtime, not exposed to the browser) | `http://localhost:4000/graphql` |
-| `NEXT_PUBLIC_GRAPHQL_URL` | Client-side queries (`LiveFeed` seed + polling fallback, GraphQL Playground) — **build-time inlined** | `http://localhost:4000/graphql` |
-| `NEXT_PUBLIC_GRAPHQL_WS_URL` | GraphQL subscriptions (`LiveFeed`, account Live Activity) — **build-time inlined** | `NEXT_PUBLIC_GRAPHQL_URL` with `http`→`ws` / `https`→`wss` |
-| `NEXT_PUBLIC_REGISTRY_CONTRACT_ID` | Registry + Stats pages, reading the Lumina Registry directly via Soroban RPC | the deployed testnet registry (`CAYUDQPV3RKPM3EXDFGI3457FV677JLUCJ4OLKWGCUBPRIHYKXK3WFAZ`) |
-| `NEXT_PUBLIC_SOROBAN_RPC_URL` | Same | `https://soroban-testnet.stellar.org` |
-| `NEXT_PUBLIC_NETWORK_PASSPHRASE` | Same, and the Registry page's wallet-signed transactions | testnet passphrase |
-| `NEXT_PUBLIC_REGISTRY_READ_ACCOUNT` | Any funded account used only for read-only simulation (no secret key needed) | a funded testnet account |
+| Variable                            | Used by                                                                                               | Default                                                                                    |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `GRAPHQL_URL`                       | Server Components (runtime, not exposed to the browser)                                               | `http://localhost:4000/graphql`                                                            |
+| `NEXT_PUBLIC_GRAPHQL_URL`           | Client-side queries (`LiveFeed` seed + polling fallback, GraphQL Playground) — **build-time inlined** | `http://localhost:4000/graphql`                                                            |
+| `NEXT_PUBLIC_GRAPHQL_WS_URL`        | GraphQL subscriptions (`LiveFeed`, account Live Activity) — **build-time inlined**                    | `NEXT_PUBLIC_GRAPHQL_URL` with `http`→`ws` / `https`→`wss`                                 |
+| `NEXT_PUBLIC_REGISTRY_CONTRACT_ID`  | Registry + Stats pages, reading the Lumina Registry directly via Soroban RPC                          | the deployed testnet registry (`CAYUDQPV3RKPM3EXDFGI3457FV677JLUCJ4OLKWGCUBPRIHYKXK3WFAZ`) |
+| `NEXT_PUBLIC_SOROBAN_RPC_URL`       | Same                                                                                                  | `https://soroban-testnet.stellar.org`                                                      |
+| `NEXT_PUBLIC_NETWORK_PASSPHRASE`    | Same, and the Registry page's wallet-signed transactions                                              | testnet passphrase                                                                         |
+| `NEXT_PUBLIC_REGISTRY_READ_ACCOUNT` | Any funded account used only for read-only simulation (no secret key needed)                          | a funded testnet account                                                                   |
 
 `NEXT_PUBLIC_*` values must be set as Docker build `ARG`s (see `Dockerfile`), not runtime env vars — Next.js inlines them into the client bundle at build time, so setting them only at container-run time has no effect.
 
@@ -69,3 +69,8 @@ lib/            GraphQL client + formatters
 ## License
 
 MIT
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for staged-file checks, GraphQL type generation,
+and the one-command bundle analyzer.

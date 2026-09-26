@@ -18,7 +18,10 @@ export function timeAgo(isoString: string): string {
 export function formatXLM(amount: string): string {
   const num = parseFloat(amount);
   if (isNaN(num)) return amount;
-  return num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 7 });
+  return num.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 7,
+  });
 }
 
 /**
@@ -36,8 +39,11 @@ export function formatStroops(stroops: bigint | number | string): string {
   const zero = BigInt(0);
   const negative = value < zero;
   const abs = negative ? -value : value;
-  const whole = abs / 10_000_000n;
-  const frac = (abs % 10_000_000n).toString().padStart(7, "0").replace(/0+$/, "");
+  const whole = abs / BigInt(10_000_000);
+  const frac = (abs % BigInt(10_000_000))
+    .toString()
+    .padStart(7, "0")
+    .replace(/0+$/, "");
   const grouped = whole.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   return `${negative ? "-" : ""}${grouped}${frac ? `.${frac}` : ""}`;
 }
@@ -45,7 +51,7 @@ export function formatStroops(stroops: bigint | number | string): string {
 export function formatOperationType(type: string): string {
   return type
     .split("_")
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
 }
 
