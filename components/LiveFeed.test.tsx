@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, cleanup, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { SubscriptionClient } from "@/lib/subscriptions";
 import { FakeSocket } from "@/lib/__fixtures__/fakeSocket";
 import { __setSubscriptionClient } from "@/lib/useSubscription";
@@ -73,12 +74,30 @@ beforeEach(() => {
   mocks.gqlFetch.mockReset();
   mocks.gqlFetch.mockResolvedValue({ transactions: { items: [] } });
   installClient();
+
+  // The virtualizer needs a viewport; jsdom otherwise reports a zero-sized
+  // element and correctly renders no rows.
+  Object.defineProperty(HTMLElement.prototype, "clientHeight", { configurable: true, value: 220 });
+  Object.defineProperty(HTMLElement.prototype, "clientWidth", { configurable: true, value: 900 });
+  Object.defineProperty(HTMLElement.prototype, "offsetHeight", { configurable: true, value: 220 });
+  Object.defineProperty(HTMLElement.prototype, "offsetWidth", { configurable: true, value: 900 });
+  HTMLElement.prototype.getBoundingClientRect = () =>
+    ({ width: 900, height: 220, top: 0, left: 0, right: 900, bottom: 220, x: 0, y: 0, toJSON: () => {} }) as DOMRect;
+  vi.stubGlobal(
+    "ResizeObserver",
+    class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    },
+  );
 });
 
 afterEach(() => {
   cleanup();
   __setSubscriptionClient(null);
   vi.useRealTimers();
+  vi.unstubAllGlobals();
 });
 
 describe("LiveFeed", () => {
@@ -159,7 +178,60 @@ describe("LiveFeed", () => {
       await push(transaction(`hash${String(i).padStart(4, "0")}`));
     }
 
-    expect(screen.getAllByRole("link")).toHaveLength(MAX_FEED_LENGTH);
+    expect(screen.getByTestId("live-feed-scroll").dataset.retainedCount).toBe(String(MAX_FEED_LENGTH));
+  });
+
+  it("renders only a viewport-sized window while retaining the capped feed", async () => {
+    await act(async () => {
+      render(<LiveFeed />);
+    });
+    await connect();
+
+    for (let i = 0; i < MAX_FEED_LENGTH + 10; i++) {
+      await push(transaction(`virtual${String(i).padStart(4, "0")}`));
+    }
+
+    const renderedRows = screen.getAllByRole("listitem").length;
+    // Before virtualization, all 25 retained rows were mounted. At this
+    // 220px test viewport, the visible window plus overscan mounts only 9.
+    expect(renderedRows).toBe(9);
+    expect(screen.getByTestId("live-feed-scroll").dataset.retainedCount).toBe(String(MAX_FEED_LENGTH));
+  });
+
+  it("holds updates while paused, counts them, and applies them on resume", async () => {
+    mocks.gqlFetch.mockResolvedValue({ transactions: { items: [transaction("old000")] } });
+    await act(async () => {
+      render(<LiveFeed />);
+    });
+    await connect();
+
+    await userEvent.click(screen.getByRole("button", { name: "Pause feed" }));
+    await push(transaction("new111"));
+    await push(transaction("new222"));
+
+    expect(screen.queryByText(/new11/)).toBeNull();
+    expect(screen.queryByText(/new22/)).toBeNull();
+    expect(screen.getByRole("button", { name: "Resume feed (2)" })).toBeTruthy();
+    expect(screen.getByText(/2 updates waiting/i)).toBeTruthy();
+
+    await userEvent.click(screen.getByRole("button", { name: "Resume feed (2)" }));
+
+    await waitFor(() => expect(screen.getByText(/new22/)).toBeTruthy());
+    expect(screen.getByText(/new11/)).toBeTruthy();
+    expect(screen.getByText(/2 updates arrived while paused/i)).toBeTruthy();
+  });
+
+  it("pauses automatically when a transaction row receives focus", async () => {
+    mocks.gqlFetch.mockResolvedValue({ transactions: { items: [transaction("focus000")] } });
+    await act(async () => {
+      render(<LiveFeed />);
+    });
+    await connect();
+
+    const rowLink = screen.getByRole("link", { name: /focus/i });
+    fireEvent.focus(rowLink);
+
+    expect(screen.getByRole("button", { name: "Resume feed" }).getAttribute("aria-pressed")).toBe("true");
   });
 
   it("reports reconnecting rather than silently stalling on a dropped connection", async () => {
