@@ -19,7 +19,7 @@ export interface WebSocketLike {
   send(data: string): void;
   close(code?: number, reason?: string): void;
   onopen: (() => void) | null;
-  onclose: (() => void) | null;
+  onclose: ((event?: { code?: number }) => void) | null;
   onerror: (() => void) | null;
   onmessage: ((event: { data: unknown }) => void) | null;
 }
@@ -37,6 +37,19 @@ export type ConnectionState =
   | "disconnected"
   /** No WebSocket in this environment at all; fall back immediately. */
   | "unsupported";
+
+/**
+ * Why the client stopped trying to hold a live connection. Only meaningful in
+ * the `disconnected` state; `null` otherwise.
+ */
+export type FailureReason =
+  /** Retries were exhausted without the server ever becoming reachable. */
+  | "unreachable"
+  /** The server closed the connection with an auth or policy close code. */
+  | "refused";
+
+/** Close codes that mean the server said no, as opposed to the network dropping. */
+const REFUSED_CLOSE_CODES = new Set([1008, 4400, 4401, 4403]);
 
 export interface SubscriptionHandlers<T> {
   onData: (data: T) => void;
@@ -107,6 +120,8 @@ export class SubscriptionClient {
   private acknowledged = false;
   private state: ConnectionState = "idle";
   private attempts = 0;
+  private failureReason: FailureReason | null = null;
+  private lastCloseCode: number | undefined;
   private retryHandle: unknown = null;
   private disposed = false;
   private nextId = 1;
@@ -129,6 +144,23 @@ export class SubscriptionClient {
 
   getState(): ConnectionState {
     return this.state;
+  }
+
+  /** Why the client gave up, or `null` while it has not. */
+  getFailureReason(): FailureReason | null {
+    return this.failureReason;
+  }
+
+  /**
+   * Try again after the client gave up. A no-op in any other state, since a
+   * live or retrying client is already doing this.
+   */
+  retryNow(): void {
+    if (this.disposed || this.state !== "disconnected") return;
+    this.attempts = 0;
+    this.failureReason = null;
+    this.lastCloseCode = undefined;
+    this.connect();
   }
 
   /** Subscribe to state changes. Returns an unsubscribe function. */
@@ -209,7 +241,7 @@ export class SubscriptionClient {
       // `onclose` always follows `onerror`, so recovery is driven from there
       // and this handler only exists to stop the event surfacing as unhandled.
     };
-    socket.onclose = () => this.handleClose();
+    socket.onclose = event => this.handleClose(event?.code);
   }
 
   private handleOpen(): void {
@@ -228,7 +260,8 @@ export class SubscriptionClient {
     }
   }
 
-  private handleClose(): void {
+  private handleClose(code?: number): void {
+    this.lastCloseCode = code;
     this.socket = null;
     this.acknowledged = false;
     for (const entry of this.subscriptions.values()) {
@@ -249,6 +282,10 @@ export class SubscriptionClient {
     if (this.attempts >= this.retry.maxAttempts) {
       // Report the failure rather than retrying forever in the background —
       // the caller needs to know it should fall back.
+      this.failureReason =
+        this.lastCloseCode !== undefined && REFUSED_CLOSE_CODES.has(this.lastCloseCode)
+          ? "refused"
+          : "unreachable";
       this.setState("disconnected");
       return;
     }

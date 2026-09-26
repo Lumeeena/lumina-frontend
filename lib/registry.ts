@@ -12,7 +12,7 @@
  * unregistered address rather than erroring, which is the truth for a contract
  * that was never registered.
  */
-import { Contract, nativeToScVal, rpc, scValToNative, TransactionBuilder, type xdr } from '@stellar/stellar-sdk';
+import { Contract, nativeToScVal, rpc, scValToNative, TransactionBuilder, xdr } from '@stellar/stellar-sdk';
 
 export const REGISTRY_CONTRACT_ID =
   process.env.NEXT_PUBLIC_REGISTRY_CONTRACT_ID ?? 'CAYUDQPV3RKPM3EXDFGI3457FV677JLUCJ4OLKWGCUBPRIHYKXK3WFAZ';
@@ -30,45 +30,43 @@ export interface RegistryEntry {
   description: string;
   active: boolean;
   registeredAt: number;
+  /** Absent until read; empty for registrations that predate the taxonomy. */
+  categories?: Category[];
 }
 
-/**
- * The reputation signal stored beside a registration (the contract's
- * `Reputation`): current stake, governance attestation, lifetime total
- * slashed, and the ledger before which `withdraw_stake` is refused.
- *
- * Amounts are i128 on-chain — JSON cannot carry them exactly as numbers — so
- * they arrive as `bigint` in the stake token's smallest unit (stroops).
- */
-export interface RegistryReputation {
-  stake: bigint;
-  verified: boolean;
-  slashedTotal: bigint;
-  withdrawLockedUntil: number;
+/** The contract's `Category` vocabulary, in declaration order. */
+export const CATEGORIES = [
+  'DeFi',
+  'Nft',
+  'Gaming',
+  'Identity',
+  'Infrastructure',
+  'Payments',
+  'Oracle',
+  'Dao',
+  'Other',
+] as const;
+
+export type Category = (typeof CATEGORIES)[number];
+
+export const CATEGORY_LABELS: Record<Category, string> = {
+  DeFi: 'DeFi',
+  Nft: 'NFT',
+  Gaming: 'Gaming',
+  Identity: 'Identity',
+  Infrastructure: 'Infrastructure',
+  Payments: 'Payments',
+  Oracle: 'Oracle',
+  Dao: 'DAO',
+  Other: 'Other',
+};
+
+export function isCategory(value: string | null | undefined): value is Category {
+  return CATEGORIES.some(c => c === value);
 }
 
-/**
- * One slash levied against a registration, recorded on-chain permanently so
- * the reason stays auditable long after the stake it was taken from is gone.
- */
-export interface SlashRecord {
-  amount: bigint;
-  reason: string;
-  /** Ledger at which the slash executed — the on-chain timestamp. */
-  slashedAt: number;
-}
-
-/** A registration joined with its reputation — what `get_active_profiles` returns. */
-export interface RegistryProfile extends RegistryEntry {
-  reputation: RegistryReputation;
-}
-
-interface ReputationScVal {
-  stake: bigint;
-  verified: boolean;
-  slashed_total: bigint;
-  withdraw_locked_until: number;
-}
+/** A unit-variant `#[contracttype]` enum crosses the wire as `ScVec[Symbol]`. */
+const categoryToScVal = (category: Category) => xdr.ScVal.scvVec([xdr.ScVal.scvSymbol(category)]);
 
 interface ContractEntryScVal {
   active: boolean;
@@ -206,11 +204,109 @@ export async function getActiveContracts(
 }
 
 /**
- * Active registrations with their reputation attached — the contract's
- * `get_active_profiles`, one call instead of an entry read plus a reputation
- * read per row. This is what a discovery surface wants: stake, verification
- * and slash history are part of the same listing, not decoration fetched
- * afterwards.
+ * Active registrations in one category, filtered by the contract rather than
+ * client-side so paging stays correct.
+ */
+export async function getActiveContractsByCategory(
+  category: Category,
+  registryContractId: string = REGISTRY_CONTRACT_ID,
+  rpcUrl: string = SOROBAN_RPC_URL,
+  readAccount: string = DEFAULT_READ_ACCOUNT,
+  networkPassphrase: string = NETWORK_PASSPHRASE
+): Promise<RegistryEntry[]> {
+  return readEntryPages(
+    'get_active_contracts_by_category',
+    [categoryToScVal(category)],
+    registryContractId,
+    rpcUrl,
+    readAccount,
+    networkPassphrase
+  );
+}
+
+/**
+ * Attach each entry's categories via `get_categories`. Categories are
+ * decoration, so a failed read leaves the entries as they were rather than
+ * failing the listing.
+ */
+export async function withCategories(
+  entries: RegistryEntry[],
+  registryContractId: string = REGISTRY_CONTRACT_ID,
+  rpcUrl: string = SOROBAN_RPC_URL,
+  readAccount: string = DEFAULT_READ_ACCOUNT,
+  networkPassphrase: string = NETWORK_PASSPHRASE
+): Promise<RegistryEntry[]> {
+  if (entries.length === 0) return entries;
+  try {
+    const server = new rpc.Server(rpcUrl);
+    const account = await server.getAccount(readAccount);
+    const contract = new Contract(registryContractId);
+
+    return await Promise.all(
+      entries.map(async entry => {
+        const tx = new TransactionBuilder(account, { fee: '100', networkPassphrase })
+          .addOperation(contract.call('get_categories', nativeToScVal(entry.contractId, { type: 'address' })))
+          .setTimeout(30)
+          .build();
+        const sim = await server.simulateTransaction(tx);
+        if (rpc.Api.isSimulationError(sim)) return entry;
+        const raw = scValToNative(sim.result!.retval) as (string | string[])[];
+        const categories = raw.map(c => (Array.isArray(c) ? c[0] : c)).filter(isCategory);
+        return { ...entry, categories };
+      })
+    );
+  } catch {
+    return entries;
+  }
+}
+
+/** What an owner has staked on a registration and when it can come out. */
+export interface StakeInfo {
+  /** Staked balance in the stake token's base units. */
+  stake: bigint;
+  /** Ledger before which `withdraw_stake` is refused; 0 once clear. */
+  withdrawLockedUntil: number;
+  /** The network's current ledger, to compare the lock against. */
+  currentLedger: number;
+}
+
+export async function getStakeInfo(
+  contractId: string,
+  registryContractId: string = REGISTRY_CONTRACT_ID,
+  rpcUrl: string = SOROBAN_RPC_URL,
+  readAccount: string = DEFAULT_READ_ACCOUNT,
+  networkPassphrase: string = NETWORK_PASSPHRASE
+): Promise<StakeInfo> {
+  const server = new rpc.Server(rpcUrl);
+  const account = await server.getAccount(readAccount);
+  const tx = new TransactionBuilder(account, { fee: '100', networkPassphrase })
+    .addOperation(
+      new Contract(registryContractId).call('get_reputation', nativeToScVal(contractId, { type: 'address' }))
+    )
+    .setTimeout(30)
+    .build();
+
+  const sim = await server.simulateTransaction(tx);
+  if (rpc.Api.isSimulationError(sim)) {
+    throw new Error(`Registry simulation failed: ${sim.error}`);
+  }
+  const rep = scValToNative(sim.result!.retval) as { stake: bigint; withdraw_locked_until: number };
+  const { sequence } = await server.getLatestLedger();
+
+  return {
+    stake: BigInt(rep.stake),
+    withdrawLockedUntil: rep.withdraw_locked_until,
+    currentLedger: sequence,
+  };
+}
+
+/**
+ * Page through any registry view that takes trailing `(offset, limit)` and
+ * returns `ContractEntry`s — `get_active_contracts`,
+ * `get_active_contracts_by_category` and `get_contracts_by_owner` share
+ * exactly that shape.
+ *
+ * `leadingArgs` are whatever the method takes *before* the pagination pair.
  */
 export async function getActiveProfiles(
   registryContractId: string = REGISTRY_CONTRACT_ID,

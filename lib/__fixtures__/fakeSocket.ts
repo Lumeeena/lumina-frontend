@@ -16,7 +16,7 @@ export class FakeSocket implements WebSocketLike {
   closed = false;
 
   onopen: (() => void) | null = null;
-  onclose: (() => void) | null = null;
+  onclose: ((event?: { code?: number }) => void) | null = null;
   onerror: (() => void) | null = null;
   onmessage: ((event: { data: unknown }) => void) | null = null;
 
@@ -46,9 +46,9 @@ export class FakeSocket implements WebSocketLike {
     this.onmessage?.({ data: JSON.stringify(message) });
   }
 
-  drop(): void {
+  drop(code?: number): void {
     this.readyState = FakeSocket.CLOSED;
-    this.onclose?.();
+    this.onclose?.({ code });
   }
 
   /** Frames the client sent, parsed. */

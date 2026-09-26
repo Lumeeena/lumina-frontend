@@ -12,6 +12,7 @@ export default function ExplorerPage() {
       <form action="/accounts" method="get" className="flex gap-2.5 mb-3">
         <input
           name="address"
+          data-shortcut-search
           placeholder="Enter a Stellar account address (G...)"
           className="flex-1 min-h-[46px] px-3.5 py-2.5 text-[13px] mono bg-[#fafafa] border border-[#e5e3ea] rounded-[9px]"
         />

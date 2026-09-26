@@ -84,6 +84,30 @@ on the real server/client component split.
 Assertions about specific data belong in component and page tests, where the
 response can be pinned exactly. Don't reach for E2E to check a number.
 
+## Visual regression
+
+`e2e/visual.spec.ts` takes a full-page screenshot of each stable route and
+compares it against a committed baseline, so a CSS change that breaks a layout
+fails CI even though every behavioural test still passes. The connection
+indicator and the footer version are masked because they change without the
+layout changing.
+
+The suite skips itself while no baselines exist, so it stays green until you
+add them. Baselines only match the OS and fonts they were made on, so generate
+them on the CI platform (Linux), not on a laptop:
+
+```bash
+npx playwright test e2e/visual.spec.ts --update-snapshots
+```
+
+That writes `e2e/visual.spec.ts-snapshots/`; commit the directory.
+
+**Accepting an intended change** is one step: re-run the command above, review
+the changed images in the diff, and commit them with the change that caused them.
+
+Dark mode is not covered yet. Once it lands, add a second pass over the same
+routes with the dark colour scheme so both themes are compared.
+
 ## Coverage
 
 `npm run test:coverage` writes `text`, `html` and `lcov` reports to `coverage/`.

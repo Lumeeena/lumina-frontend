@@ -5,6 +5,7 @@ import {
   SubscriptionClient,
   deriveWebSocketUrl,
   type ConnectionState,
+  type FailureReason,
 } from "./subscriptions";
 import { PUBLIC_GRAPHQL_URL } from "./graphql";
 
@@ -46,6 +47,10 @@ export interface UseSubscriptionResult<T> {
   /** Most recent payload, or `null` before the first message arrives. */
   latest: T | null;
   state: ConnectionState;
+  /** Why the client fell back to polling, when it has and the cause is known. */
+  failureReason: FailureReason | null;
+  /** Ask a client that gave up to try connecting again. */
+  retry: () => void;
   error: Error | null;
 }
 
@@ -102,5 +107,7 @@ export function useSubscription<T>(
     return stop;
   }, [client, query, variablesKey]);
 
-  return { latest, state, error };
+  const retry = useCallback(() => client.retryNow(), [client]);
+
+  return { latest, state, failureReason: client.getFailureReason(), retry, error };
 }

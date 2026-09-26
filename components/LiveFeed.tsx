@@ -60,7 +60,7 @@ export default function LiveFeed() {
     setLastUpdated(new Date());
   }, []);
 
-  const { state } = useSubscription<{ newTransaction: Transaction }>(
+  const { state, failureReason, retry } = useSubscription<{ newTransaction: Transaction }>(
     NEW_TRANSACTION_SUBSCRIPTION,
     undefined,
     useCallback(
@@ -111,7 +111,7 @@ export default function LiveFeed() {
   return (
     <div className="rounded-xl border border-[#e5e3ea] overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-[#e5e3ea] bg-[#fafafa]">
-        <ConnectionIndicator state={state} />
+        <ConnectionIndicator state={state} failureReason={failureReason} onRetry={retry} />
         {lastUpdated && (
           <span className="text-[11px] text-[#a6a3b0]">Updated {timeAgo(lastUpdated.toISOString())}</span>
         )}

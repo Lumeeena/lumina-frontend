@@ -1,6 +1,6 @@
 "use client";
 
-import type { ConnectionState } from "@/lib/subscriptions";
+import type { ConnectionState, FailureReason } from "@/lib/subscriptions";
 
 /**
  * What each state means to someone looking at a feed that has stopped moving.
@@ -27,8 +27,26 @@ const TITLE: Record<ConnectionState, string> = {
   unsupported: "Live updates unavailable here — falling back to periodic refresh",
 };
 
-export default function ConnectionIndicator({ state }: { state: ConnectionState }) {
+/** Short cause shown next to POLLING, so the fallback reads as designed rather than broken. */
+const REASON_TEXT: Partial<Record<ConnectionState, string>> = {
+  unsupported: "live updates not supported here",
+};
+
+const FAILURE_TEXT: Record<FailureReason, string> = {
+  unreachable: "server unreachable",
+  refused: "server refused the connection",
+};
+
+interface ConnectionIndicatorProps {
+  state: ConnectionState;
+  failureReason?: FailureReason | null;
+  /** When given, a retry is offered while the feed is polling. */
+  onRetry?: () => void;
+}
+
+export default function ConnectionIndicator({ state, failureReason = null, onRetry }: ConnectionIndicatorProps) {
   const { label, dot, ring, pulse } = PRESENTATION[state];
+  const reason = state === "disconnected" && failureReason ? FAILURE_TEXT[failureReason] : REASON_TEXT[state];
 
   return (
     <div
@@ -46,6 +64,20 @@ export default function ConnectionIndicator({ state }: { state: ConnectionState 
         style={{ boxShadow: `0 0 0 3px ${ring}` }}
       />
       {label}
+      {reason && (
+        <span className="font-normal text-[11px] text-[#a6a3b0]" data-testid="connection-reason">
+          {reason}
+        </span>
+      )}
+      {state === "disconnected" && onRetry && (
+        <button
+          type="button"
+          onClick={onRetry}
+          className="font-medium text-[11px] text-[#7c3aed] hover:text-[#6d28d9] hover:underline"
+        >
+          Retry
+        </button>
+      )}
     </div>
   );
 }

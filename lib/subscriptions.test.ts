@@ -380,6 +380,50 @@ describe("SubscriptionClient reconnection", () => {
   });
 });
 
+describe("SubscriptionClient failure reason", () => {
+  function giveUp(h: Harness, code?: number) {
+    connect(h);
+    h.sockets[0].drop();
+    h.runPendingRetry();
+    h.sockets[1].drop(code);
+  }
+
+  it("reports an unreachable server when the network just drops", () => {
+    const h = harness({ maxAttempts: 1 });
+    giveUp(h);
+
+    expect(h.client.getState()).toBe("disconnected");
+    expect(h.client.getFailureReason()).toBe("unreachable");
+  });
+
+  it("reports a refusal when the server closes with a policy code", () => {
+    const h = harness({ maxAttempts: 1 });
+    giveUp(h, 4401);
+
+    expect(h.client.getFailureReason()).toBe("refused");
+  });
+
+  it("retryNow reconnects a client that gave up and clears the reason", () => {
+    const h = harness({ maxAttempts: 1 });
+    giveUp(h);
+
+    h.client.retryNow();
+
+    expect(h.client.getState()).toBe("connecting");
+    expect(h.client.getFailureReason()).toBeNull();
+    expect(h.sockets).toHaveLength(3);
+  });
+
+  it("retryNow does nothing while the client is not disconnected", () => {
+    const h = harness();
+    connect(h);
+
+    h.client.retryNow();
+
+    expect(h.sockets).toHaveLength(1);
+  });
+});
+
 describe("SubscriptionClient dispose", () => {
   it("closes the socket and refuses further subscriptions", () => {
     const h = harness();
