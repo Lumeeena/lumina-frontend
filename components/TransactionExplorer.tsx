@@ -16,6 +16,7 @@ import {
 import { deletePreset, loadPresets, savePreset, type FilterPreset } from "@/lib/filterPresets";
 import TransactionFilters from "./TransactionFilters";
 import TransactionRow from "./TransactionRow";
+import BackendUnavailable from "./BackendUnavailable";
 
 const PAGE_QUERY = `
   query TransactionPage($limit: Int, $cursor: String) {
@@ -143,6 +144,12 @@ export default function TransactionExplorer({ initial }: { initial?: Transaction
     else for (const tx of initial) loadedHashes.current.add(tx.hash);
   }, [initial, loadMore]);
 
+  useEffect(() => {
+    const retry = () => { if (error || txs.length === 0) void loadMore(); };
+    window.addEventListener("lumina:online", retry);
+    return () => window.removeEventListener("lumina:online", retry);
+  }, [error, txs.length, loadMore]);
+
   const filtered = useMemo(() => applyFilters(txs, filters), [txs, filters]);
 
   // Chase more pages when a filter has thinned the result set out.
@@ -267,7 +274,7 @@ export default function TransactionExplorer({ initial }: { initial?: Transaction
           </tbody>
         </table>
 
-        {filtered.length === 0 && !loading && (
+        {filtered.length === 0 && !loading && !error && (
           <div className="p-8 text-center text-[#a6a3b0] text-sm">
             {txs.length === 0
               ? "No transactions indexed yet."
@@ -279,7 +286,9 @@ export default function TransactionExplorer({ initial }: { initial?: Transaction
       </div>
 
       <div className="mt-4 flex items-center justify-center gap-3">
-        {error ? (
+        {error && txs.length === 0 ? (
+          <BackendUnavailable onRetry={() => { setHasNextPage(true); void loadMore(); }} />
+        ) : error ? (
           <>
             <span className="text-[13px] text-[#dc2626]">{error}</span>
             <button

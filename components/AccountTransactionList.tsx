@@ -13,7 +13,8 @@
 import { useCallback, useState } from 'react';
 import { gqlFetch, PUBLIC_GRAPHQL_URL } from '@/lib/graphql';
 import type { Transaction } from '@/lib/types';
-import { timeAgo, truncateAddress } from '@/lib/formatters';
+import { truncateAddress } from '@/lib/formatters';
+import TimeAgo from './TimeAgo';
 import LoadMoreFooter from './LoadMoreFooter';
 
 const ACCOUNT_TRANSACTIONS_QUERY = `
@@ -111,7 +112,7 @@ export default function AccountTransactionList({
                 </td>
                 <td className="py-2.5 px-3 mono text-xs">{tx.ledger.toLocaleString()}</td>
                 <td className="py-2.5 px-3 text-xs">{tx.operationCount}</td>
-                <td className="py-2.5 px-3 text-xs text-[#c3c1cb]">{timeAgo(tx.createdAt)}</td>
+                <td className="py-2.5 px-3 text-xs text-[#c3c1cb]"><TimeAgo isoString={tx.createdAt} /></td>
               </tr>
             ))}
           </tbody>

@@ -10,7 +10,8 @@
 import { useCallback, useState } from 'react';
 import { gqlFetch, PUBLIC_GRAPHQL_URL } from '@/lib/graphql';
 import type { Operation } from '@/lib/types';
-import { formatOperationType, timeAgo, truncateAddress } from '@/lib/formatters';
+import { formatOperationType, truncateAddress } from '@/lib/formatters';
+import TimeAgo from './TimeAgo';
 import LoadMoreFooter from './LoadMoreFooter';
 
 const ACCOUNT_OPERATIONS_QUERY = `
@@ -132,7 +133,7 @@ export default function AccountOperationList({
                     <span className="text-[#a6a3b0]">—</span>
                   )}
                 </td>
-                <td className="py-2.5 px-3 text-xs text-[#c3c1cb]">{timeAgo(op.createdAt)}</td>
+                <td className="py-2.5 px-3 text-xs text-[#c3c1cb]"><TimeAgo isoString={op.createdAt} /></td>
               </tr>
             ))}
           </tbody>

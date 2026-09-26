@@ -15,6 +15,18 @@ export function timeAgo(isoString: string): string {
   return `${days}d ago`;
 }
 
+export function absoluteTime(isoString: string): string {
+  return new Date(isoString).toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    timeZoneName: "short",
+  });
+}
+
 export function formatXLM(amount: string): string {
   const num = parseFloat(amount);
   if (isNaN(num)) return amount;

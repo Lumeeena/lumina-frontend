@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { gqlFetch, PUBLIC_GRAPHQL_URL } from "@/lib/graphql";
 import { useSubscription } from "@/lib/useSubscription";
 import type { Transaction } from "@/lib/types";
-import { truncateAddress, timeAgo } from "@/lib/formatters";
+import { truncateAddress } from "@/lib/formatters";
+import TimeAgo from "./TimeAgo";
 import ConnectionIndicator from "./ConnectionIndicator";
 
 const TRANSACTION_FIELDS = `
@@ -99,6 +100,12 @@ export default function LiveFeed() {
     void fetchRecent();
   }, [fetchRecent]);
 
+  useEffect(() => {
+    const reconnect = () => { void fetchRecent(); retry(); };
+    window.addEventListener("lumina:online", reconnect);
+    return () => window.removeEventListener("lumina:online", reconnect);
+  }, [fetchRecent, retry]);
+
   // Fall back to the old polling behaviour only once the client has actually
   // given up — a restrictive proxy or a browser without WebSocket should
   // degrade to a slower feed, not to a dead one.
@@ -113,7 +120,7 @@ export default function LiveFeed() {
       <div className="flex items-center justify-between px-4 py-3 border-b border-[#e5e3ea] bg-[#fafafa]">
         <ConnectionIndicator state={state} failureReason={failureReason} onRetry={retry} />
         {lastUpdated && (
-          <span className="text-[11px] text-[#a6a3b0]">Updated {timeAgo(lastUpdated.toISOString())}</span>
+          <span className="text-[11px] text-[#a6a3b0]">Updated <TimeAgo isoString={lastUpdated.toISOString()} /></span>
         )}
       </div>
 
@@ -135,7 +142,7 @@ export default function LiveFeed() {
                 {truncateAddress(tx.hash, 5)}
               </a>
               <span className="text-xs text-[#a6a3b0] mono">{truncateAddress(tx.sourceAccount)}</span>
-              <span className="ml-auto text-[11px] text-[#c3c1cb]">{timeAgo(tx.createdAt)}</span>
+              <span className="ml-auto text-[11px] text-[#c3c1cb]"><TimeAgo isoString={tx.createdAt} /></span>
               <span className="text-[11px] bg-[#f6f5f8] text-[#6b6975] px-1.5 py-0.5 rounded">{tx.operationCount} ops</span>
             </div>
           ))}

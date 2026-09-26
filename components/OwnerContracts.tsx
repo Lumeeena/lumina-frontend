@@ -42,8 +42,10 @@ import {
   type ActivityState,
 } from '@/lib/contractActivity';
 import type { ContractEvent } from '@/lib/types';
-import { formatStroops, timeAgo, truncateAddress } from '@/lib/formatters';
+import { formatStroops, truncateAddress } from '@/lib/formatters';
+import TimeAgo from './TimeAgo';
 import { LifetimeSlashedBadge, StakeBadge, VerifiedBadge } from './RegistryBadges';
+import BackendUnavailable from './BackendUnavailable';
 
 const EVENTS_QUERY = `
   query ContractEvents($contractId: String!, $limit: Int) {
@@ -163,7 +165,6 @@ export default function OwnerContracts({
 }: OwnerContractsProps) {
   const [entries, setEntries] = useState<RegistryEntry[]>([]);
   const [state, setState] = useState<LoadState>('loading');
-  const [error, setError] = useState<string | null>(null);
 
   const [history, setHistory] = useState<RegistryHistoryEntry[]>([]);
   const [activity, setActivity] = useState<Map<string, ActivityState>>(new Map());
@@ -208,9 +209,8 @@ export default function OwnerContracts({
     [loadHistory, loadActivity, loadStake]
   );
 
-  const applyError = useCallback((err: unknown, isCurrent: () => boolean) => {
+  const applyError = useCallback((_err: unknown, isCurrent: () => boolean) => {
     if (!isCurrent()) return;
-    setError(err instanceof Error ? err.message : "Couldn't read your contracts from the registry.");
     setState('error');
   }, []);
 
@@ -338,17 +338,7 @@ export default function OwnerContracts({
   }
 
   if (state === 'error') {
-    return (
-      <div className="border border-[#fecaca] bg-[#fef2f2] rounded-xl p-4">
-        <p className="text-sm text-[#dc2626] mb-2">{error}</p>
-        <button
-          onClick={retry}
-          className="text-xs font-bold text-[#dc2626] underline underline-offset-2"
-        >
-          Try again
-        </button>
-      </div>
-    );
+    return <BackendUnavailable onRetry={retry} />;
   }
 
   if (entries.length === 0) {
@@ -470,7 +460,7 @@ export default function OwnerContracts({
                           {REGISTRY_EVENT_LABELS[item.type]}
                         </span>
                         <span className="mono text-[11px] text-[#a6a3b0] shrink-0">
-                          ledger {item.ledger} · {timeAgo(item.createdAt)}
+                          ledger {item.ledger} · <TimeAgo isoString={item.createdAt} />
                         </span>
                       </li>
                     ))

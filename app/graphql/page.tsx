@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { QUERY_EXAMPLES, QueryExample } from "@/lib/queries";
 import { PUBLIC_GRAPHQL_URL } from "@/lib/graphql";
+import BackendUnavailable from "@/components/BackendUnavailable";
 
 function JsonHighlight({ data }: { data: object }) {
   const str = JSON.stringify(data, null, 2);
@@ -23,11 +24,13 @@ export default function GraphQLPage() {
   const [query, setQuery] = useState(QUERY_EXAMPLES[0].query);
   const [result, setResult] = useState<object | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [unavailable, setUnavailable] = useState(false);
   const [running, setRunning] = useState(false);
 
   async function runQuery() {
     setRunning(true);
     setError(null);
+    setUnavailable(false);
     try {
       const res = await fetch(PUBLIC_GRAPHQL_URL, {
         method: "POST",
@@ -42,6 +45,7 @@ export default function GraphQLPage() {
         setResult(body.data);
       }
     } catch {
+      setUnavailable(true);
       setError(`Couldn't reach the GraphQL server at ${PUBLIC_GRAPHQL_URL}. Is it running?`);
       setResult(null);
     } finally {
@@ -54,7 +58,14 @@ export default function GraphQLPage() {
     setQuery(ex.query);
     setResult(null);
     setError(null);
+    setUnavailable(false);
   }
+
+  useEffect(() => {
+    const reconnect = () => { if (unavailable) void runQuery(); };
+    window.addEventListener("lumina:online", reconnect);
+    return () => window.removeEventListener("lumina:online", reconnect);
+  }, [unavailable, query]);
 
   return (
     <div className="max-w-[1280px] mx-auto px-4 sm:px-7 py-12">
@@ -91,7 +102,9 @@ export default function GraphQLPage() {
           <div className="rounded-xl border border-[#e5e3ea] overflow-hidden">
             <div className="px-4 py-2.5 border-b border-[#e5e3ea] bg-[#fafafa]"><span className="text-[11px] font-bold tracking-wide uppercase text-[#a6a3b0]">Response</span></div>
             <div className="p-3.5 px-4 max-h-[260px] overflow-y-auto">
-              {error ? (
+              {unavailable ? (
+                <BackendUnavailable onRetry={runQuery} />
+              ) : error ? (
                 <span className="text-[#dc2626] text-sm">{error}</span>
               ) : result === null ? (
                 <span className="text-[#a6a3b0] text-sm">Click &ldquo;Run Query&rdquo; to see the response.</span>

@@ -3,6 +3,10 @@ import type { Ledger, Operation } from "@/lib/types";
 import { getActiveContracts } from "@/lib/registry";
 import { formatOperationType } from "@/lib/formatters";
 import StatCard from "@/components/StatCard";
+import BackendUnavailable from "@/components/BackendUnavailable";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Network Stats | Lumina", description: "Lumina indexer health and Stellar network throughput." };
 
 export const dynamic = 'force-dynamic';
 
@@ -20,18 +24,18 @@ const STATS_QUERY = `
 
 async function getStats() {
   try {
-    return await gqlFetch<{ latestLedger: Ledger | null; operations: { items: Operation[] } }>(GRAPHQL_URL, STATS_QUERY, { opLimit: 200 });
+    return { ...(await gqlFetch<{ latestLedger: Ledger | null; operations: { items: Operation[] } }>(GRAPHQL_URL, STATS_QUERY, { opLimit: 200 })), unavailable: false };
   } catch {
-    return { latestLedger: null, operations: { items: [] } };
+    return { latestLedger: null, operations: { items: [] }, unavailable: true };
   }
 }
 
-async function getContractsRegisteredCount(): Promise<number | null> {
+async function getContractsRegisteredCount(): Promise<{ count: number | null; unavailable: boolean }> {
   try {
     const entries = await getActiveContracts();
-    return entries.length;
+    return { count: entries.length, unavailable: false };
   } catch {
-    return null;
+    return { count: null, unavailable: true };
   }
 }
 
@@ -48,21 +52,23 @@ function opBreakdown(operations: Operation[]) {
 }
 
 export default async function StatsPage() {
-  const [{ latestLedger, operations }, contractsRegistered] = await Promise.all([
+  const [{ latestLedger, operations, unavailable }, contracts] = await Promise.all([
     getStats(),
     getContractsRegisteredCount(),
   ]);
+  const backendUnavailable = unavailable || contracts.unavailable;
   const breakdown = opBreakdown(operations.items);
 
   return (
     <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
       <h1 className="font-extrabold text-3xl mb-2 text-[#0e0e12]">Network Stats</h1>
       <p className="text-[#6b6975] mb-8">Indexer health and Stellar network throughput at a glance.</p>
+      {backendUnavailable && <BackendUnavailable />}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-9">
         <StatCard title="Latest Ledger" value={latestLedger ? latestLedger.sequence.toLocaleString() : "—"} subtitle="Stellar Mainnet" />
         <StatCard title="Txs (last ledger)" value={latestLedger ? latestLedger.transactionCount.toLocaleString() : "—"} subtitle="Successful + failed" />
-        <StatCard title="Contracts Registered" value={contractsRegistered ?? "—"} subtitle="Via Lumina Registry" />
+        <StatCard title="Contracts Registered" value={contracts.count ?? "—"} subtitle="Via Lumina Registry" />
         <StatCard title="Avg Ledger Time" value="~5s" subtitle="Protocol target, not a live average" />
       </div>
 

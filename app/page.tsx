@@ -3,6 +3,10 @@ import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
 import type { Ledger } from "@/lib/types";
 import StatCard from "@/components/StatCard";
 import LiveFeed from "@/components/LiveFeed";
+import BackendUnavailable from "@/components/BackendUnavailable";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Home | Lumina", description: "Illuminate Stellar network data with Lumina." };
 
 export const dynamic = 'force-dynamic';
 
@@ -17,12 +21,12 @@ const LATEST_LEDGER_QUERY = `
   }
 `;
 
-async function getLatestLedger(): Promise<Ledger | null> {
+async function getLatestLedger(): Promise<{ ledger: Ledger | null; unavailable: boolean }> {
   try {
     const data = await gqlFetch<{ latestLedger: Ledger | null }>(GRAPHQL_URL, LATEST_LEDGER_QUERY);
-    return data.latestLedger;
+    return { ledger: data.latestLedger, unavailable: false };
   } catch {
-    return null;
+    return { ledger: null, unavailable: true };
   }
 }
 
@@ -35,7 +39,8 @@ const QUICK_LINKS = [
 ];
 
 export default async function Home() {
-  const ledger = await getLatestLedger();
+  const result = await getLatestLedger();
+  const ledger = result.ledger;
 
   return (
     <div>
@@ -66,6 +71,7 @@ export default async function Home() {
         </div>
       </section>
 
+      {result.unavailable && <div className="max-w-[1160px] mx-auto px-4 sm:px-7 pt-8"><BackendUnavailable /></div>}
       <section className="px-4 sm:px-7 py-8 border-b border-[#e5e3ea] bg-[#fafafa]">
         <div className="max-w-[1160px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard title="Latest Ledger" value={ledger ? ledger.sequence.toLocaleString() : "—"} subtitle="Stellar Mainnet" />

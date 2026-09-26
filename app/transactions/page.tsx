@@ -1,5 +1,8 @@
 import { Suspense } from "react";
 import TransactionExplorer from "@/components/TransactionExplorer";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Transactions | Lumina", description: "Browse recent Stellar transactions indexed by Lumina." };
 
 export const dynamic = 'force-dynamic';
 

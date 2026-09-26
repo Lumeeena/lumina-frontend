@@ -6,6 +6,8 @@ import CopyAddressButton from "@/components/CopyAddressButton";
 import AccountActivityFeed from "@/components/AccountActivityFeed";
 import AccountTransactionList from "@/components/AccountTransactionList";
 import AccountOperationList from "@/components/AccountOperationList";
+import BackendUnavailable from "@/components/BackendUnavailable";
+import type { Metadata } from "next";
 
 export const dynamic = 'force-dynamic';
 
@@ -44,13 +46,18 @@ const ACCOUNT_QUERY = `
   }
 `;
 
-async function getAccount(address: string): Promise<Account | null> {
+async function getAccount(address: string): Promise<{ account: Account | null; unavailable: boolean }> {
   try {
     const data = await gqlFetch<{ account: Account | null }>(GRAPHQL_URL, ACCOUNT_QUERY, { address });
-    return data.account;
+    return { account: data.account, unavailable: false };
   } catch {
-    return null;
+    return { account: null, unavailable: true };
   }
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ address: string }> }): Promise<Metadata> {
+  const { address } = await params;
+  return { title: `Account ${address} | Lumina`, description: `Stellar account ${address} and its indexed activity.` };
 }
 
 const th = "text-left text-[11px] tracking-[0.06em] uppercase text-[#a6a3b0] px-3 py-2.5 border-b border-[#e5e3ea] bg-[#fafafa]";
@@ -60,7 +67,8 @@ const statValue = "mono text-sm mt-1";
 
 export default async function AccountPage({ params }: { params: Promise<{ address: string }> }) {
   const { address } = await params;
-  const account = await getAccount(address);
+  const result = await getAccount(address);
+  const account = result.account;
 
   const flagTags = account
     ? [
@@ -77,7 +85,9 @@ export default async function AccountPage({ params }: { params: Promise<{ addres
       <Link href="/explorer" className="inline-block text-[13px] font-semibold text-[#7c3aed] hover:text-[#6d28d9] mb-[18px]">
         &larr; Back to Explorer
       </Link>
-      {!account ? (
+      {result.unavailable ? (
+        <BackendUnavailable />
+      ) : !account ? (
         <div className="p-8 rounded-xl border border-[#fecaca] text-center">
           <p className="text-[#dc2626] font-semibold mb-2">Account Not Found</p>
           <p className="text-[#a6a3b0] text-sm max-w-md mx-auto">The address <span className="mono text-[#6b6975] break-all">{address}</span> does not exist on Stellar Mainnet, or has never been funded.</p>

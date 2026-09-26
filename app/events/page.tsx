@@ -1,6 +1,11 @@
 import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
 import type { ContractEvent } from "@/lib/types";
-import { timeAgo, truncateAddress } from "@/lib/formatters";
+import { truncateAddress } from "@/lib/formatters";
+import TimeAgo from "@/components/TimeAgo";
+import BackendUnavailable from "@/components/BackendUnavailable";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Contract Events | Lumina", description: "Browse Soroban contract events indexed by Lumina." };
 
 export const dynamic = 'force-dynamic';
 
@@ -24,12 +29,12 @@ const EVENTS_QUERY = `
   }
 `;
 
-async function getEvents(contractId: string): Promise<ContractEvent[]> {
+async function getEvents(contractId: string): Promise<{ events: ContractEvent[]; unavailable: boolean }> {
   try {
     const data = await gqlFetch<{ events: { items: ContractEvent[] } }>(GRAPHQL_URL, EVENTS_QUERY, { contractId, limit: 20 });
-    return data.events.items;
+    return { events: data.events.items, unavailable: false };
   } catch {
-    return [];
+    return { events: [], unavailable: true };
   }
 }
 
@@ -38,7 +43,7 @@ const th = "text-left text-[11px] tracking-[0.06em] uppercase text-[#a6a3b0] px-
 export default async function EventsPage({ searchParams }: { searchParams: Promise<{ contractId?: string }> }) {
   const { contractId: rawContractId } = await searchParams;
   const contractId = rawContractId?.trim() || DEFAULT_CONTRACT_ID;
-  const events = await getEvents(contractId);
+  const result = await getEvents(contractId);
 
   return (
     <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
@@ -58,7 +63,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
       </form>
 
       <div className="rounded-xl border border-[#e5e3ea] overflow-x-auto">
-        {events.length === 0 ? (
+        {result.unavailable ? <BackendUnavailable /> : result.events.length === 0 ? (
           <div className="p-8 text-center text-[#a6a3b0] text-sm">
             No events indexed for this contract yet. Event indexing is opt-in on the indexer (<span className="mono">INDEXED_CONTRACT_IDS</span>/<span className="mono">REGISTRY_CONTRACT_ID</span>) — see the lumina-backend README.
           </div>
@@ -74,7 +79,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
               </tr>
             </thead>
             <tbody>
-              {events.map(ev => (
+              {result.events.map(ev => (
                 <tr key={ev.id} className="border-b border-[#f0eff3] last:border-0">
                   <td className="py-2.5 px-3 mono text-xs text-[#7c3aed]">{truncateAddress(ev.contractId, 6)}</td>
                   <td className="py-2.5 px-3">
@@ -86,7 +91,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
                   </td>
                   <td className="py-2.5 px-3 mono text-xs text-[#6b6975] max-w-[280px] truncate">{ev.value ?? "—"}</td>
                   <td className="py-2.5 px-3 mono text-xs text-[#6b6975]">{ev.ledger.toLocaleString()}</td>
-                  <td className="py-2.5 px-3 text-xs text-[#c3c1cb]">{timeAgo(ev.createdAt)}</td>
+                  <td className="py-2.5 px-3 text-xs text-[#c3c1cb]"><TimeAgo isoString={ev.createdAt} /></td>
                 </tr>
               ))}
             </tbody>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Transaction } from "@/lib/types";
-import { truncateAddress, timeAgo, formatXLM } from "@/lib/formatters";
+import { truncateAddress, formatXLM } from "@/lib/formatters";
+import TimeAgo from "./TimeAgo";
 
 export default function TransactionRow({ tx }: { tx: Transaction }) {
   const fee = (parseInt(tx.feeCharged) / 1e7).toFixed(7);
@@ -30,7 +31,7 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
         <span className="text-[11px] bg-[#f6f5f8] text-[#6b6975] px-1.5 py-0.5 rounded">{tx.operationCount}</span>
       </td>
       <td className="py-2.5 px-3 mono text-xs text-[#a6a3b0]">{formatXLM(fee)} XLM</td>
-      <td className="py-2.5 px-3 text-xs text-[#c3c1cb]">{timeAgo(tx.createdAt)}</td>
+      <td className="py-2.5 px-3 text-xs text-[#c3c1cb]"><TimeAgo isoString={tx.createdAt} /></td>
     </tr>
   );
 }
