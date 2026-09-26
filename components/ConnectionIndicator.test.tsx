@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { ConnectionState } from "@/lib/subscriptions";
 import ConnectionIndicator from "./ConnectionIndicator";
 
@@ -46,5 +46,21 @@ describe("ConnectionIndicator", () => {
 
     const settled = render(<ConnectionIndicator state="connected" />);
     expect(settled.container.querySelector(".animate-pulse")).toBeNull();
+  });
+
+  it("says why the feed fell back and offers a retry", () => {
+    const onRetry = vi.fn();
+    render(<ConnectionIndicator state="disconnected" failureReason="refused" onRetry={onRetry} />);
+
+    expect(screen.getByTestId("connection-reason").textContent).toBe("server refused the connection");
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(onRetry).toHaveBeenCalledTimes(1);
+  });
+
+  it("explains the unsupported fallback without offering a retry that cannot help", () => {
+    render(<ConnectionIndicator state="unsupported" onRetry={() => {}} />);
+
+    expect(screen.getByTestId("connection-reason")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Retry" })).toBeNull();
   });
 });

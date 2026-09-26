@@ -54,7 +54,7 @@ export default function AccountActivityFeed({ address }: { address: string }) {
     [address],
   );
 
-  const { state } = useSubscription<{ accountActivity: Operation }>(
+  const { state, failureReason, retry } = useSubscription<{ accountActivity: Operation }>(
     ACCOUNT_ACTIVITY_SUBSCRIPTION,
     { address },
     prepend,
@@ -70,7 +70,7 @@ export default function AccountActivityFeed({ address }: { address: string }) {
     <div className="mb-9" data-testid="account-activity">
       <div className="flex items-center justify-between mb-3">
         <h2 className="font-extrabold text-base text-[#0e0e12]">Live Activity</h2>
-        <ConnectionIndicator state={state} />
+        <ConnectionIndicator state={state} failureReason={failureReason} onRetry={retry} />
       </div>
 
       <div className="rounded-xl border border-[#e5e3ea] overflow-hidden">
