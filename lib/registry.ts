@@ -78,6 +78,14 @@ interface ContractEntryScVal {
   reputation?: ReputationScVal;
 }
 
+interface ReputationScVal {
+  /** i128 on-chain, so it crosses the wire as a bigint. */
+  stake: bigint;
+  verified: boolean;
+  slashed_total: bigint;
+  withdraw_locked_until: number;
+}
+
 interface SlashRecordScVal {
   amount: bigint;
   reason: string;
@@ -215,8 +223,11 @@ export async function getActiveContractsByCategory(
   networkPassphrase: string = NETWORK_PASSPHRASE
 ): Promise<RegistryEntry[]> {
   return readEntryPages(
-    'get_active_contracts_by_category',
-    [categoryToScVal(category)],
+    {
+      method: 'get_active_contracts_by_category',
+      leadingArgs: [categoryToScVal(category)],
+      decode: toRegistryEntry,
+    },
     registryContractId,
     rpcUrl,
     readAccount,
@@ -229,13 +240,13 @@ export async function getActiveContractsByCategory(
  * decoration, so a failed read leaves the entries as they were rather than
  * failing the listing.
  */
-export async function withCategories(
-  entries: RegistryEntry[],
+export async function withCategories<T extends RegistryEntry>(
+  entries: T[],
   registryContractId: string = REGISTRY_CONTRACT_ID,
   rpcUrl: string = SOROBAN_RPC_URL,
   readAccount: string = DEFAULT_READ_ACCOUNT,
   networkPassphrase: string = NETWORK_PASSPHRASE
-): Promise<RegistryEntry[]> {
+): Promise<T[]> {
   if (entries.length === 0) return entries;
   try {
     const server = new rpc.Server(rpcUrl);
@@ -269,6 +280,34 @@ export interface StakeInfo {
   /** The network's current ledger, to compare the lock against. */
   currentLedger: number;
 }
+
+/** A registration's standing, as the contract's `get_reputation` reports it. */
+export interface RegistryReputation {
+  /** Staked balance in the stake token's base units. */
+  stake: bigint;
+  /** Whether the contract considers the registration verified. */
+  verified: boolean;
+  /** Total ever slashed from this registration, in base units. */
+  slashedTotal: bigint;
+  /** Ledger before which `withdraw_stake` is refused; 0 once clear. */
+  withdrawLockedUntil: number;
+}
+
+/** One slash on record: what was taken, why, and at which ledger. */
+export interface SlashRecord {
+  /** Slashed amount in the stake token's base units. */
+  amount: bigint;
+  reason: string;
+  slashedAt: number;
+}
+
+/**
+ * A registry entry with its standing attached — what `get_active_profiles`
+ * returns, which is the one call a list view needs to show a row in full.
+ */
+export type RegistryProfile = RegistryEntry & {
+  reputation: RegistryReputation;
+};
 
 export async function getStakeInfo(
   contractId: string,

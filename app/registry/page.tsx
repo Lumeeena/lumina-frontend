@@ -5,14 +5,15 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   CATEGORIES,
   CATEGORY_LABELS,
-  getActiveContracts,
-  getActiveContractsByCategory,
+  getActiveProfiles,
   isCategory,
   withCategories,
   type Category,
   type RegistryEntry,
+  type RegistryProfile,
 } from "@/lib/registry";
 import { connectWallet, getConnectedAddress } from "@/lib/wallet";
+import { truncateAddress } from "@/lib/formatters";
 import RegisterContractForm from "@/components/RegisterContractForm";
 import OwnerContracts from "@/components/OwnerContracts";
 import RegistryEntryCard from "@/components/RegistryEntryCard";
@@ -28,9 +29,17 @@ export default function RegistryPage() {
   );
 }
 
-/** The contract filters by category, so the server does the narrowing. */
-const fetchEntries = (category: Category | null) =>
-  (category ? getActiveContractsByCategory(category) : getActiveContracts()).then(withCategories);
+/**
+ * The whole list in one read: `get_active_profiles` attaches each entry's
+ * reputation, which every row needs to show its stake and verification badges.
+ * Categories come from a second, tolerant read — and since the contract's
+ * category view carries no reputation, the filter is applied here rather than
+ * by the contract.
+ */
+const fetchEntries = async (category: Category | null): Promise<RegistryProfile[]> => {
+  const profiles = await withCategories(await getActiveProfiles());
+  return category ? profiles.filter(profile => profile.categories?.includes(category)) : profiles;
+};
 
 function RegistryContent() {
   const router = useRouter();

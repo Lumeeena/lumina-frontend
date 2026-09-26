@@ -2,15 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-const NAV_ITEMS = [
-  { href: "/explorer", label: "Explorer" },
-  { href: "/transactions", label: "Transactions" },
-  { href: "/events", label: "Contract Events" },
-  { href: "/graphql", label: "GraphQL" },
-  { href: "/registry", label: "Registry" },
-  { href: "/stats", label: "Stats" },
-];
+import { NAV_ROUTES } from "@/lib/routes";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -25,17 +17,19 @@ export default function Navbar() {
         <span className="font-extrabold text-[17px] tracking-tight text-[#0e0e12]">Lumina</span>
       </Link>
 
-      {NAV_ITEMS.map(item => {
-        const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+      {/* Labels come from the route inventory, which the sitemap is built from,
+          so the nav and the sitemap cannot disagree about what exists. */}
+      {NAV_ROUTES.map(route => {
+        const active = pathname === route.path || pathname.startsWith(`${route.path}/`);
         return (
           <Link
-            key={item.href}
-            href={item.href}
+            key={route.path}
+            href={route.path}
             className={`px-3.5 py-2 text-[13.5px] font-semibold rounded-lg whitespace-nowrap transition-colors ${
               active ? "text-[#0e0e12] bg-[#f6f5f8]" : "text-[#6b6975] hover:text-[#0e0e12]"
             }`}
           >
-            {item.label}
+            {route.label}
           </Link>
         );
       })}

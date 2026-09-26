@@ -1,7 +1,12 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
+import { routeMetadata } from "@/lib/metadata";
+import { TRANSACTIONS } from "@/lib/routes";
 import TransactionExplorer from "@/components/TransactionExplorer";
 
 export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = routeMetadata(TRANSACTIONS);
 
 export default function TransactionsPage() {
   return (

@@ -1,13 +1,37 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
+import { accountOgImage, routeMetadata } from "@/lib/metadata";
 import type { Account } from "@/lib/types";
-import { formatXLM } from "@/lib/formatters";
+import { formatXLM, truncateAddress } from "@/lib/formatters";
 import CopyAddressButton from "@/components/CopyAddressButton";
 import AccountActivityFeed from "@/components/AccountActivityFeed";
 import AccountTransactionList from "@/components/AccountTransactionList";
 import AccountOperationList from "@/components/AccountOperationList";
 
 export const dynamic = 'force-dynamic';
+
+/**
+ * Metadata for one account, from its address alone.
+ *
+ * The page itself fetches the account, but this does not: a share card is
+ * fetched by bots that do not wait, and a title built from the URL is both
+ * instant and always correct. The per-account image is generated from the same
+ * address, so a shared link shows which account it is without either request
+ * depending on the indexer being up.
+ */
+export function generateMetadata({ params }: { params: Promise<{ address: string }> }): Promise<Metadata> {
+  return params.then(({ address }) => {
+    const short = truncateAddress(address, 6);
+    return routeMetadata({
+      label: short,
+      description: `Balances, transactions and live activity for the Stellar account ${address}, indexed on Lumina.`,
+      path: `/accounts/${address}`,
+      image: accountOgImage(address),
+      imageAlt: `Stellar account ${short}`,
+    });
+  });
+}
 
 const ACCOUNT_QUERY = `
   query AccountDetail($address: String!) {

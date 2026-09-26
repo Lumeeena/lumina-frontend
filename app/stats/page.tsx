@@ -1,10 +1,15 @@
+import type { Metadata } from "next";
 import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
+import { routeMetadata } from "@/lib/metadata";
+import { STATS } from "@/lib/routes";
 import type { Ledger, Operation } from "@/lib/types";
 import { getActiveContracts } from "@/lib/registry";
 import { formatOperationType } from "@/lib/formatters";
 import StatCard from "@/components/StatCard";
 
 export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = routeMetadata(STATS);
 
 const STATS_QUERY = `
   query Stats($opLimit: Int) {
