@@ -97,7 +97,7 @@ describe('RegisterContractForm', () => {
     await userEvent.click(screen.getByRole('button', { name: /register contract/i }));
 
     await screen.findByRole('status');
-    expect(screen.getByRole('button', { name: 'DeFi', exact: true })).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('button', { name: 'DeFi', exact: true }).getAttribute('aria-pressed')).toBe('false');
   });
 
   it('reports progress through the wallet phases', async () => {
@@ -161,7 +161,7 @@ describe('RegisterContractForm', () => {
     await userEvent.click(button);
     await waitFor(() => expect(register).toHaveBeenCalledTimes(1));
 
-    await userEvent.click(screen.getByRole('button'));
+    await userEvent.click(screen.getByRole('button', { name: /preparing transaction/i }));
     expect(register).toHaveBeenCalledTimes(1);
   });
 });
