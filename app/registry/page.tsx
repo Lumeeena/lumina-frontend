@@ -1,7 +1,17 @@
 'use client';
 
-import { useCallback, useEffect, useState } from "react";
-import { getActiveContracts, RegistryEntry } from "@/lib/registry";
+import { Suspense, useCallback, useEffect, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import {
+  CATEGORIES,
+  CATEGORY_LABELS,
+  getActiveContracts,
+  getActiveContractsByCategory,
+  isCategory,
+  withCategories,
+  type Category,
+  type RegistryEntry,
+} from "@/lib/registry";
 import { connectWallet, getConnectedAddress } from "@/lib/wallet";
 import { truncateAddress } from "@/lib/formatters";
 import RegisterContractForm from "@/components/RegisterContractForm";
@@ -9,7 +19,27 @@ import OwnerContracts from "@/components/OwnerContracts";
 
 type Tab = "mine" | "all";
 
+// useSearchParams has to sit inside a Suspense boundary for Next to build.
 export default function RegistryPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-[#a6a3b0] text-sm">Loading registry…</div>}>
+      <RegistryContent />
+    </Suspense>
+  );
+}
+
+/** The contract filters by category, so the server does the narrowing. */
+const fetchEntries = (category: Category | null) =>
+  (category ? getActiveContractsByCategory(category) : getActiveContracts()).then(withCategories);
+
+function RegistryContent() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  // The URL is the source of truth, so a shared link opens the same filter.
+  const rawCategory = searchParams?.get("category");
+  const category = isCategory(rawCategory) ? rawCategory : null;
+
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [connecting, setConnecting] = useState(false);
   const [connectError, setConnectError] = useState<string | null>(null);
@@ -34,8 +64,8 @@ export default function RegistryPage() {
   }, []);
 
   const loadEntries = useCallback(
-    () => getActiveContracts().then(applyEntries, applyEntriesError),
-    [applyEntries, applyEntriesError]
+    () => fetchEntries(category).then(applyEntries, applyEntriesError),
+    [category, applyEntries, applyEntriesError]
   );
 
   useEffect(() => {
@@ -43,10 +73,18 @@ export default function RegistryPage() {
     // handlers, so nothing cascades a render synchronously.
     let cancelled = false;
 
-    getActiveContracts().then(
+    fetchEntries(category).then(
       result => !cancelled && applyEntries(result),
       err => !cancelled && applyEntriesError(err)
     );
+
+    return () => {
+      cancelled = true;
+    };
+  }, [category, applyEntries, applyEntriesError]);
+
+  useEffect(() => {
+    let cancelled = false;
 
     getConnectedAddress().then(address => {
       if (cancelled) return;
@@ -57,7 +95,13 @@ export default function RegistryPage() {
     return () => {
       cancelled = true;
     };
-  }, [applyEntries, applyEntriesError]);
+  }, []);
+
+  function handleCategory(next: Category | null) {
+    if (next === category) return;
+    setEntriesLoading(true);
+    router.replace(next ? `${pathname}?category=${next}` : pathname, { scroll: false });
+  }
 
   async function handleConnect() {
     setConnecting(true);
@@ -119,6 +163,19 @@ export default function RegistryPage() {
             </TabButton>
           </div>
 
+          {tab === "all" && (
+            <div className="flex flex-wrap gap-1.5 mb-3.5" role="group" aria-label="Filter by category">
+              <CategoryChip active={category === null} onClick={() => handleCategory(null)}>
+                All
+              </CategoryChip>
+              {CATEGORIES.map(c => (
+                <CategoryChip key={c} active={category === c} onClick={() => handleCategory(c)}>
+                  {CATEGORY_LABELS[c]}
+                </CategoryChip>
+              ))}
+            </div>
+          )}
+
           {tab === "mine" ? (
             walletAddress ? (
               <OwnerContracts
@@ -134,7 +191,9 @@ export default function RegistryPage() {
           ) : entriesError ? (
             <p className="text-sm text-[#dc2626]">{entriesError}</p>
           ) : entries.length === 0 ? (
-            <p className="text-sm text-[#a6a3b0]">No contracts registered yet.</p>
+            <p className="text-sm text-[#a6a3b0]">
+              {category ? `No active ${CATEGORY_LABELS[category]} contracts.` : "No contracts registered yet."}
+            </p>
           ) : (
             <div className="flex flex-col gap-2">
               {entries.map(entry => (
@@ -144,6 +203,15 @@ export default function RegistryPage() {
                     <span className="mono text-[11px] text-[#a6a3b0]">{truncateAddress(entry.contractId, 5)}</span>
                   </div>
                   <p className="text-xs text-[#6b6975] m-0">{entry.description}</p>
+                  {entry.categories && entry.categories.length > 0 && (
+                    <ul className="flex flex-wrap gap-1.5 mt-2 list-none p-0 m-0" aria-label="Categories">
+                      {entry.categories.map(c => (
+                        <li key={c} className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#f5f3ff] text-[#7c3aed]">
+                          {CATEGORY_LABELS[c]}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               ))}
             </div>
@@ -173,6 +241,30 @@ function TabButton({
       onClick={onClick}
       className={`text-sm font-extrabold px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40 ${
         active ? "bg-[#f5f3ff] text-[#7c3aed]" : "text-[#6b6975] hover:text-[#0e0e12]"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function CategoryChip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      aria-pressed={active}
+      onClick={onClick}
+      className={`text-xs font-bold px-2.5 py-1 rounded-full border transition-colors ${
+        active
+          ? "bg-[#f5f3ff] border-[#8b5cf6] text-[#7c3aed]"
+          : "border-[#e5e3ea] text-[#6b6975] hover:text-[#0e0e12]"
       }`}
     >
       {children}

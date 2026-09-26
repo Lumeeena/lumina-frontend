@@ -2,7 +2,8 @@
 
 /**
  * "My Contracts" — everything the connected wallet has registered, with a real
- * deactivate flow and the per-contract history derived from registry events.
+ * deactivate flow, stake and withdraw controls, and the per-contract history
+ * derived from registry events.
  *
  * Every data dependency arrives as an optional prop defaulting to the real
  * implementation. That is what makes this testable without a wallet extension
@@ -10,13 +11,15 @@
  * has never had.
  */
 import { useCallback, useEffect, useState } from 'react';
-import { nativeToScVal } from '@stellar/stellar-sdk';
+import { nativeToScVal, type xdr } from '@stellar/stellar-sdk';
 import {
   getContractsByOwner,
+  getStakeInfo,
   NETWORK_PASSPHRASE,
   REGISTRY_CONTRACT_ID,
   RegistryEntry,
   SOROBAN_RPC_URL,
+  type StakeInfo,
 } from '@/lib/registry';
 import {
   ContractCallError,
@@ -61,7 +64,10 @@ export interface OwnerContractsProps {
   loadContracts?: (owner: string) => Promise<RegistryEntry[]>;
   loadHistory?: () => Promise<RegistryHistoryEntry[]>;
   loadActivity?: (contractIds: string[]) => Promise<Map<string, ActivityState>>;
+  loadStake?: (contractId: string) => Promise<StakeInfo>;
   deactivate?: (contractId: string, owner: string) => Promise<void>;
+  stake?: (contractId: string, owner: string, amount: bigint) => Promise<void>;
+  withdraw?: (contractId: string, owner: string) => Promise<void>;
   /** Notifies the parent so the global list can refresh after a change. */
   onChanged?: () => void;
 }
@@ -74,7 +80,9 @@ const defaultLoadHistory = async () =>
 const defaultLoadActivity = (contractIds: string[]) =>
   probeContractActivity(contractIds, id => fetchEvents(id, 1));
 
-const defaultDeactivate = async (contractId: string, owner: string) => {
+const defaultLoadStake = (contractId: string) => getStakeInfo(contractId);
+
+async function callRegistry(owner: string, method: string, args: xdr.ScVal[]) {
   // Imported lazily rather than at module scope: the wallet kit pulls in
   // browser-only CommonJS (Freighter et al) that cannot be loaded outside a
   // browser, which would otherwise make this component untestable — the exact
@@ -88,19 +96,54 @@ const defaultDeactivate = async (contractId: string, owner: string) => {
       networkPassphrase: NETWORK_PASSPHRASE,
       walletAddress: owner,
     }),
-    call: {
-      contractId: REGISTRY_CONTRACT_ID,
-      method: 'deactivate',
-      args: [
-        nativeToScVal(owner, { type: 'address' }),
-        nativeToScVal(contractId, { type: 'address' }),
-      ],
-    },
+    call: { contractId: REGISTRY_CONTRACT_ID, method, args },
     sign: signWithWallet,
     walletAddress: owner,
     networkPassphrase: NETWORK_PASSPHRASE,
   });
-};
+}
+
+const defaultDeactivate = (contractId: string, owner: string) =>
+  callRegistry(owner, 'deactivate', [
+    nativeToScVal(owner, { type: 'address' }),
+    nativeToScVal(contractId, { type: 'address' }),
+  ]);
+
+const defaultStake = (contractId: string, owner: string, amount: bigint) =>
+  callRegistry(owner, 'stake', [
+    nativeToScVal(owner, { type: 'address' }),
+    nativeToScVal(contractId, { type: 'address' }),
+    nativeToScVal(amount, { type: 'i128' }),
+  ]);
+
+const defaultWithdraw = (contractId: string, owner: string) =>
+  callRegistry(owner, 'withdraw_stake', [
+    nativeToScVal(owner, { type: 'address' }),
+    nativeToScVal(contractId, { type: 'address' }),
+  ]);
+
+/**
+ * The unmet good-standing conditions for `withdraw_stake`, worked out up front
+ * so the owner is told why it is blocked instead of meeting the contract's
+ * error afterwards. Mirrors the contract's checks: deactivated, not within the
+ * post-slash lock, and something to withdraw.
+ */
+export function withdrawBlockers(entry: RegistryEntry, info: StakeInfo | undefined): string[] {
+  const blockers: string[] = [];
+  if (entry.active) {
+    blockers.push('Deactivate this registration first; stake can only be withdrawn once it is deactivated.');
+  }
+  if (info && info.withdrawLockedUntil > info.currentLedger) {
+    blockers.push(
+      `A slash landed recently, so withdrawal is locked until ledger ${info.withdrawLockedUntil} ` +
+        `(currently ${info.currentLedger}, ${info.withdrawLockedUntil - info.currentLedger} to go).`
+    );
+  }
+  if (info && info.stake <= BigInt(0)) {
+    blockers.push('There is no stake to withdraw.');
+  }
+  return blockers;
+}
 
 type LoadState = 'loading' | 'ready' | 'error';
 
@@ -109,7 +152,10 @@ export default function OwnerContracts({
   loadContracts = defaultLoadContracts,
   loadHistory = defaultLoadHistory,
   loadActivity = defaultLoadActivity,
+  loadStake = defaultLoadStake,
   deactivate = defaultDeactivate,
+  stake = defaultStake,
+  withdraw = defaultWithdraw,
   onChanged,
 }: OwnerContractsProps) {
   const [entries, setEntries] = useState<RegistryEntry[]>([]);
@@ -122,6 +168,9 @@ export default function OwnerContracts({
   const [expanded, setExpanded] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [pendingPhase, setPendingPhase] = useState<TxPhase>('idle');
+  const [pendingAction, setPendingAction] = useState<'deactivate' | 'stake' | 'withdraw'>('deactivate');
+  const [stakeInfo, setStakeInfo] = useState<Record<string, StakeInfo>>({});
+  const [stakeInput, setStakeInput] = useState<Record<string, string>>({});
   const [rowError, setRowError] = useState<Record<string, string>>({});
 
   const applyLoaded = useCallback(
@@ -140,9 +189,16 @@ export default function OwnerContracts({
         loadActivity(owned.map(e => e.contractId))
           .then(a => isCurrent() && setActivity(a))
           .catch(() => isCurrent() && setActivity(new Map()));
+        // Stake is decoration too: without it the controls still work, they
+        // just cannot pre-explain a blocked withdrawal.
+        owned.forEach(e =>
+          loadStake(e.contractId)
+            .then(info => isCurrent() && setStakeInfo(prev => ({ ...prev, [e.contractId]: info })))
+            .catch(() => {})
+        );
       }
     },
-    [loadHistory, loadActivity]
+    [loadHistory, loadActivity, loadStake]
   );
 
   const applyError = useCallback((err: unknown, isCurrent: () => boolean) => {
@@ -179,8 +235,62 @@ export default function OwnerContracts({
     );
   }, [walletAddress, loadContracts, applyLoaded, applyError]);
 
+  function refreshStake(contractId: string) {
+    loadStake(contractId)
+      .then(info => setStakeInfo(prev => ({ ...prev, [contractId]: info })))
+      .catch(() => {});
+  }
+
+  /** Shared by stake and withdraw: run a signed call, surface its error on the row. */
+  async function runRowAction(
+    entry: RegistryEntry,
+    action: 'stake' | 'withdraw',
+    work: () => Promise<void>,
+    fallback: string
+  ) {
+    setPendingId(entry.contractId);
+    setPendingAction(action);
+    setPendingPhase('building');
+    setRowError(prev => {
+      const next = { ...prev };
+      delete next[entry.contractId];
+      return next;
+    });
+
+    try {
+      await work();
+      refreshStake(entry.contractId);
+      loadHistory()
+        .then(setHistory)
+        .catch(() => {});
+    } catch (err) {
+      const message = err instanceof Error && err.message ? err.message : fallback;
+      setRowError(prev => ({ ...prev, [entry.contractId]: message }));
+    } finally {
+      setPendingId(null);
+      setPendingPhase('idle');
+    }
+  }
+
+  async function handleStake(entry: RegistryEntry) {
+    const raw = (stakeInput[entry.contractId] ?? '').trim();
+    if (!/^\d+$/.test(raw) || BigInt(raw) <= BigInt(0)) {
+      setRowError(prev => ({
+        ...prev,
+        [entry.contractId]: 'Enter a whole amount greater than zero, in the stake token’s base units.',
+      }));
+      return;
+    }
+    await runRowAction(entry, 'stake', () => stake(entry.contractId, walletAddress, BigInt(raw)), 'Staking failed.');
+    setStakeInput(prev => ({ ...prev, [entry.contractId]: '' }));
+  }
+
+  const handleWithdraw = (entry: RegistryEntry) =>
+    runRowAction(entry, 'withdraw', () => withdraw(entry.contractId, walletAddress), 'Withdrawal failed.');
+
   async function handleDeactivate(entry: RegistryEntry) {
     setPendingId(entry.contractId);
+    setPendingAction('deactivate');
     setPendingPhase('building');
     setRowError(prev => {
       const next = { ...prev };
@@ -201,6 +311,7 @@ export default function OwnerContracts({
       loadHistory()
         .then(setHistory)
         .catch(() => {});
+      refreshStake(entry.contractId);
     } catch (err) {
       const message =
         err instanceof ContractCallError
@@ -251,6 +362,8 @@ export default function OwnerContracts({
         const activityState = activity.get(entry.contractId) ?? 'unknown';
         const isPending = pendingId === entry.contractId;
         const isOpen = expanded === entry.contractId;
+        const info = stakeInfo[entry.contractId];
+        const blockers = withdrawBlockers(entry, info);
 
         return (
           <div key={entry.contractId} className="border border-[#e5e3ea] rounded-xl p-4">
@@ -273,8 +386,45 @@ export default function OwnerContracts({
                   disabled={isPending}
                   className="shrink-0 border border-[#e5e3ea] hover:border-[#dc2626] hover:text-[#dc2626] disabled:opacity-50 text-[#6b6975] font-bold text-xs px-3 py-2 rounded-lg transition-colors"
                 >
-                  {isPending ? DEACTIVATE_LABELS[pendingPhase] : 'Deactivate'}
+                  {isPending && pendingAction === 'deactivate' ? DEACTIVATE_LABELS[pendingPhase] : 'Deactivate'}
                 </button>
+              )}
+            </div>
+
+            <div className="mt-3 border-t border-[#f0eff3] pt-3">
+              <p className="text-xs text-[#6b6975] mb-2">
+                Staked: <span className="mono">{info ? info.stake.toString() : '—'}</span>
+              </p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <input
+                  inputMode="numeric"
+                  aria-label={`Stake amount for ${entry.name}`}
+                  placeholder="Amount (base units)"
+                  value={stakeInput[entry.contractId] ?? ''}
+                  onChange={e => setStakeInput(prev => ({ ...prev, [entry.contractId]: e.target.value }))}
+                  className="min-h-[34px] px-2.5 text-xs mono bg-[#fafafa] border border-[#e5e3ea] rounded-lg w-44"
+                />
+                <button
+                  onClick={() => handleStake(entry)}
+                  disabled={pendingId !== null}
+                  className="border border-[#e5e3ea] hover:border-[#8b5cf6] hover:text-[#7c3aed] disabled:opacity-50 text-[#6b6975] font-bold text-xs px-3 py-2 rounded-lg transition-colors"
+                >
+                  {isPending && pendingAction === 'stake' ? 'Staking…' : 'Stake'}
+                </button>
+                <button
+                  onClick={() => handleWithdraw(entry)}
+                  disabled={pendingId !== null || blockers.length > 0}
+                  className="border border-[#e5e3ea] hover:border-[#8b5cf6] hover:text-[#7c3aed] disabled:opacity-50 text-[#6b6975] font-bold text-xs px-3 py-2 rounded-lg transition-colors"
+                >
+                  {isPending && pendingAction === 'withdraw' ? 'Withdrawing…' : 'Withdraw stake'}
+                </button>
+              </div>
+              {blockers.length > 0 && (
+                <ul className="mt-2 list-disc pl-4 text-[11px] text-[#b45309]">
+                  {blockers.map(b => (
+                    <li key={b}>{b}</li>
+                  ))}
+                </ul>
               )}
             </div>
 

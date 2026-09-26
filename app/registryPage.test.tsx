@@ -15,6 +15,14 @@ const connectWallet = vi.hoisted(() => vi.fn());
 const getConnectedAddress = vi.hoisted(() => vi.fn());
 const getActiveContracts = vi.hoisted(() => vi.fn());
 const getContractsByOwner = vi.hoisted(() => vi.fn());
+const getActiveContractsByCategory = vi.hoisted(() => vi.fn());
+const nav = vi.hoisted(() => ({ query: "", replace: vi.fn() }));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: nav.replace }),
+  usePathname: () => "/registry",
+  useSearchParams: () => new URLSearchParams(nav.query),
+}));
 
 vi.mock("@/lib/wallet", () => ({
   connectWallet,
@@ -25,7 +33,13 @@ vi.mock("@/lib/wallet", () => ({
 
 vi.mock("@/lib/registry", async () => {
   const actual = await vi.importActual<typeof import("@/lib/registry")>("@/lib/registry");
-  return { ...actual, getActiveContracts, getContractsByOwner };
+  return {
+    ...actual,
+    getActiveContracts,
+    getContractsByOwner,
+    getActiveContractsByCategory,
+    withCategories: async (entries: unknown[]) => entries,
+  };
 });
 
 vi.mock("@/lib/graphql", () => ({
@@ -50,6 +64,8 @@ const entry = (name: string) => ({
 
 beforeEach(() => {
   vi.clearAllMocks();
+  nav.query = "";
+  getActiveContractsByCategory.mockResolvedValue([entry("Gaming Protocol")]);
   getConnectedAddress.mockResolvedValue(null);
   getActiveContracts.mockResolvedValue([entry("Global Protocol")]);
   getContractsByOwner.mockResolvedValue([entry("My Protocol")]);
@@ -112,5 +128,33 @@ describe("RegistryPage", () => {
     render(<RegistryPage />);
 
     await waitFor(() => expect(screen.getByText("Registry simulation failed")).toBeTruthy());
+  });
+
+  it("asks the contract for the category named in the URL", async () => {
+    nav.query = "category=Gaming";
+    render(<RegistryPage />);
+
+    expect(await screen.findByText("Gaming Protocol")).toBeTruthy();
+    expect(getActiveContractsByCategory).toHaveBeenCalledWith("Gaming");
+    expect(getActiveContracts).not.toHaveBeenCalled();
+  });
+
+  it("writes the chosen category to the URL", async () => {
+    render(<RegistryPage />);
+
+    await userEvent.click(await screen.findByRole("button", { name: "Gaming" }));
+
+    expect(nav.replace).toHaveBeenCalledWith("/registry?category=Gaming", { scroll: false });
+  });
+
+  it("renders categories where present and no gap where absent", async () => {
+    getActiveContracts.mockResolvedValue([
+      { ...entry("Tagged"), categories: ["DeFi"] },
+      { ...entry("Legacy"), contractId: "CLEGACY", categories: [] },
+    ]);
+    render(<RegistryPage />);
+
+    await screen.findByText("Tagged");
+    expect(screen.getAllByLabelText("Categories")).toHaveLength(1);
   });
 });

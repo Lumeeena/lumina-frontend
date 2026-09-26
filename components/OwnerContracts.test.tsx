@@ -45,6 +45,7 @@ function renderDashboard(props: Partial<React.ComponentProps<typeof OwnerContrac
       loadContracts={async () => [entry()]}
       loadHistory={async () => []}
       loadActivity={async () => new Map()}
+      loadStake={async () => ({ stake: BigInt(0), withdrawLockedUntil: 0, currentLedger: 100 })}
       deactivate={async () => {}}
       {...props}
     />
@@ -237,5 +238,61 @@ describe('OwnerContracts', () => {
 
     expect(await screen.findByText('My Protocol')).toBeTruthy();
     expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('stakes the entered amount for the connected wallet', async () => {
+    const stake = vi.fn(async () => {});
+    renderDashboard({ stake });
+
+    await screen.findByText('My Protocol');
+    await userEvent.type(screen.getByLabelText(/stake amount for my protocol/i), '250');
+    await userEvent.click(screen.getByRole('button', { name: /^stake$/i }));
+
+    await waitFor(() => expect(stake).toHaveBeenCalledWith(C1, OWNER, BigInt(250)));
+  });
+
+  it('rejects a stake amount that is not a positive whole number', async () => {
+    const stake = vi.fn(async () => {});
+    renderDashboard({ stake });
+
+    await screen.findByText('My Protocol');
+    await userEvent.type(screen.getByLabelText(/stake amount for my protocol/i), '0');
+    await userEvent.click(screen.getByRole('button', { name: /^stake$/i }));
+
+    expect((await screen.findByRole('alert')).textContent).toMatch(/greater than zero/i);
+    expect(stake).not.toHaveBeenCalled();
+  });
+
+  it('explains why an active registration cannot withdraw', async () => {
+    renderDashboard();
+
+    await screen.findByText('My Protocol');
+    expect(screen.getByText(/deactivate this registration first/i)).toBeTruthy();
+    expect(screen.getByRole('button', { name: /withdraw stake/i }).hasAttribute('disabled')).toBe(true);
+  });
+
+  it('shows the post-slash withdrawal lock', async () => {
+    renderDashboard({
+      loadContracts: async () => [entry({ active: false })],
+      loadStake: async () => ({ stake: BigInt(500), withdrawLockedUntil: 120, currentLedger: 100 }),
+    });
+
+    expect(await screen.findByText(/locked until ledger 120/i)).toBeTruthy();
+    expect(screen.getByRole('button', { name: /withdraw stake/i }).hasAttribute('disabled')).toBe(true);
+  });
+
+  it('withdraws once the registration is deactivated and in good standing', async () => {
+    const withdraw = vi.fn(async () => {});
+    renderDashboard({
+      loadContracts: async () => [entry({ active: false })],
+      loadStake: async () => ({ stake: BigInt(500), withdrawLockedUntil: 0, currentLedger: 100 }),
+      withdraw,
+    });
+
+    const button = await screen.findByRole('button', { name: /withdraw stake/i });
+    await waitFor(() => expect(button.hasAttribute('disabled')).toBe(false));
+    await userEvent.click(button);
+
+    await waitFor(() => expect(withdraw).toHaveBeenCalledWith(C1, OWNER));
   });
 });
