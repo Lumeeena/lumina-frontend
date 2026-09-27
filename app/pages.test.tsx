@@ -31,7 +31,12 @@ vi.mock("@/lib/registry", async () => {
 // it lets the test assert the destination instead of catching a control-flow
 // exception.
 const redirect = vi.hoisted(() => vi.fn());
-vi.mock("next/navigation", () => ({ redirect }));
+vi.mock("next/navigation", () => ({
+  redirect,
+  // `BackendUnavailable` calls `useRouter().refresh()` when no `onRetry` is
+  // given; the server pages render it on the unreachable-API branch.
+  useRouter: () => ({ refresh: vi.fn(), replace: vi.fn(), push: vi.fn() }),
+}));
 
 import StatsPage from "./stats/page";
 import EventsPage from "./events/page";
@@ -199,12 +204,16 @@ describe("EventsPage", () => {
     expect(gqlFetch.mock.calls[0][2]).toMatchObject({ contractId: "CPADDED" });
   });
 
-  it("shows the empty state when the API is unreachable", async () => {
+  it("says the API is unreachable rather than faking an empty state", async () => {
     gqlFetch.mockRejectedValue(UNREACHABLE);
 
     await renderPage(EventsPage({ searchParams: Promise.resolve({}) }));
 
-    expect(screen.getByText(/no events indexed/i)).toBeTruthy();
+    // An unreachable indexer must not be reported as "no events indexed" —
+    // that would claim the contract emitted nothing.
+    expect(screen.getByRole("alert").textContent).toMatch(
+      /temporarily unavailable/i,
+    );
   });
 });
 

@@ -145,12 +145,12 @@ describe("GraphQLPage", () => {
 
     await userEvent.click(screen.getByRole("button", { name: /run/i }));
 
-    // The page reports an unreachable server in its own words rather than
-    // surfacing the raw fetch rejection.
+    // An unreachable server surfaces the shared retry panel rather than
+    // swallowing the rejection or dumping it raw on the page.
     await waitFor(() =>
-      expect(
-        screen.getByText(/couldn't reach the graphql server/i),
-      ).toBeTruthy(),
+      expect(screen.getByRole("alert").textContent).toMatch(
+        /temporarily unavailable/i,
+      ),
     );
   });
 });

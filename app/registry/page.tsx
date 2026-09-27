@@ -126,6 +126,11 @@ function RegistryContent() {
   }, [loadEntries]);
 
   useEffect(() => {
+    // No persisted session means there is nothing to confirm — and confirming
+    // is what would pull the wallet kit in. Skipping it keeps the kit out of
+    // the browser entirely for a visitor who never connects.
+    if (!readPersistedSession()) return;
+
     let cancelled = false;
 
     getConnectedWallet().then((session) => {

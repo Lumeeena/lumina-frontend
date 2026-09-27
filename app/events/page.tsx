@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
 import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
+import { ContractEventsDocument as EVENTS_QUERY } from "@/lib/generated/graphql";
 import { routeMetadata } from "@/lib/metadata";
 import { EVENTS } from "@/lib/routes";
 import type { ContractEvent } from "@/lib/types";
 import { truncateAddress } from "@/lib/formatters";
 import TimeAgo from "@/components/TimeAgo";
 import BackendUnavailable from "@/components/BackendUnavailable";
-import type { Metadata } from "next";
-
-export const metadata: Metadata = { title: "Contract Events | Lumina", description: "Browse Soroban contract events indexed by Lumina." };
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +30,7 @@ interface EventsPageData {
 
 async function getEvents(contractId: string): Promise<{ events: ContractEvent[]; unavailable: boolean }> {
   try {
-    const data = await gqlFetch<{ events: { items: ContractEvent[] } }>(GRAPHQL_URL, EVENTS_QUERY, { contractId, limit: 20 });
+    const data = await gqlFetch(GRAPHQL_URL, EVENTS_QUERY, { contractId, limit: 20 });
     return { events: data.events.items, unavailable: false };
   } catch {
     return { events: [], unavailable: true };
@@ -117,13 +115,6 @@ export default async function EventsPage({
           </table>
         )}
       </div>
-      {nextHref && (
-        <div className="flex justify-end mt-4">
-          <a href={nextHref} className="bg-white border border-[#e5e3ea] hover:border-[#c4b5fd] text-[#6d28d9] font-bold text-sm px-4 py-2 rounded-lg">
-            Next page →
-          </a>
-        </div>
-      )}
     </div>
   );
 }

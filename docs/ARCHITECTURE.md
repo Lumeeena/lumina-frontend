@@ -115,7 +115,10 @@ testable without a browser extension.
 `lib/wallet.ts` wraps `@creit.tech/stellar-wallets-kit` behind a small session
 API: connect, disconnect, `getConnectedWallet`, and `readPersistedSession`,
 which seeds the UI from `localStorage` so a reload does not flash a disconnected
-state before the async check resolves.
+state before the async check resolves. The kit itself is imported on the first
+wallet call rather than at module load, so a visitor who never connects never
+downloads it: `readPersistedSession` reads `localStorage` synchronously and the
+connect button shows a loading state while the kit chunks arrive.
 
 `lib/sorobanTx.ts` is the write path, modelled as an explicit phase machine:
 

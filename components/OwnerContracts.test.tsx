@@ -8,6 +8,11 @@ import type { ContractEvent } from '@/lib/types';
 import { ContractCallError } from '@/lib/sorobanTx';
 import OwnerContracts from './OwnerContracts';
 
+// The error branch renders `BackendUnavailable`, which reads the app router.
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: vi.fn(), replace: vi.fn(), push: vi.fn() }),
+}));
+
 const OWNER = 'GOWNERAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
 const C1 = 'CCONTRACTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
 const C2 = 'CCONTRACTBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB';
@@ -101,9 +106,11 @@ describe("OwnerContracts", () => {
 
     renderDashboard({ loadContracts });
 
-    expect(await screen.findByText("Registry simulation failed")).toBeTruthy();
+    expect((await screen.findByRole("alert")).textContent).toMatch(
+      /temporarily unavailable/i,
+    );
 
-    await userEvent.click(screen.getByRole("button", { name: /try again/i }));
+    await userEvent.click(screen.getByRole("button", { name: /retry/i }));
 
     await screen.findByText("My Protocol");
     expect(loadContracts).toHaveBeenCalledTimes(2);

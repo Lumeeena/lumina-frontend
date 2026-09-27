@@ -10,6 +10,7 @@ import AccountActivityFeed from "@/components/AccountActivityFeed";
 import AccountTransactionList from "@/components/AccountTransactionList";
 import AccountOperationList from "@/components/AccountOperationList";
 import BackendUnavailable from "@/components/BackendUnavailable";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 export const dynamic = "force-dynamic";
 

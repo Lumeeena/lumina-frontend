@@ -55,10 +55,13 @@ obviously equivalent to the real thing and the tests stop meaning much.
 
 - **The wallet kit cannot be imported outside a browser.**
   `@creit.tech/stellar-wallets-kit` pulls in CommonJS bundles that assume
-  `window`, and a static import of `lib/wallet.ts` fails at *collection* time —
-  before any assertion runs. Import it lazily at the point of signing
-  (`const { signWithWallet } = await import('@/lib/wallet')`), or mock the kit
-  wholesale as `lib/wallet.test.ts` does.
+  `window`, so importing the package itself fails at *collection* time — before
+  any assertion runs. `lib/wallet.ts` imports it lazily on the first wallet
+  call, so importing the wallet module is safe; reach the kit only behind
+  `vi.mock`, as `lib/wallet.test.ts` does. The same laziness keeps the kit out
+  of the registry route's initial bundle, and the loader memoises its promise
+  for the life of the module — so a test asserting the kit arrives on the first
+  wallet call has to be the first kit-touching test in its file.
 - **`vi.mock` is hoisted above everything**, so its factory cannot close over
   file-scope variables. Use `vi.hoisted()` for shared mock state, and write
   repeated mocks out one by one rather than generating them in a loop.

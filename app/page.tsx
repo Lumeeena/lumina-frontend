@@ -9,12 +9,6 @@ import StatCard from "@/components/StatCard";
 import SearchBar from "@/components/SearchBar";
 import LiveFeed from "@/components/LiveFeed";
 import BackendUnavailable from "@/components/BackendUnavailable";
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Home | Lumina",
-  description: "Illuminate Stellar network data with Lumina.",
-};
 
 export const metadata: Metadata = {
   // `absolute` because this is the route the title template's own default
@@ -29,26 +23,12 @@ export const metadata: Metadata = {
   }),
 };
 
-const LATEST_LEDGER_QUERY = `
-  query LatestLedger {
-    latestLedger {
-      sequence
-      closedAt
-      transactionCount
-      operationCount
-    }
-  }
-`;
-
 async function getLatestLedger(): Promise<{
   ledger: Ledger | null;
   unavailable: boolean;
 }> {
   try {
-    const data = await gqlFetch<{ latestLedger: Ledger | null }>(
-      GRAPHQL_URL,
-      LATEST_LEDGER_QUERY,
-    );
+    const data = await gqlFetch(GRAPHQL_URL, LATEST_LEDGER_QUERY);
     return { ledger: data.latestLedger, unavailable: false };
   } catch {
     return { ledger: null, unavailable: true };

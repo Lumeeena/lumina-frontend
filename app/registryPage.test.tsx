@@ -12,11 +12,11 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 const connectWallet = vi.hoisted(() => vi.fn());
-const getConnectedAddress = vi.hoisted(() => vi.fn());
+const getConnectedWallet = vi.hoisted(() => vi.fn());
+const readPersistedSession = vi.hoisted(() => vi.fn());
 const getActiveProfiles = vi.hoisted(() => vi.fn());
 const getSlashes = vi.hoisted(() => vi.fn());
 const getContractsByOwner = vi.hoisted(() => vi.fn());
-const getSlashes = vi.hoisted(() => vi.fn());
 const nav = vi.hoisted(() => ({ query: "", replace: vi.fn() }));
 
 vi.mock("next/navigation", () => ({
@@ -27,9 +27,10 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("@/lib/wallet", () => ({
   connectWallet,
-  getConnectedAddress,
-  signWithWallet: vi.fn(),
+  getConnectedWallet,
+  readPersistedSession,
   disconnectWallet: vi.fn(),
+  signWithWallet: vi.fn(),
 }));
 
 vi.mock("@/lib/registry", async () => {
@@ -57,6 +58,13 @@ import RegistryPage from "./registry/page";
 const OWNER = "GOWNERAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 const C1 = "CCONTRACTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 
+const session = (address: string) => ({
+  address,
+  walletId: "freighter",
+  walletName: "Freighter",
+  walletIcon: "freighter.svg",
+});
+
 const profile = (
   name: string,
   reputation: { stake?: bigint; verified?: boolean; slashedTotal?: bigint } = {},
@@ -80,7 +88,9 @@ const profile = (
 beforeEach(() => {
   vi.clearAllMocks();
   nav.query = "";
-  getConnectedAddress.mockResolvedValue(null);
+  // Nothing persisted, nothing connected: the state a first-time visitor gets.
+  readPersistedSession.mockReturnValue(null);
+  getConnectedWallet.mockResolvedValue(null);
   getActiveProfiles.mockResolvedValue([profile("Global Protocol")]);
   getContractsByOwner.mockResolvedValue([profile("My Protocol")]);
   getSlashes.mockResolvedValue([]);
@@ -172,6 +182,7 @@ describe("RegistryPage", () => {
 
   it("shows the owner dashboard once a wallet connects", async () => {
     connectWallet.mockResolvedValue({ address: OWNER });
+    getConnectedWallet.mockResolvedValue(session(OWNER));
     render(<RegistryPage />);
 
     await userEvent.click(
@@ -201,15 +212,60 @@ describe("RegistryPage", () => {
   });
 
   it("opens on the owner dashboard when a wallet is already connected", async () => {
-    getConnectedAddress.mockResolvedValue(OWNER);
+    readPersistedSession.mockReturnValue({ address: OWNER, walletId: "freighter" });
+    getConnectedWallet.mockResolvedValue(session(OWNER));
     render(<RegistryPage />);
 
     expect(await screen.findByText("My Protocol")).toBeTruthy();
     expect(connectWallet).not.toHaveBeenCalled();
   });
 
+  it("confirms a persisted session without opening the picker", async () => {
+    readPersistedSession.mockReturnValue({ address: OWNER, walletId: "freighter" });
+    getConnectedWallet.mockResolvedValue(session(OWNER));
+    render(<RegistryPage />);
+
+    // The seeded state says "connected, still resolving" until this lands.
+    expect(await screen.findByText("Freighter")).toBeTruthy();
+    expect(getConnectedWallet).toHaveBeenCalledTimes(1);
+    expect(connectWallet).not.toHaveBeenCalled();
+  });
+
+  it("never asks for a session when nothing is persisted", async () => {
+    render(<RegistryPage />);
+
+    expect(await screen.findByRole("button", { name: /connect wallet/i })).toBeTruthy();
+    // No persisted session means nothing to confirm, so the wallet kit — which
+    // is loaded by that confirmation — is never pulled in at all.
+    expect(getConnectedWallet).not.toHaveBeenCalled();
+    expect(screen.queryByText("Connecting…")).toBeNull();
+  });
+
+  it("holds the connect button in a loading state while the kit arrives", async () => {
+    let finishConnect!: (result: { address: string } | { error: string }) => void;
+    connectWallet.mockReturnValue(
+      new Promise<{ address: string } | { error: string }>((resolve) => {
+        finishConnect = resolve;
+      }),
+    );
+    getConnectedWallet.mockResolvedValue(session(OWNER));
+    render(<RegistryPage />);
+
+    const button = await screen.findByRole("button", { name: /connect wallet/i });
+    await userEvent.click(button);
+
+    const pending = await screen.findByRole("button", { name: /connecting/i });
+    expect(pending.getAttribute("aria-busy")).toBe("true");
+    expect(pending.hasAttribute("disabled")).toBe(true);
+
+    finishConnect({ address: OWNER });
+
+    expect(await screen.findByText("My Protocol")).toBeTruthy();
+  });
+
   it("switches back to the global list on demand", async () => {
-    getConnectedAddress.mockResolvedValue(OWNER);
+    readPersistedSession.mockReturnValue({ address: OWNER, walletId: "freighter" });
+    getConnectedWallet.mockResolvedValue(session(OWNER));
     render(<RegistryPage />);
 
     await screen.findByText("My Protocol");
@@ -227,8 +283,10 @@ describe("RegistryPage", () => {
     render(<RegistryPage />);
 
     await waitFor(() =>
-      expect(screen.getByText("Registry simulation failed")).toBeTruthy(),
+      expect(screen.getByRole("alert").textContent).toMatch(/temporarily unavailable/i),
     );
+    // The copy is the component's, not the raw error — but the way out is here.
+    expect(screen.getByRole("button", { name: /retry/i })).toBeTruthy();
   });
 
   it("narrows the list to the category named in the URL", async () => {

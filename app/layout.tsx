@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import SkipLink from "@/components/SkipLink";
 import KeyboardShortcuts from "@/components/KeyboardShortcuts";
 import ThemeScript from "@/components/ThemeScript";
+import WatchActivityWatcher from "@/components/WatchActivityWatcher";
 import { shareCard } from "@/lib/metadata";
 import { DEFAULT_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
 

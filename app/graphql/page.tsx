@@ -5,6 +5,7 @@ import CodeMirror from "@uiw/react-codemirror";
 import { StreamLanguage } from "@codemirror/language";
 import { QUERY_EXAMPLES, QueryExample } from "@/lib/queries";
 import { PUBLIC_GRAPHQL_URL } from "@/lib/graphql";
+import { loadQueryHistory, saveQueryToHistory } from "@/lib/queryHistory";
 import BackendUnavailable from "@/components/BackendUnavailable";
 
 function JsonHighlight({ data }: { data: object }) {

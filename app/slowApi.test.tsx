@@ -53,7 +53,8 @@ vi.mock("next/navigation", () => ({
 // page behaves while data is slow or missing.
 vi.mock("@/lib/wallet", () => ({
   connectWallet: vi.fn(),
-  getConnectedAddress: vi.fn().mockResolvedValue(null),
+  getConnectedWallet: vi.fn().mockResolvedValue(null),
+  readPersistedSession: vi.fn(() => null),
   disconnectWallet: vi.fn(),
   signWithWallet: vi.fn(),
 }));
@@ -352,7 +353,9 @@ describe("a response that only half arrived", () => {
       { page: HomePage(), expect: () => expect(screen.getByRole("heading", { level: 1 })).toBeTruthy() },
       {
         page: EventsPage({ searchParams: Promise.resolve({}) }),
-        expect: () => expect(screen.getByText(/no events indexed/i)).toBeTruthy(),
+        // A rejected read is a failure, not an empty list — the two are told
+        // apart above, so this is the fallback rather than the empty state.
+        expect: () => expect(screen.getByRole("alert").textContent).toMatch(/temporarily unavailable/i),
       },
       {
         page: StatsPage(),

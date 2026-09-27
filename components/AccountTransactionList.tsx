@@ -19,20 +19,6 @@ import { truncateAddress } from '@/lib/formatters';
 import TimeAgo from './TimeAgo';
 import LoadMoreFooter from './LoadMoreFooter';
 
-const ACCOUNT_TRANSACTIONS_QUERY = `
-  query AccountTransactions($address: String!, $limit: Int) {
-    account(address: $address) {
-      transactions(limit: $limit) {
-        hash
-        ledger
-        createdAt
-        sourceAccount
-        operationCount
-      }
-    }
-  }
-`;
-
 /** The seed the server component renders; the first client fetch widens past it. */
 export const SEED_LIMIT = 10;
 /** Each load more widens the window: 10 → 25 → 60 → 150 → 375. */

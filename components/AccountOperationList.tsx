@@ -16,28 +16,6 @@ import { formatOperationType, truncateAddress } from '@/lib/formatters';
 import TimeAgo from './TimeAgo';
 import LoadMoreFooter from './LoadMoreFooter';
 
-const ACCOUNT_OPERATIONS_QUERY = `
-  query AccountOperations($address: String!, $limit: Int, $cursor: String) {
-    operations(account: $address, limit: $limit, cursor: $cursor) {
-      items {
-        id
-        type
-        createdAt
-        transactionHash
-        sourceAccount
-        from
-        to
-        amount
-        asset
-      }
-      pageInfo {
-        hasNextPage
-        cursor
-      }
-    }
-  }
-`;
-
 const PAGE_SIZE = 25;
 /** Matches the seed the server component renders. */
 const SEED_LIMIT = 10;

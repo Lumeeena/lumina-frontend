@@ -39,21 +39,21 @@ describe("Navbar", () => {
     const active = screen.getByRole("link", { name: "Registry" });
     const inactive = screen.getByRole("link", { name: "Stats" });
 
-    expect(active.className).toContain("bg-[#f6f5f8]");
-    expect(inactive.className).not.toContain("bg-[#f6f5f8]");
+    expect(active.className).toContain("bg-[var(--color-bg-raised)]");
+    expect(inactive.className).not.toContain("bg-[var(--color-bg-raised)]");
   });
 
   it("keeps the section active on nested routes", () => {
     // /accounts/G... is reached from the explorer; a nav that de-highlights
     // as soon as you click through is worse than no highlight at all.
     renderAt("/transactions/abc123");
-    expect(screen.getByRole("link", { name: "Transactions" }).className).toContain("bg-[#f6f5f8]");
+    expect(screen.getByRole("link", { name: "Transactions" }).className).toContain("bg-[var(--color-bg-raised)]");
   });
 
   it("highlights nothing on a route outside the nav", () => {
     renderAt("/");
     for (const label of ["Explorer", "Transactions", "Registry"]) {
-      expect(screen.getByRole("link", { name: label }).className).not.toContain("bg-[#f6f5f8]");
+      expect(screen.getByRole("link", { name: label }).className).not.toContain("bg-[var(--color-bg-raised)]");
     }
   });
 

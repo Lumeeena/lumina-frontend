@@ -2,16 +2,17 @@
  * Wallet connection for the Registry page, via @creit.tech/stellar-wallets-kit —
  * gives users a choice of wallet (Freighter, xBull, Albedo, Rabet, Lobstr)
  * through one modal, rather than hard-coding to Freighter alone.
+ *
+ * The kit is loaded on first use, not at import: five wallet integrations and
+ * their browser-only bundles are far more than the registry route needs for the
+ * majority of visitors who never connect, so nothing here reaches the kit until
+ * a wallet function is actually called. The loader memoises its promise, so
+ * concurrent callers share one import and one init.
  */
-import { Networks, StellarWalletsKit } from '@creit.tech/stellar-wallets-kit';
-import { AlbedoModule } from '@creit.tech/stellar-wallets-kit/modules/albedo';
-import { FreighterModule } from '@creit.tech/stellar-wallets-kit/modules/freighter';
-import { LobstrModule } from '@creit.tech/stellar-wallets-kit/modules/lobstr';
-import { RabetModule } from '@creit.tech/stellar-wallets-kit/modules/rabet';
-import { xBullModule } from '@creit.tech/stellar-wallets-kit/modules/xbull';
 import { NETWORK_PASSPHRASE } from './registry';
 
-const KIT_NETWORK = NETWORK_PASSPHRASE === Networks.PUBLIC ? Networks.PUBLIC : Networks.TESTNET;
+type KitModule = typeof import('@creit.tech/stellar-wallets-kit');
+type WalletsKit = KitModule['StellarWalletsKit'];
 
 /**
  * localStorage keys the kit uses to persist its session.  Reading them
@@ -45,22 +46,54 @@ export function readPersistedSession(): { address: string; walletId: string } | 
   }
 }
 
-let initialized = false;
+let kitPromise: Promise<WalletsKit> | null = null;
+let kitInitialized = false;
 
-function ensureInit() {
-  if (initialized) return;
-  StellarWalletsKit.init({
-    network: KIT_NETWORK,
-    modules: [new FreighterModule(), new xBullModule(), new AlbedoModule(), new RabetModule(), new LobstrModule()],
-  });
-  initialized = true;
+function loadKit(): Promise<WalletsKit> {
+  if (!kitPromise) {
+    kitPromise = importKit().catch((err) => {
+      // A chunk that failed to arrive (flaky network, offline) must not poison
+      // every later attempt — drop it so the next click imports again.
+      kitPromise = null;
+      throw err;
+    });
+  }
+  return kitPromise;
+}
+
+async function importKit(): Promise<WalletsKit> {
+  const [
+    { StellarWalletsKit, Networks },
+    { FreighterModule },
+    { xBullModule },
+    { AlbedoModule },
+    { RabetModule },
+    { LobstrModule },
+  ] = await Promise.all([
+    import('@creit.tech/stellar-wallets-kit'),
+    import('@creit.tech/stellar-wallets-kit/modules/freighter'),
+    import('@creit.tech/stellar-wallets-kit/modules/xbull'),
+    import('@creit.tech/stellar-wallets-kit/modules/albedo'),
+    import('@creit.tech/stellar-wallets-kit/modules/rabet'),
+    import('@creit.tech/stellar-wallets-kit/modules/lobstr'),
+  ]);
+
+  if (!kitInitialized) {
+    StellarWalletsKit.init({
+      network: NETWORK_PASSPHRASE === Networks.PUBLIC ? Networks.PUBLIC : Networks.TESTNET,
+      modules: [new FreighterModule(), new xBullModule(), new AlbedoModule(), new RabetModule(), new LobstrModule()],
+    });
+    kitInitialized = true;
+  }
+
+  return StellarWalletsKit;
 }
 
 /** Opens the wallet-picker modal; resolves once the user connects a wallet. */
 export async function connectWallet(): Promise<{ address: string } | { error: string; isLocked?: boolean }> {
-  ensureInit();
   try {
-    const { address } = await StellarWalletsKit.authModal();
+    const kit = await loadKit();
+    const { address } = await kit.authModal();
     return { address };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Wallet connection was cancelled.';
@@ -84,9 +117,9 @@ function detectLockedWallet(message: string, err: unknown): boolean {
 
 /** Returns the already-connected address without opening the modal, or null if none. */
 export async function getConnectedAddress(): Promise<string | null> {
-  ensureInit();
   try {
-    const { address } = await StellarWalletsKit.getAddress();
+    const kit = await loadKit();
+    const { address } = await kit.getAddress();
     return address || null;
   } catch {
     return null;
@@ -99,11 +132,11 @@ export async function getConnectedAddress(): Promise<string | null> {
  * module's product metadata.  Returns null when nothing is connected.
  */
 export async function getConnectedWallet(): Promise<WalletSession | null> {
-  ensureInit();
   try {
-    const { address } = await StellarWalletsKit.getAddress();
+    const kit = await loadKit();
+    const { address } = await kit.getAddress();
     if (!address) return null;
-    const mod = StellarWalletsKit.selectedModule();
+    const mod = kit.selectedModule;
     return {
       address,
       walletId: mod.productId,
@@ -119,11 +152,11 @@ export async function signWithWallet(
   xdr: string,
   opts: { networkPassphrase: string; address: string }
 ): Promise<{ signedTxXdr: string }> {
-  ensureInit();
-  return StellarWalletsKit.signTransaction(xdr, opts);
+  const kit = await loadKit();
+  return kit.signTransaction(xdr, opts);
 }
 
 export async function disconnectWallet(): Promise<void> {
-  ensureInit();
-  await StellarWalletsKit.disconnect();
+  const kit = await loadKit();
+  await kit.disconnect();
 }

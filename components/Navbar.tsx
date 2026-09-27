@@ -4,6 +4,9 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_ROUTES } from "@/lib/routes";
+import { DEFAULT_NETWORK, withNetwork, type NetworkId } from "@/lib/network";
+import { useNetwork } from "@/lib/useNetwork";
+import NetworkSwitcher from "./NetworkSwitcher";
 import ThemeToggle from "@/components/ThemeToggle";
 
 /**
@@ -27,8 +30,11 @@ function NavContent({
   switcher?: React.ReactNode;
 }) {
   return (
-    <nav className="flex items-center gap-1 px-4 sm:px-7 h-[60px] border-b border-[var(--color-border-default)] bg-[var(--color-bg-base)]/90 backdrop-blur sticky top-0 z-20 overflow-x-auto">
-      <Link href="/" className="flex items-center gap-2 mr-4 sm:mr-7 shrink-0">
+    <>
+      <Link
+        href={withNetwork("/", network)}
+        className="flex items-center gap-2 mr-4 sm:mr-7 shrink-0"
+      >
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="12" r="9" stroke="#7c3aed" strokeWidth="2" />
           <circle cx="17" cy="7" r="3.4" fill="#8b5cf6" />
@@ -56,6 +62,29 @@ function NavContent({
           </Link>
         );
       })}
+    </>
+  );
+}
+
+/** The nav once the network in the URL has been read. */
+function RoutedNavContent({ pathname }: { pathname: string }) {
+  const { network } = useNetwork();
+  return <NavContent network={network} pathname={pathname} switcher={<NetworkSwitcher />} />;
+}
+
+export default function Navbar() {
+  const pathname = usePathname();
+
+  return (
+    <nav className="flex items-center gap-1 px-4 sm:px-7 h-[60px] border-b border-[var(--color-border-default)] bg-[var(--color-bg-base)]/90 backdrop-blur sticky top-0 z-20 overflow-x-auto">
+      {/* The links and the switcher both read the network from the URL, and
+          `useSearchParams` suspends while the URL is being read, so reading
+          happens behind one boundary. The fallback is the same nav on the
+          default network — the server HTML is a complete, working nav rather
+          than an empty one that fills in after hydration. */}
+      <Suspense fallback={<NavContent network={DEFAULT_NETWORK} pathname={pathname} />}>
+        <RoutedNavContent pathname={pathname} />
+      </Suspense>
 
       {/* Push the toggle to the far right */}
       <div className="ml-auto shrink-0">
