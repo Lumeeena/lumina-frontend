@@ -110,5 +110,5 @@ MIT
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for staged-file checks, GraphQL type generation,
-and the one-command bundle analyzer.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, where new code goes, the staged-file
+checks, and what a pull request is expected to contain.
