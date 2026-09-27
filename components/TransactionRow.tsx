@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Transaction } from "@/lib/types";
 import { truncateAddress, formatXLM } from "@/lib/formatters";
 import TimeAgo from "./TimeAgo";
+import WatchIndicator from "./WatchIndicator";
 
 export default function TransactionRow({ tx }: { tx: Transaction }) {
   const fee = (parseInt(tx.feeCharged) / 1e7).toFixed(7);
@@ -23,9 +24,12 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
       </td>
       <td className="py-2.5 px-3 mono text-xs text-[#6b6975]">{tx.ledger.toLocaleString()}</td>
       <td className="py-2.5 px-3 mono text-xs text-[#6b6975]">
-        <Link href={`/accounts/${tx.sourceAccount}`} className="hover:text-[#7c3aed] hover:underline transition-colors">
-          {truncateAddress(tx.sourceAccount)}
-        </Link>
+        <span className="inline-flex items-center gap-1">
+          <Link href={`/accounts/${tx.sourceAccount}`} className="hover:text-[#7c3aed] hover:underline transition-colors">
+            {truncateAddress(tx.sourceAccount)}
+          </Link>
+          <WatchIndicator address={tx.sourceAccount} />
+        </span>
       </td>
       <td className="py-2.5 px-3">
         <span className="text-[11px] bg-[#f6f5f8] text-[#6b6975] px-1.5 py-0.5 rounded">{tx.operationCount}</span>

@@ -13,7 +13,7 @@ import { nativeToScVal } from '@stellar/stellar-sdk';
 import { REGISTRY_CATEGORIES, type RegistryCategory } from '@/lib/categories';
 import { NETWORK_PASSPHRASE, REGISTRY_CONTRACT_ID, SOROBAN_RPC_URL } from '@/lib/registry';
 import { createStellarDriver, submitContractCall, type TxPhase } from '@/lib/sorobanTx';
-import { truncateAddress } from '@/lib/formatters';
+
 
 export interface RegistrationInput {
   contractId: string;
@@ -153,9 +153,6 @@ export default function RegisterContractForm({
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
-      <div className="text-xs text-[#6b6975] bg-white border border-[#e5e3ea] rounded-lg px-3 py-2 mono break-all">
-        Connected: {truncateAddress(walletAddress, 6)}
-      </div>
 
       <div>
         <label htmlFor="reg-contract-id" className="block text-xs font-semibold text-[#6b6975] mb-1.5">

@@ -13,6 +13,38 @@ import { NETWORK_PASSPHRASE } from './registry';
 
 const KIT_NETWORK = NETWORK_PASSPHRASE === Networks.PUBLIC ? Networks.PUBLIC : Networks.TESTNET;
 
+/**
+ * localStorage keys the kit uses to persist its session.  Reading them
+ * synchronously lets the UI avoid a flash of the "disconnected" state on every
+ * reload — we know before any async call whether a session is likely present.
+ */
+const LS_ADDRESS = '@StellarWalletsKit/activeAddress';
+const LS_MODULE_ID = '@StellarWalletsKit/selectedModuleId';
+
+export interface WalletSession {
+  address: string;
+  walletId: string;
+  walletName: string;
+  walletIcon: string;
+}
+
+/**
+ * Reads the kit's persisted session from localStorage synchronously.
+ * Returns null when no session exists or in a non-browser context.
+ * Use this to seed initial state and avoid a flash of disconnected UI.
+ */
+export function readPersistedSession(): { address: string; walletId: string } | null {
+  try {
+    if (typeof localStorage === 'undefined') return null;
+    const address = localStorage.getItem(LS_ADDRESS);
+    const walletId = localStorage.getItem(LS_MODULE_ID);
+    if (!address || !walletId) return null;
+    return { address, walletId };
+  } catch {
+    return null;
+  }
+}
+
 let initialized = false;
 
 function ensureInit() {
@@ -41,6 +73,28 @@ export async function getConnectedAddress(): Promise<string | null> {
   try {
     const { address } = await StellarWalletsKit.getAddress();
     return address || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Returns the full wallet session — address, id, name, and icon — by
+ * confirming the persisted session with the kit and then reading the selected
+ * module's product metadata.  Returns null when nothing is connected.
+ */
+export async function getConnectedWallet(): Promise<WalletSession | null> {
+  ensureInit();
+  try {
+    const { address } = await StellarWalletsKit.getAddress();
+    if (!address) return null;
+    const mod = StellarWalletsKit.selectedModule();
+    return {
+      address,
+      walletId: mod.productId,
+      walletName: mod.productName,
+      walletIcon: mod.productIcon,
+    };
   } catch {
     return null;
   }

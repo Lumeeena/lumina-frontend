@@ -1,4 +1,3 @@
-import { AccountDetailDocument as ACCOUNT_QUERY } from "@/lib/generated/graphql";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
@@ -6,11 +5,11 @@ import { accountOgImage, routeMetadata } from "@/lib/metadata";
 import type { Account } from "@/lib/types";
 import { formatXLM, truncateAddress } from "@/lib/formatters";
 import CopyAddressButton from "@/components/CopyAddressButton";
+import WatchIndicator from "@/components/WatchIndicator";
 import AccountActivityFeed from "@/components/AccountActivityFeed";
 import AccountTransactionList from "@/components/AccountTransactionList";
 import AccountOperationList from "@/components/AccountOperationList";
 import BackendUnavailable from "@/components/BackendUnavailable";
-import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
@@ -71,18 +70,13 @@ const ACCOUNT_QUERY = `
   }
 `;
 
-async function getAccount(address: string): Promise<Account | null> {
+async function getAccount(address: string): Promise<{ account: Account | null; unavailable: boolean }> {
   try {
     const data = await gqlFetch<{ account: Account | null }>(GRAPHQL_URL, ACCOUNT_QUERY, { address });
     return { account: data.account, unavailable: false };
   } catch {
     return { account: null, unavailable: true };
   }
-}
-
-export async function generateMetadata({ params }: { params: Promise<{ address: string }> }): Promise<Metadata> {
-  const { address } = await params;
-  return { title: `Account ${address} | Lumina`, description: `Stellar account ${address} and its indexed activity.` };
 }
 
 const th = "text-left text-[11px] tracking-[0.06em] uppercase text-[#a6a3b0] px-3 py-2.5 border-b border-[#e5e3ea] bg-[#fafafa]";
@@ -135,6 +129,7 @@ export default async function AccountPage({
               {account.address}
             </h1>
             <CopyAddressButton address={address} />
+            <WatchIndicator address={address} />
           </div>
           <p className="text-[#a6a3b0] text-[13px] mb-6">
             Last modified at ledger{" "}

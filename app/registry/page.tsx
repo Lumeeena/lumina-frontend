@@ -11,11 +11,18 @@ import {
   type Category,
   type RegistryProfile,
 } from "@/lib/registry";
-import { connectWallet, getConnectedAddress } from "@/lib/wallet";
+import {
+  connectWallet,
+  disconnectWallet,
+  getConnectedWallet,
+  readPersistedSession,
+  type WalletSession,
+} from "@/lib/wallet";
 import RegisterContractForm from "@/components/RegisterContractForm";
 import OwnerContracts from "@/components/OwnerContracts";
 import RegistryEntryCard from "@/components/RegistryEntryCard";
 import BackendUnavailable from "@/components/BackendUnavailable";
+import WalletInfo from "@/components/WalletInfo";
 
 type Tab = "mine" | "all";
 
@@ -54,9 +61,18 @@ function RegistryContent() {
   const rawCategory = searchParams?.get("category");
   const category = isCategory(rawCategory) ? rawCategory : null;
 
-  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  // "resolving" prevents a flash of disconnected state on reload: we seed from
+  // localStorage synchronously so the UI knows a session likely exists before
+  // the async getConnectedWallet() call confirms it (#86).
+  const persisted = typeof window !== "undefined" ? readPersistedSession() : null;
+  const [wallet, setWallet] = useState<WalletSession | null>(null);
+  const [walletResolving, setWalletResolving] = useState(persisted !== null);
   const [connecting, setConnecting] = useState(false);
+  const [disconnecting, setDisconnecting] = useState(false);
   const [connectError, setConnectError] = useState<string | null>(null);
+
+  // Convenience: address is still used in several places below.
+  const walletAddress = wallet?.address ?? null;
 
   const [entries, setEntries] = useState<RegistryProfile[]>([]);
   const [entriesLoading, setEntriesLoading] = useState(true);
@@ -110,10 +126,11 @@ function RegistryContent() {
   useEffect(() => {
     let cancelled = false;
 
-    getConnectedAddress().then((address) => {
+    getConnectedWallet().then((session) => {
       if (cancelled) return;
-      setWalletAddress(address);
-      if (address) setTab("mine");
+      setWallet(session);
+      if (session) setTab("mine");
+      setWalletResolving(false);
     });
 
     return () => {
@@ -136,10 +153,23 @@ function RegistryContent() {
     if ("error" in result) {
       setConnectError(result.error);
     } else {
-      setWalletAddress(result.address);
+      // Re-fetch full session so we get name + icon too (#88).
+      const session = await getConnectedWallet();
+      setWallet(session);
       setTab("mine");
     }
     setConnecting(false);
+  }
+
+  async function handleDisconnect() {
+    setDisconnecting(true);
+    try {
+      await disconnectWallet();
+    } finally {
+      setWallet(null);
+      setTab("all");
+      setDisconnecting(false);
+    }
   }
 
   function handleRegistered() {
@@ -164,7 +194,12 @@ function RegistryContent() {
             Register a Contract
           </h2>
 
-          {!walletAddress ? (
+          {/* walletResolving means we have a persisted session but haven't confirmed
+              it yet — show a neutral "Connecting…" state rather than flashing
+              the disconnected UI on every reload (#86). */}
+          {walletResolving ? (
+            <p className="text-[13px] text-[#a6a3b0]">Connecting…</p>
+          ) : !walletAddress ? (
             <div className="flex flex-col gap-3">
               <p className="text-[13px] text-[#6b6975]">
                 Connect a wallet to register and manage contracts.
@@ -186,10 +221,20 @@ function RegistryContent() {
               )}
             </div>
           ) : (
-            <RegisterContractForm
-              walletAddress={walletAddress}
-              onRegistered={handleRegistered}
-            />
+            <div className="flex flex-col gap-3">
+              {/* Wallet name + icon + disconnect control (#87, #88) */}
+              <WalletInfo
+                address={wallet!.address}
+                walletName={wallet!.walletName}
+                walletIcon={wallet!.walletIcon}
+                onDisconnect={handleDisconnect}
+                disconnecting={disconnecting}
+              />
+              <RegisterContractForm
+                walletAddress={walletAddress}
+                onRegistered={handleRegistered}
+              />
+            </div>
           )}
         </div>
 
