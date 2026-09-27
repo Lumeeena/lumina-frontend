@@ -10,7 +10,14 @@ export const dynamic = "force-dynamic";
 const DEFAULT_CONTRACT_ID =
   "CAYUDQPV3RKPM3EXDFGI3457FV677JLUCJ4OLKWGCUBPRIHYKXK3WFAZ";
 
-async function getEvents(contractId: string): Promise<ContractEvent[]> {
+interface EventsPageData {
+  events: {
+    items: ContractEvent[];
+    pageInfo?: { hasNextPage: boolean; cursor: string | null };
+  };
+}
+
+async function getEvents(contractId: string, topic: string, cursor: string): Promise<EventsPageData["events"]> {
   try {
     const data = await gqlFetch(GRAPHQL_URL, EVENTS_QUERY, {
       contractId,
@@ -18,7 +25,7 @@ async function getEvents(contractId: string): Promise<ContractEvent[]> {
     });
     return data.events.items;
   } catch {
-    return [];
+    return { items: [] };
   }
 }
 
@@ -32,7 +39,13 @@ export default async function EventsPage({
 }) {
   const { contractId: rawContractId } = await searchParams;
   const contractId = rawContractId?.trim() || DEFAULT_CONTRACT_ID;
-  const events = await getEvents(contractId);
+  const topic = rawTopic?.trim() || "";
+  const cursor = rawCursor?.trim() || "";
+  const page = await getEvents(contractId, topic, cursor);
+  const events = page.items;
+  const nextHref = page.pageInfo?.hasNextPage && page.pageInfo.cursor
+    ? `/events?${new URLSearchParams({ contractId, ...(topic ? { topic } : {}), cursor: page.pageInfo.cursor }).toString()}`
+    : null;
 
   return (
     <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
@@ -111,6 +124,13 @@ export default async function EventsPage({
           </table>
         )}
       </div>
+      {nextHref && (
+        <div className="flex justify-end mt-4">
+          <a href={nextHref} className="bg-white border border-[#e5e3ea] hover:border-[#c4b5fd] text-[#6d28d9] font-bold text-sm px-4 py-2 rounded-lg">
+            Next page →
+          </a>
+        </div>
+      )}
     </div>
   );
 }

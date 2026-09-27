@@ -4,6 +4,7 @@ import "./globals.css";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import KeyboardShortcuts from "@/components/KeyboardShortcuts";
+import Footer from "@/components/Footer";
 
 const inter = Inter({
   variable: "--font-inter",

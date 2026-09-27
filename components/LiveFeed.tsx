@@ -4,6 +4,8 @@ import { LiveFeedTransactionsDocument as RECENT_TRANSACTIONS_QUERY } from "@/lib
 import { LiveFeedNewTransactionDocument as NEW_TRANSACTION_SUBSCRIPTION } from "@/lib/generated/graphql";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { Pause, Play } from "lucide-react";
 import { gqlFetch, PUBLIC_GRAPHQL_URL } from "@/lib/graphql";
 import { useSubscription } from "@/lib/useSubscription";
 import type { Transaction } from "@/lib/types";
@@ -23,11 +25,54 @@ export const FALLBACK_POLL_MS = 30_000;
 
 /** The initial page, so the feed is not empty until the first push arrives. */
 const SEED_LIMIT = 10;
+const ROW_HEIGHT = 43;
+const OVERSCAN = 3;
 
 export default function LiveFeed() {
   const [txs, setTxs] = useState<Transaction[]>([]);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [loading, setLoading] = useState(true);
+  const [paused, setPaused] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [resumedCount, setResumedCount] = useState(0);
+  const pausedRef = useRef(false);
+  const txsRef = useRef<Transaction[]>([]);
+  const queuedRef = useRef<Transaction[]>([]);
+  const seenWhilePausedRef = useRef(new Set<string>());
+
+  useEffect(() => {
+    txsRef.current = txs;
+  }, [txs]);
+
+  const pauseFeed = useCallback(() => {
+    pausedRef.current = true;
+    setPaused(true);
+    setResumedCount(0);
+  }, []);
+
+  const resumeFeed = useCallback(() => {
+    const queued = queuedRef.current;
+    const arrived = pendingCount;
+
+    pausedRef.current = false;
+    queuedRef.current = [];
+    seenWhilePausedRef.current.clear();
+    setPaused(false);
+    setPendingCount(0);
+    setResumedCount(arrived);
+
+    if (queued.length === 0) return;
+    setTxs(current => {
+      const seen = new Set<string>();
+      const merged = [...queued, ...current].filter(tx => {
+        if (seen.has(tx.hash)) return false;
+        seen.add(tx.hash);
+        return true;
+      });
+      return merged.slice(0, MAX_FEED_LENGTH);
+    });
+    setLastUpdated(new Date());
+  }, [pendingCount]);
 
   const prependTransaction = useCallback((tx: Transaction) => {
     setTxs((current) => {
@@ -87,6 +132,15 @@ export default function LiveFeed() {
     const interval = setInterval(() => void fetchRecent(), FALLBACK_POLL_MS);
     return () => clearInterval(interval);
   }, [live, fetchRecent]);
+
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const virtualizer = useVirtualizer({
+    count: txs.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => ROW_HEIGHT,
+    overscan: OVERSCAN,
+  });
+  const virtualRows = virtualizer.getVirtualItems();
 
   return (
     <div className="rounded-xl border border-[#e5e3ea] overflow-hidden">
