@@ -1,4 +1,6 @@
-'use client';
+"use client";
+
+import { AccountOperationsDocument as ACCOUNT_OPERATIONS_QUERY } from "@/lib/generated/graphql";
 
 /**
  * An account's operations, cursor-paginated.
@@ -10,7 +12,8 @@
 import { useCallback, useState } from 'react';
 import { gqlFetch, PUBLIC_GRAPHQL_URL } from '@/lib/graphql';
 import type { Operation } from '@/lib/types';
-import { formatOperationType, timeAgo, truncateAddress } from '@/lib/formatters';
+import { formatOperationType, truncateAddress } from '@/lib/formatters';
+import TimeAgo from './TimeAgo';
 import LoadMoreFooter from './LoadMoreFooter';
 
 const ACCOUNT_OPERATIONS_QUERY = `
@@ -39,7 +42,8 @@ const PAGE_SIZE = 25;
 /** Matches the seed the server component renders. */
 const SEED_LIMIT = 10;
 
-const th = 'text-left text-[11px] tracking-[0.06em] uppercase text-[#a6a3b0] px-3 py-2.5 border-b border-[#e5e3ea] bg-[#fafafa]';
+const th =
+  "text-left text-[11px] tracking-[0.06em] uppercase text-[#a6a3b0] px-3 py-2.5 border-b border-[#e5e3ea] bg-[#fafafa]";
 
 export default function AccountOperationList({
   address,
@@ -59,24 +63,25 @@ export default function AccountOperationList({
     setLoading(true);
     setError(null);
     try {
-      const data = await gqlFetch<{
-        operations: {
-          items: Operation[];
-          pageInfo: { hasNextPage: boolean; cursor: string | null };
-        };
-      }>(PUBLIC_GRAPHQL_URL, ACCOUNT_OPERATIONS_QUERY, { address, limit: PAGE_SIZE, cursor });
+      const data = await gqlFetch(
+        PUBLIC_GRAPHQL_URL,
+        ACCOUNT_OPERATIONS_QUERY,
+        { address, limit: PAGE_SIZE, cursor },
+      );
       const page = data.operations;
 
-      setRows(prev => {
-        const seen = new Set(prev.map(op => op.id));
+      setRows((prev) => {
+        const seen = new Set(prev.map((op) => op.id));
         // A cursor page can overlap the previous one when operations are
         // indexed between requests; an id already shown is never rendered twice.
-        return [...prev, ...page.items.filter(op => !seen.has(op.id))];
+        return [...prev, ...page.items.filter((op) => !seen.has(op.id))];
       });
       setCursor(page.pageInfo.cursor);
-      setHasNextPage(page.pageInfo.hasNextPage && page.pageInfo.cursor !== null);
+      setHasNextPage(
+        page.pageInfo.hasNextPage && page.pageInfo.cursor !== null,
+      );
     } catch {
-      setError('Could not load more operations.');
+      setError("Could not load more operations.");
       // Stop the button from immediately retrying in a tight loop; the
       // footer's Retry puts the user back in control.
       setHasNextPage(false);
@@ -103,36 +108,52 @@ export default function AccountOperationList({
         <table className="w-full text-sm border-collapse">
           <thead>
             <tr>
-              <th className={th}>Type</th><th className={th}>Transaction</th><th className={th}>Detail</th><th className={th}>Time</th>
+              <th className={th}>Type</th>
+              <th className={th}>Transaction</th>
+              <th className={th}>Detail</th>
+              <th className={th}>Time</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map(op => (
-              <tr key={op.id} className="border-b border-[#f0eff3] last:border-0">
+            {rows.map((op) => (
+              <tr
+                key={op.id}
+                className="border-b border-[#f0eff3] last:border-0"
+              >
                 <td className="py-2.5 px-3">
                   <span className="text-[10px] font-bold rounded-full bg-[#f3effe] text-[#6d28d9] px-2 py-0.5">
                     {formatOperationType(op.type.toLowerCase())}
                   </span>
                 </td>
                 <td className="py-2.5 px-3">
-                  <a href={`https://stellar.expert/explorer/public/tx/${op.transactionHash}`} target="_blank" rel="noopener noreferrer" className="mono text-xs text-[#7c3aed] hover:text-[#6d28d9] hover:underline transition-colors">
+                  <a
+                    href={`https://stellar.expert/explorer/public/tx/${op.transactionHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mono text-xs text-[#7c3aed] hover:text-[#6d28d9] hover:underline transition-colors"
+                  >
                     {truncateAddress(op.transactionHash, 6)}
                   </a>
                 </td>
                 <td className="py-2.5 px-3 text-xs text-[#0e0e12]">
                   {op.amount ? (
-                    <span className="mono">{op.amount} {op.asset ?? 'XLM'}</span>
+                    <span className="mono">
+                      {op.amount} {op.asset ?? "XLM"}
+                    </span>
                   ) : op.from && op.to ? (
                     <span className="mono text-[#6b6975]">
-                      {truncateAddress(op.from, 4)} → {truncateAddress(op.to, 4)}
+                      {truncateAddress(op.from, 4)} →{" "}
+                      {truncateAddress(op.to, 4)}
                     </span>
                   ) : op.from || op.to ? (
-                    <span className="mono text-[#6b6975]">{truncateAddress(op.from ?? op.to ?? '', 4)}</span>
+                    <span className="mono text-[#6b6975]">
+                      {truncateAddress(op.from ?? op.to ?? "", 4)}
+                    </span>
                   ) : (
                     <span className="text-[#a6a3b0]">—</span>
                   )}
                 </td>
-                <td className="py-2.5 px-3 text-xs text-[#c3c1cb]">{timeAgo(op.createdAt)}</td>
+                <td className="py-2.5 px-3 text-xs text-[#c3c1cb]"><TimeAgo isoString={op.createdAt} /></td>
               </tr>
             ))}
           </tbody>

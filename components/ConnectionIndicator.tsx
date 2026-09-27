@@ -1,5 +1,7 @@
 "use client";
 
+import { useId, useState } from "react";
+import { Info } from "lucide-react";
 import type { ConnectionState, FailureReason } from "@/lib/subscriptions";
 
 /**
@@ -18,13 +20,13 @@ const PRESENTATION: Record<ConnectionState, { label: string; dot: string; ring: 
   unsupported: { label: "POLLING", dot: "bg-[#a6a3b0]", ring: "rgba(166,163,176,0.15)", pulse: false },
 };
 
-const TITLE: Record<ConnectionState, string> = {
-  idle: "Not connected yet",
-  connecting: "Opening a live connection",
-  connected: "Streaming live updates",
-  reconnecting: "Connection lost — retrying",
-  disconnected: "Live connection unavailable — falling back to periodic refresh",
-  unsupported: "Live updates unavailable here — falling back to periodic refresh",
+const EXPLANATION: Record<ConnectionState, string> = {
+  idle: "The feed is waiting to connect. The displayed data may not be current yet.",
+  connecting: "A live connection is opening. The feed shows the most recently loaded data until it connects.",
+  connected: "Transactions arrive as soon as the server publishes them, so the feed stays current.",
+  reconnecting: "The live connection was interrupted. Existing data remains visible while Lumina reconnects.",
+  disconnected: "Live updates are unavailable. The feed refreshes every 30 seconds, so data may be up to 30 seconds old.",
+  unsupported: "This browser cannot receive live updates. The feed refreshes every 30 seconds, so data may be up to 30 seconds old.",
 };
 
 /** Short cause shown next to POLLING, so the fallback reads as designed rather than broken. */
@@ -47,6 +49,8 @@ interface ConnectionIndicatorProps {
 export default function ConnectionIndicator({ state, failureReason = null, onRetry }: ConnectionIndicatorProps) {
   const { label, dot, ring, pulse } = PRESENTATION[state];
   const reason = state === "disconnected" && failureReason ? FAILURE_TEXT[failureReason] : REASON_TEXT[state];
+  const [expanded, setExpanded] = useState(false);
+  const explanationId = useId();
 
   return (
     <div
@@ -72,11 +76,35 @@ export default function ConnectionIndicator({ state, failureReason = null, onRet
       {state === "disconnected" && onRetry && (
         <button
           type="button"
-          onClick={onRetry}
-          className="font-medium text-[11px] text-[#7c3aed] hover:text-[#6d28d9] hover:underline"
+          aria-expanded={expanded}
+          aria-controls={explanationId}
+          aria-label={`What does ${label} mean?`}
+          onClick={() => setExpanded(open => !open)}
+          className="relative inline-flex size-7 shrink-0 select-none items-center justify-center rounded-md text-[#6b6975] hover:bg-[#f0eff3] hover:text-[#0e0e12]"
         >
-          Retry
+          <Info aria-hidden="true" className="size-4 shrink-0" strokeWidth={2} />
+          <span className="absolute left-1/2 top-1/2 size-[max(100%,3rem)] -translate-1/2 pointer-fine:hidden" aria-hidden="true" />
         </button>
+
+        {state === "disconnected" && onRetry && (
+          <button
+            type="button"
+            onClick={onRetry}
+            className="relative select-none font-medium text-[0.6875rem] text-[#7c3aed] hover:text-[#6d28d9] hover:underline"
+          >
+            Retry connection
+            <span className="absolute left-1/2 top-1/2 size-[max(100%,3rem)] -translate-1/2 pointer-fine:hidden" aria-hidden="true" />
+          </button>
+        )}
+      </div>
+
+      {expanded && (
+        <p
+          id={explanationId}
+          className="absolute left-0 top-full z-20 mt-2 w-[min(19rem,calc(100vw-2rem))] rounded-lg border border-[#e5e3ea] bg-white p-3 text-sm/5 font-normal tracking-normal text-[#6b6975] shadow-lg"
+        >
+          {EXPLANATION[state]}
+        </p>
       )}
     </div>
   );

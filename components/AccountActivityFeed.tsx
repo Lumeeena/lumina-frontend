@@ -1,26 +1,13 @@
 "use client";
 
+import { AccountActivityDocument as ACCOUNT_ACTIVITY_SUBSCRIPTION } from "@/lib/generated/graphql";
+
 import { useCallback, useState } from "react";
 import { useSubscription } from "@/lib/useSubscription";
 import type { Operation } from "@/lib/types";
-import { truncateAddress, timeAgo } from "@/lib/formatters";
+import { truncateAddress } from "@/lib/formatters";
+import TimeAgo from "./TimeAgo";
 import ConnectionIndicator from "./ConnectionIndicator";
-
-const ACCOUNT_ACTIVITY_SUBSCRIPTION = `
-  subscription AccountActivity($address: String!) {
-    accountActivity(address: $address) {
-      id
-      type
-      createdAt
-      transactionHash
-      sourceAccount
-      from
-      to
-      amount
-      asset
-    }
-  }
-`;
 
 /** Cap, for the same reason `LiveFeed` has one: a long-lived tab. */
 export const MAX_ACTIVITY_LENGTH = 25;
@@ -43,18 +30,23 @@ export default function AccountActivityFeed({ address }: { address: string }) {
       // The server filters by address, but this section is labelled as being
       // about *this* account — so anything else is dropped rather than shown
       // under a heading that would make it wrong.
-      if (operation.sourceAccount !== address && operation.from !== address && operation.to !== address) {
+      if (
+        operation.sourceAccount !== address &&
+        operation.from !== address &&
+        operation.to !== address
+      ) {
         return;
       }
-      setOperations(current => {
-        if (current.some(existing => existing.id === operation.id)) return current;
+      setOperations((current) => {
+        if (current.some((existing) => existing.id === operation.id))
+          return current;
         return [operation, ...current].slice(0, MAX_ACTIVITY_LENGTH);
       });
     },
     [address],
   );
 
-  const { state, failureReason, retry } = useSubscription<{ accountActivity: Operation }>(
+  const { state, failureReason, retry } = useSubscription(
     ACCOUNT_ACTIVITY_SUBSCRIPTION,
     { address },
     prepend,
@@ -62,15 +54,24 @@ export default function AccountActivityFeed({ address }: { address: string }) {
 
   // No live connection and nothing received: the section has nothing to say,
   // and the page's server-rendered transaction table already covers history.
-  if (operations.length === 0 && (state === "disconnected" || state === "unsupported")) {
+  if (
+    operations.length === 0 &&
+    (state === "disconnected" || state === "unsupported")
+  ) {
     return null;
   }
 
   return (
     <div className="mb-9" data-testid="account-activity">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="font-extrabold text-base text-[#0e0e12]">Live Activity</h2>
-        <ConnectionIndicator state={state} failureReason={failureReason} onRetry={retry} />
+        <h2 className="font-extrabold text-base text-[#0e0e12]">
+          Live Activity
+        </h2>
+        <ConnectionIndicator
+          state={state}
+          failureReason={failureReason}
+          onRetry={retry}
+        />
       </div>
 
       <div className="rounded-xl border border-[#e5e3ea] overflow-hidden">
@@ -79,7 +80,7 @@ export default function AccountActivityFeed({ address }: { address: string }) {
             Waiting for new activity on this account&hellip;
           </div>
         ) : (
-          operations.map(operation => (
+          operations.map((operation) => (
             <div
               key={operation.id}
               className="flex items-center gap-3 px-4 py-2.5 border-b border-[#f0eff3] last:border-0"
@@ -100,7 +101,7 @@ export default function AccountActivityFeed({ address }: { address: string }) {
                   {operation.amount} {operation.asset ?? "XLM"}
                 </span>
               )}
-              <span className="ml-auto text-[11px] text-[#c3c1cb]">{timeAgo(operation.createdAt)}</span>
+              <span className="ml-auto text-[11px] text-[#c3c1cb]"><TimeAgo isoString={operation.createdAt} /></span>
             </div>
           ))
         )}

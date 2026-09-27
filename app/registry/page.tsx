@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -15,13 +15,20 @@ import { connectWallet, getConnectedAddress } from "@/lib/wallet";
 import RegisterContractForm from "@/components/RegisterContractForm";
 import OwnerContracts from "@/components/OwnerContracts";
 import RegistryEntryCard from "@/components/RegistryEntryCard";
+import BackendUnavailable from "@/components/BackendUnavailable";
 
 type Tab = "mine" | "all";
 
 // useSearchParams has to sit inside a Suspense boundary for Next to build.
 export default function RegistryPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-[#a6a3b0] text-sm">Loading registry…</div>}>
+    <Suspense
+      fallback={
+        <div className="p-8 text-center text-[#a6a3b0] text-sm">
+          Loading registry…
+        </div>
+      }
+    >
       <RegistryContent />
     </Suspense>
   );
@@ -66,13 +73,17 @@ function RegistryContent() {
   }, []);
 
   const applyEntriesError = useCallback((err: unknown) => {
-    setEntriesError(err instanceof Error ? err.message : "Couldn't reach the registry contract.");
+    setEntriesError(
+      err instanceof Error
+        ? err.message
+        : "Couldn't reach the registry contract.",
+    );
     setEntriesLoading(false);
   }, []);
 
   const loadEntries = useCallback(
     () => fetchEntries(category).then(applyEntries, applyEntriesError),
-    [category, applyEntries, applyEntriesError]
+    [category, applyEntries, applyEntriesError],
   );
 
   useEffect(() => {
@@ -81,8 +92,8 @@ function RegistryContent() {
     let cancelled = false;
 
     fetchEntries(category).then(
-      result => !cancelled && applyEntries(result),
-      err => !cancelled && applyEntriesError(err)
+      (result) => !cancelled && applyEntries(result),
+      (err) => !cancelled && applyEntriesError(err),
     );
 
     return () => {
@@ -91,9 +102,15 @@ function RegistryContent() {
   }, [category, applyEntries, applyEntriesError]);
 
   useEffect(() => {
+    const reconnect = () => { void loadEntries(); };
+    window.addEventListener("lumina:online", reconnect);
+    return () => window.removeEventListener("lumina:online", reconnect);
+  }, [loadEntries]);
+
+  useEffect(() => {
     let cancelled = false;
 
-    getConnectedAddress().then(address => {
+    getConnectedAddress().then((address) => {
       if (cancelled) return;
       setWalletAddress(address);
       if (address) setTab("mine");
@@ -107,7 +124,9 @@ function RegistryContent() {
   function handleCategory(next: Category | null) {
     if (next === category) return;
     setEntriesLoading(true);
-    router.replace(next ? `${pathname}?category=${next}` : pathname, { scroll: false });
+    router.replace(next ? `${pathname}?category=${next}` : pathname, {
+      scroll: false,
+    });
   }
 
   async function handleConnect() {
@@ -124,24 +143,32 @@ function RegistryContent() {
   }
 
   function handleRegistered() {
-    setOwnerRefresh(n => n + 1);
+    setOwnerRefresh((n) => n + 1);
     loadEntries();
   }
 
   return (
     <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
-      <h1 className="font-extrabold text-3xl mb-2 text-[#0e0e12]">Lumina Registry</h1>
+      <h1 className="font-extrabold text-3xl mb-2 text-[#0e0e12]">
+        Lumina Registry
+      </h1>
       <p className="text-[#6b6975] mb-8 max-w-[70ch]">
-        An on-chain Soroban manifest of contracts Lumina indexes. Register your contract to opt into priority indexing — permissionless, on Stellar/Soroban testnet.
+        An on-chain Soroban manifest of contracts Lumina indexes. Register your
+        contract to opt into priority indexing — permissionless, on
+        Stellar/Soroban testnet.
       </p>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-8 items-start">
         <div className="border border-[#e5e3ea] rounded-2xl p-6 bg-[#fafafa]">
-          <h2 className="font-extrabold text-base mb-[18px] text-[#0e0e12]">Register a Contract</h2>
+          <h2 className="font-extrabold text-base mb-[18px] text-[#0e0e12]">
+            Register a Contract
+          </h2>
 
           {!walletAddress ? (
             <div className="flex flex-col gap-3">
-              <p className="text-[13px] text-[#6b6975]">Connect a wallet to register and manage contracts.</p>
+              <p className="text-[13px] text-[#6b6975]">
+                Connect a wallet to register and manage contracts.
+              </p>
               <button
                 onClick={handleConnect}
                 disabled={connecting}
@@ -150,19 +177,29 @@ function RegistryContent() {
                 {connecting ? "Connecting…" : "Connect Wallet"}
               </button>
               {connectError && (
-                <div role="alert" className="text-xs text-[#dc2626] bg-[#fef2f2] rounded-lg px-3 py-2">
+                <div
+                  role="alert"
+                  className="text-xs text-[#dc2626] bg-[#fef2f2] rounded-lg px-3 py-2"
+                >
                   {connectError}
                 </div>
               )}
             </div>
           ) : (
-            <RegisterContractForm walletAddress={walletAddress} onRegistered={handleRegistered} />
+            <RegisterContractForm
+              walletAddress={walletAddress}
+              onRegistered={handleRegistered}
+            />
           )}
         </div>
 
         <div>
           <div className="flex items-center gap-1 mb-3.5" role="tablist">
-            <TabButton active={tab === "mine"} onClick={() => setTab("mine")} disabled={!walletAddress}>
+            <TabButton
+              active={tab === "mine"}
+              onClick={() => setTab("mine")}
+              disabled={!walletAddress}
+            >
               My Contracts
             </TabButton>
             <TabButton active={tab === "all"} onClick={() => setTab("all")}>
@@ -171,12 +208,23 @@ function RegistryContent() {
           </div>
 
           {tab === "all" && (
-            <div className="flex flex-wrap gap-1.5 mb-3.5" role="group" aria-label="Filter by category">
-              <CategoryChip active={category === null} onClick={() => handleCategory(null)}>
+            <div
+              className="flex flex-wrap gap-1.5 mb-3.5"
+              role="group"
+              aria-label="Filter by category"
+            >
+              <CategoryChip
+                active={category === null}
+                onClick={() => handleCategory(null)}
+              >
                 All
               </CategoryChip>
-              {CATEGORIES.map(c => (
-                <CategoryChip key={c} active={category === c} onClick={() => handleCategory(c)}>
+              {CATEGORIES.map((c) => (
+                <CategoryChip
+                  key={c}
+                  active={category === c}
+                  onClick={() => handleCategory(c)}
+                >
                   {CATEGORY_LABELS[c]}
                 </CategoryChip>
               ))}
@@ -191,15 +239,19 @@ function RegistryContent() {
                 onChanged={loadEntries}
               />
             ) : (
-              <p className="text-sm text-[#a6a3b0]">Connect a wallet to see the contracts you registered.</p>
+              <p className="text-sm text-[#a6a3b0]">
+                Connect a wallet to see the contracts you registered.
+              </p>
             )
           ) : entriesLoading ? (
             <p className="text-sm text-[#a6a3b0]">Loading registry entries…</p>
           ) : entriesError ? (
-            <p className="text-sm text-[#dc2626]">{entriesError}</p>
+            <BackendUnavailable onRetry={loadEntries} />
           ) : entries.length === 0 ? (
             <p className="text-sm text-[#a6a3b0]">
-              {category ? `No active ${CATEGORY_LABELS[category]} contracts.` : "No contracts registered yet."}
+              {category
+                ? `No active ${CATEGORY_LABELS[category]} contracts.`
+                : "No contracts registered yet."}
             </p>
           ) : (
             <div className="flex flex-col gap-2">
@@ -232,7 +284,9 @@ function TabButton({
       disabled={disabled}
       onClick={onClick}
       className={`text-sm font-extrabold px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40 ${
-        active ? "bg-[#f5f3ff] text-[#7c3aed]" : "text-[#6b6975] hover:text-[#0e0e12]"
+        active
+          ? "bg-[#f5f3ff] text-[#7c3aed]"
+          : "text-[#6b6975] hover:text-[#0e0e12]"
       }`}
     >
       {children}

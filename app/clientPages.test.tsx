@@ -22,6 +22,14 @@ vi.mock("@/lib/graphql", () => ({
   PUBLIC_GRAPHQL_URL: "http://test/graphql",
 }));
 
+vi.mock("@uiw/react-codemirror", async () => {
+  const React = await import("react");
+  return {
+    default: ({ value, onChange }: { value: string; onChange: (value: string) => void }) =>
+      React.createElement("textarea", { value, onChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => onChange(event.target.value) }),
+  };
+});
+
 import HomePage from "./page";
 import ExplorerPage from "./explorer/page";
 import TransactionsPage from "./transactions/page";

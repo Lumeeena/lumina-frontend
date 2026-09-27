@@ -1,12 +1,21 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import type { Transaction } from "@/lib/types";
 import { PRESETS_STORAGE_KEY } from "@/lib/filterPresets";
 
 const mocks = vi.hoisted(() => ({
   gqlFetch: vi.fn(),
   replace: vi.fn(),
+  parentRender: vi.fn(),
   searchParams: new URLSearchParams(),
 }));
 
@@ -18,7 +27,10 @@ vi.mock("@/lib/graphql", () => ({
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: mocks.replace, push: vi.fn() }),
-  usePathname: () => "/transactions",
+  usePathname: () => {
+    mocks.parentRender();
+    return "/transactions";
+  },
   useSearchParams: () => mocks.searchParams,
 }));
 
@@ -40,7 +52,11 @@ function tx(n: number, overrides: Partial<Transaction> = {}): Transaction {
 }
 
 /** A page response in the shape the schema actually returns. */
-function page(items: Transaction[], cursor: string | null, hasNextPage = cursor !== null) {
+function page(
+  items: Transaction[],
+  cursor: string | null,
+  hasNextPage = cursor !== null,
+) {
   return { transactions: { items, pageInfo: { hasNextPage, cursor } } };
 }
 
@@ -48,25 +64,48 @@ function rowHashes(): string[] {
   const scroll = screen.getByTestId("transaction-scroll");
   return within(scroll)
     .queryAllByRole("link")
-    .map(a => a.getAttribute("title") ?? "")
+    .map((a) => a.getAttribute("title") ?? "")
     .filter(Boolean);
 }
 
 beforeEach(() => {
   mocks.gqlFetch.mockReset();
   mocks.replace.mockReset();
+  mocks.parentRender.mockReset();
   mocks.searchParams = new URLSearchParams();
   localStorage.clear();
 
   // jsdom gives every element a zero-sized box, which would leave the
   // virtualizer with no visible window at all — it reads `offsetHeight`, so
   // stubbing only `getBoundingClientRect` renders zero rows.
-  Object.defineProperty(HTMLElement.prototype, "clientHeight", { configurable: true, value: 800 });
-  Object.defineProperty(HTMLElement.prototype, "clientWidth", { configurable: true, value: 900 });
-  Object.defineProperty(HTMLElement.prototype, "offsetHeight", { configurable: true, value: 800 });
-  Object.defineProperty(HTMLElement.prototype, "offsetWidth", { configurable: true, value: 900 });
+  Object.defineProperty(HTMLElement.prototype, "clientHeight", {
+    configurable: true,
+    value: 800,
+  });
+  Object.defineProperty(HTMLElement.prototype, "clientWidth", {
+    configurable: true,
+    value: 900,
+  });
+  Object.defineProperty(HTMLElement.prototype, "offsetHeight", {
+    configurable: true,
+    value: 800,
+  });
+  Object.defineProperty(HTMLElement.prototype, "offsetWidth", {
+    configurable: true,
+    value: 900,
+  });
   HTMLElement.prototype.getBoundingClientRect = () =>
-    ({ width: 900, height: 800, top: 0, left: 0, right: 900, bottom: 800, x: 0, y: 0, toJSON: () => {} }) as DOMRect;
+    ({
+      width: 900,
+      height: 800,
+      top: 0,
+      left: 0,
+      right: 900,
+      bottom: 800,
+      x: 0,
+      y: 0,
+      toJSON: () => {},
+    }) as DOMRect;
 
   // Neither observer exists in jsdom; the component treats an absent
   // IntersectionObserver as "use the Load more button".
@@ -97,7 +136,10 @@ describe("TransactionExplorer pagination", () => {
     await renderExplorer();
 
     expect(mocks.gqlFetch).toHaveBeenCalledTimes(1);
-    expect(mocks.gqlFetch.mock.calls[0][2]).toEqual({ limit: PAGE_SIZE, cursor: null });
+    expect(mocks.gqlFetch.mock.calls[0][2]).toEqual({
+      limit: PAGE_SIZE,
+      cursor: null,
+    });
   });
 
   it("uses the API's real cursor for the next page rather than a bigger limit", async () => {
@@ -111,7 +153,10 @@ describe("TransactionExplorer pagination", () => {
     });
 
     // This is the whole point of the issue: page two comes from the cursor.
-    expect(mocks.gqlFetch.mock.calls[1][2]).toEqual({ limit: PAGE_SIZE, cursor: "cursor-1" });
+    expect(mocks.gqlFetch.mock.calls[1][2]).toEqual({
+      limit: PAGE_SIZE,
+      cursor: "cursor-1",
+    });
     expect(rowHashes()).toEqual([tx(1).hash, tx(2).hash, tx(3).hash]);
   });
 
@@ -156,13 +201,19 @@ describe("TransactionExplorer filtering", () => {
   it("reads its filters from the URL on first render", async () => {
     mocks.searchParams = new URLSearchParams("status=failed");
     mocks.gqlFetch.mockResolvedValue(
-      page([tx(1, { successful: true }), tx(2, { successful: false })], null, false),
+      page(
+        [tx(1, { successful: true }), tx(2, { successful: false })],
+        null,
+        false,
+      ),
     );
 
     await renderExplorer();
 
     expect(rowHashes()).toEqual([tx(2).hash]);
-    expect(screen.getByTestId("result-count").textContent).toBe("1 of 2 loaded");
+    expect(screen.getByTestId("result-count").textContent).toBe(
+      "1 of 2 loaded",
+    );
   });
 
   it("writes a filter change to the URL so the view is shareable", async () => {
@@ -173,19 +224,25 @@ describe("TransactionExplorer filtering", () => {
       fireEvent.click(screen.getByRole("button", { name: "failed" }));
     });
 
-    expect(mocks.replace).toHaveBeenCalledWith("/transactions?status=failed", { scroll: false });
+    expect(mocks.replace).toHaveBeenCalledWith("/transactions?status=failed", {
+      scroll: false,
+    });
   });
 
   it("clears back to a bare path rather than an empty query string", async () => {
     mocks.searchParams = new URLSearchParams("status=failed");
-    mocks.gqlFetch.mockResolvedValue(page([tx(1, { successful: false })], null, false));
+    mocks.gqlFetch.mockResolvedValue(
+      page([tx(1, { successful: false })], null, false),
+    );
     await renderExplorer();
 
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: /clear 1 filter/i }));
     });
 
-    expect(mocks.replace).toHaveBeenCalledWith("/transactions", { scroll: false });
+    expect(mocks.replace).toHaveBeenCalledWith("/transactions", {
+      scroll: false,
+    });
   });
 
   it("keeps pulling pages when a filter leaves too few matches to show", async () => {
@@ -204,34 +261,46 @@ describe("TransactionExplorer filtering", () => {
 
   it("gives up chasing rather than walking the whole chain for a filter that matches nothing", async () => {
     mocks.searchParams = new URLSearchParams("source=NOTHINGMATCHESTHIS");
-    mocks.gqlFetch.mockImplementation(async () => page([tx(Math.random())], "more"));
+    mocks.gqlFetch.mockImplementation(async () =>
+      page([tx(Math.random())], "more"),
+    );
 
     await renderExplorer();
 
-    await waitFor(() => expect(mocks.gqlFetch.mock.calls.length).toBeGreaterThan(1));
+    await waitFor(() =>
+      expect(mocks.gqlFetch.mock.calls.length).toBeGreaterThan(1),
+    );
     // Bounded: the first page plus a capped number of auto-loads.
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise((resolve) => setTimeout(resolve, 50));
     expect(mocks.gqlFetch.mock.calls.length).toBeLessThanOrEqual(7);
   });
 
   it("says the filters matched nothing, not that nothing is indexed", async () => {
     mocks.searchParams = new URLSearchParams("status=failed");
-    mocks.gqlFetch.mockResolvedValue(page([tx(1, { successful: true })], null, false));
+    mocks.gqlFetch.mockResolvedValue(
+      page([tx(1, { successful: true })], null, false),
+    );
 
     await renderExplorer();
 
-    expect(screen.getByText(/no transactions match these filters/i)).toBeTruthy();
+    expect(
+      screen.getByText(/no transactions match these filters/i),
+    ).toBeTruthy();
   });
 });
 
 describe("TransactionExplorer presets", () => {
   it("saves a named preset and offers it back", async () => {
     mocks.searchParams = new URLSearchParams("status=failed");
-    mocks.gqlFetch.mockResolvedValue(page([tx(1, { successful: false })], null, false));
+    mocks.gqlFetch.mockResolvedValue(
+      page([tx(1, { successful: false })], null, false),
+    );
     await renderExplorer();
 
     await act(async () => {
-      fireEvent.change(screen.getByLabelText("Preset name"), { target: { value: "My failures" } });
+      fireEvent.change(screen.getByLabelText("Preset name"), {
+        target: { value: "My failures" },
+      });
       fireEvent.click(screen.getByRole("button", { name: /save preset/i }));
     });
 
@@ -264,7 +333,9 @@ describe("TransactionExplorer presets", () => {
       fireEvent.click(screen.getByRole("button", { name: "Big batches" }));
     });
 
-    expect(mocks.replace).toHaveBeenCalledWith("/transactions?minOps=5", { scroll: false });
+    expect(mocks.replace).toHaveBeenCalledWith("/transactions?minOps=5", {
+      scroll: false,
+    });
   });
 
   it("deletes a preset", async () => {
@@ -276,7 +347,9 @@ describe("TransactionExplorer presets", () => {
     await renderExplorer();
 
     await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: "Delete preset Doomed" }));
+      fireEvent.click(
+        screen.getByRole("button", { name: "Delete preset Doomed" }),
+      );
     });
 
     expect(screen.queryByRole("button", { name: "Doomed" })).toBeNull();
@@ -307,7 +380,8 @@ describe("TransactionExplorer virtualization", () => {
       .getByTestId("transaction-scroll")
       .querySelectorAll('tr[aria-hidden="true"] > td');
     const reserved = Array.from(spacers).reduce(
-      (total, cell) => total + parseFloat((cell as HTMLElement).style.height || "0"),
+      (total, cell) =>
+        total + parseFloat((cell as HTMLElement).style.height || "0"),
       0,
     );
     const renderedHeight = rowHashes().length * 41;
@@ -323,6 +397,7 @@ describe("TransactionExplorer virtualization", () => {
     await renderExplorer();
 
     const before = rowHashes();
+    const parentRendersBeforeScroll = mocks.parentRender.mock.calls.length;
     const scroll = screen.getByTestId("transaction-scroll");
 
     await act(async () => {
@@ -332,6 +407,10 @@ describe("TransactionExplorer virtualization", () => {
 
     const after = rowHashes();
     expect(after).not.toEqual(before);
+    // Virtualizer state updates stay in the child: filters/presets do not render.
+    expect(mocks.parentRender.mock.calls.length).toBe(
+      parentRendersBeforeScroll,
+    );
     expect(after.length).toBeGreaterThan(0);
   });
 });

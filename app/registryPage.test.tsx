@@ -14,6 +14,7 @@ import userEvent from "@testing-library/user-event";
 const connectWallet = vi.hoisted(() => vi.fn());
 const getConnectedAddress = vi.hoisted(() => vi.fn());
 const getActiveProfiles = vi.hoisted(() => vi.fn());
+const getSlashes = vi.hoisted(() => vi.fn());
 const getContractsByOwner = vi.hoisted(() => vi.fn());
 const getSlashes = vi.hoisted(() => vi.fn());
 const nav = vi.hoisted(() => ({ query: "", replace: vi.fn() }));
@@ -32,7 +33,8 @@ vi.mock("@/lib/wallet", () => ({
 }));
 
 vi.mock("@/lib/registry", async () => {
-  const actual = await vi.importActual<typeof import("@/lib/registry")>("@/lib/registry");
+  const actual =
+    await vi.importActual<typeof import("@/lib/registry")>("@/lib/registry");
   return {
     ...actual,
     getActiveProfiles,
@@ -90,20 +92,30 @@ describe("RegistryPage", () => {
   it("offers connection and the global list when no wallet is connected", async () => {
     render(<RegistryPage />);
 
-    expect(await screen.findByRole("button", { name: /connect wallet/i })).toBeTruthy();
+    expect(
+      await screen.findByRole("button", { name: /connect wallet/i }),
+    ).toBeTruthy();
     expect(await screen.findByText("Global Protocol")).toBeTruthy();
     // Nothing owner-scoped is reachable without a wallet.
-    expect(screen.getByRole("tab", { name: /my contracts/i }).hasAttribute("disabled")).toBe(true);
+    expect(
+      screen
+        .getByRole("tab", { name: /my contracts/i })
+        .hasAttribute("disabled"),
+    ).toBe(true);
   });
 
   it("shows the reputation signal an entry carries: verified and stake", async () => {
-    getActiveProfiles.mockResolvedValue([profile("Staked One", { stake: BigInt(12_500_000_000), verified: true })]);
+    getActiveProfiles.mockResolvedValue([
+      profile("Staked One", { stake: BigInt(12_500_000_000), verified: true }),
+    ]);
 
     render(<RegistryPage />);
 
     await screen.findByText("Staked One");
     // Icon *and* text — never colour alone.
-    expect(await screen.findByRole("img", { name: /attested by registry governance/i })).toBeTruthy();
+    expect(
+      await screen.findByTitle("Attested by registry governance"),
+    ).toBeTruthy();
     expect(screen.getByText("Verified")).toBeTruthy();
     expect(screen.getByText("Staked 1,250 XLM")).toBeTruthy();
   });
@@ -119,9 +131,15 @@ describe("RegistryPage", () => {
   });
 
   it("loads slash history on expand and shows reasons with their ledgers", async () => {
-    getActiveProfiles.mockResolvedValue([profile("Slashed One", { slashedTotal: BigInt(100_000_000) })]);
+    getActiveProfiles.mockResolvedValue([
+      profile("Slashed One", { slashedTotal: BigInt(100_000_000) }),
+    ]);
     getSlashes.mockResolvedValue([
-      { amount: BigInt(100_000_000), reason: "Stale event schema", slashedAt: 9000 },
+      {
+        amount: BigInt(100_000_000),
+        reason: "Stale event schema",
+        slashedAt: 9000,
+      },
     ]);
 
     render(<RegistryPage />);
@@ -129,7 +147,9 @@ describe("RegistryPage", () => {
     await screen.findByText("Slashed One");
     // Lazy: the per-contract read happens on expand, not for the whole list.
     expect(getSlashes).not.toHaveBeenCalled();
-    await userEvent.click(screen.getByRole("button", { name: /slash history/i }));
+    await userEvent.click(
+      screen.getByRole("button", { name: /slash history/i }),
+    );
 
     // The reason sits beside the amount in one line, so match the words rather
     // than the whole element.
@@ -140,7 +160,9 @@ describe("RegistryPage", () => {
   });
 
   it("shows the lifetime slashed total from the profile read, without a per-row fetch", async () => {
-    getActiveProfiles.mockResolvedValue([profile("Slashed One", { slashedTotal: BigInt(250_000_000) })]);
+    getActiveProfiles.mockResolvedValue([
+      profile("Slashed One", { slashedTotal: BigInt(250_000_000) }),
+    ]);
 
     render(<RegistryPage />);
 
@@ -152,7 +174,9 @@ describe("RegistryPage", () => {
     connectWallet.mockResolvedValue({ address: OWNER });
     render(<RegistryPage />);
 
-    await userEvent.click(await screen.findByRole("button", { name: /connect wallet/i }));
+    await userEvent.click(
+      await screen.findByRole("button", { name: /connect wallet/i }),
+    );
 
     // Connecting switches to My Contracts, since that is why you connected.
     expect(await screen.findByText("My Protocol")).toBeTruthy();
@@ -163,11 +187,17 @@ describe("RegistryPage", () => {
     connectWallet.mockResolvedValue({ error: "Modal closed" });
     render(<RegistryPage />);
 
-    await userEvent.click(await screen.findByRole("button", { name: /connect wallet/i }));
+    await userEvent.click(
+      await screen.findByRole("button", { name: /connect wallet/i }),
+    );
 
-    expect((await screen.findByRole("alert")).textContent).toContain("Modal closed");
+    expect((await screen.findByRole("alert")).textContent).toContain(
+      "Modal closed",
+    );
     // Still offering to connect, rather than stuck mid-flow.
-    expect(screen.getByRole("button", { name: /connect wallet/i })).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: /connect wallet/i }),
+    ).toBeTruthy();
   });
 
   it("opens on the owner dashboard when a wallet is already connected", async () => {
@@ -183,16 +213,22 @@ describe("RegistryPage", () => {
     render(<RegistryPage />);
 
     await screen.findByText("My Protocol");
-    await userEvent.click(screen.getByRole("tab", { name: /recently registered/i }));
+    await userEvent.click(
+      screen.getByRole("tab", { name: /recently registered/i }),
+    );
 
     expect(await screen.findByText("Global Protocol")).toBeTruthy();
   });
 
   it("surfaces a failed registry read on the global list", async () => {
-    getActiveProfiles.mockRejectedValue(new Error("Registry simulation failed"));
+    getActiveProfiles.mockRejectedValue(
+      new Error("Registry simulation failed"),
+    );
     render(<RegistryPage />);
 
-    await waitFor(() => expect(screen.getByText("Registry simulation failed")).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText("Registry simulation failed")).toBeTruthy(),
+    );
   });
 
   it("narrows the list to the category named in the URL", async () => {
@@ -212,9 +248,13 @@ describe("RegistryPage", () => {
   it("writes the chosen category to the URL", async () => {
     render(<RegistryPage />);
 
-    await userEvent.click(await screen.findByRole("button", { name: "Gaming" }));
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Gaming" }),
+    );
 
-    expect(nav.replace).toHaveBeenCalledWith("/registry?category=Gaming", { scroll: false });
+    expect(nav.replace).toHaveBeenCalledWith("/registry?category=Gaming", {
+      scroll: false,
+    });
   });
 
   it("renders categories where present and no gap where absent", async () => {

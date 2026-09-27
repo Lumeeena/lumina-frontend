@@ -3,6 +3,9 @@ import type { Metadata } from "next";
 import { routeMetadata } from "@/lib/metadata";
 import { EXPLORER } from "@/lib/routes";
 import TransactionExplorer from "@/components/TransactionExplorer";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Account Explorer | Lumina", description: "Search Stellar accounts and browse recent transactions." };
 
 export const dynamic = 'force-dynamic';
 

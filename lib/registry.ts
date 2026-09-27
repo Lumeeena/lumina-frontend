@@ -12,16 +12,28 @@
  * unregistered address rather than erroring, which is the truth for a contract
  * that was never registered.
  */
-import { Contract, nativeToScVal, rpc, scValToNative, TransactionBuilder, xdr } from '@stellar/stellar-sdk';
+import {
+  Contract,
+  nativeToScVal,
+  rpc,
+  scValToNative,
+  TransactionBuilder,
+  xdr,
+} from "@stellar/stellar-sdk";
 
 export const REGISTRY_CONTRACT_ID =
-  process.env.NEXT_PUBLIC_REGISTRY_CONTRACT_ID ?? 'CAYUDQPV3RKPM3EXDFGI3457FV677JLUCJ4OLKWGCUBPRIHYKXK3WFAZ';
-export const SOROBAN_RPC_URL = process.env.NEXT_PUBLIC_SOROBAN_RPC_URL ?? 'https://soroban-testnet.stellar.org';
+  process.env.NEXT_PUBLIC_REGISTRY_CONTRACT_ID ??
+  "CAYUDQPV3RKPM3EXDFGI3457FV677JLUCJ4OLKWGCUBPRIHYKXK3WFAZ";
+export const SOROBAN_RPC_URL =
+  process.env.NEXT_PUBLIC_SOROBAN_RPC_URL ??
+  "https://soroban-testnet.stellar.org";
 export const NETWORK_PASSPHRASE =
-  process.env.NEXT_PUBLIC_NETWORK_PASSPHRASE ?? 'Test SDF Network ; September 2015';
+  process.env.NEXT_PUBLIC_NETWORK_PASSPHRASE ??
+  "Test SDF Network ; September 2015";
 // Any funded testnet account works here — simulation doesn't sign or spend.
 const DEFAULT_READ_ACCOUNT =
-  process.env.NEXT_PUBLIC_REGISTRY_READ_ACCOUNT ?? 'GBWKFFXZ5CJESIHP2EOID5IOXMF472RO5XOJ36X475D5LJGI3AF5R5KY';
+  process.env.NEXT_PUBLIC_REGISTRY_READ_ACCOUNT ??
+  "GBWKFFXZ5CJESIHP2EOID5IOXMF472RO5XOJ36X475D5LJGI3AF5R5KY";
 
 export interface RegistryEntry {
   contractId: string;
@@ -34,39 +46,66 @@ export interface RegistryEntry {
   categories?: Category[];
 }
 
+export interface RegistryReputation {
+  stake: bigint;
+  verified: boolean;
+  slashedTotal: bigint;
+  withdrawLockedUntil: number;
+}
+
+export interface RegistryProfile extends RegistryEntry {
+  reputation: RegistryReputation;
+}
+
+export interface SlashRecord {
+  amount: bigint;
+  reason: string;
+  slashedAt: number;
+}
+
+interface ReputationScVal {
+  stake: bigint;
+  verified: boolean;
+  slashed_total: bigint;
+  withdraw_locked_until: number;
+}
+
 /** The contract's `Category` vocabulary, in declaration order. */
 export const CATEGORIES = [
-  'DeFi',
-  'Nft',
-  'Gaming',
-  'Identity',
-  'Infrastructure',
-  'Payments',
-  'Oracle',
-  'Dao',
-  'Other',
+  "DeFi",
+  "Nft",
+  "Gaming",
+  "Identity",
+  "Infrastructure",
+  "Payments",
+  "Oracle",
+  "Dao",
+  "Other",
 ] as const;
 
 export type Category = (typeof CATEGORIES)[number];
 
 export const CATEGORY_LABELS: Record<Category, string> = {
-  DeFi: 'DeFi',
-  Nft: 'NFT',
-  Gaming: 'Gaming',
-  Identity: 'Identity',
-  Infrastructure: 'Infrastructure',
-  Payments: 'Payments',
-  Oracle: 'Oracle',
-  Dao: 'DAO',
-  Other: 'Other',
+  DeFi: "DeFi",
+  Nft: "NFT",
+  Gaming: "Gaming",
+  Identity: "Identity",
+  Infrastructure: "Infrastructure",
+  Payments: "Payments",
+  Oracle: "Oracle",
+  Dao: "DAO",
+  Other: "Other",
 };
 
-export function isCategory(value: string | null | undefined): value is Category {
-  return CATEGORIES.some(c => c === value);
+export function isCategory(
+  value: string | null | undefined,
+): value is Category {
+  return CATEGORIES.some((c) => c === value);
 }
 
 /** A unit-variant `#[contracttype]` enum crosses the wire as `ScVec[Symbol]`. */
-const categoryToScVal = (category: Category) => xdr.ScVal.scvVec([xdr.ScVal.scvSymbol(category)]);
+const categoryToScVal = (category: Category) =>
+  xdr.ScVal.scvVec([xdr.ScVal.scvSymbol(category)]);
 
 interface ContractEntryScVal {
   active: boolean;
@@ -115,12 +154,12 @@ async function simulate(
   registryContractId: string,
   rpcUrl: string,
   readAccount: string,
-  networkPassphrase: string
+  networkPassphrase: string,
 ): Promise<xdr.ScVal> {
   const server = new rpc.Server(rpcUrl);
   const account = await server.getAccount(readAccount);
   const contract = new Contract(registryContractId);
-  const tx = new TransactionBuilder(account, { fee: '100', networkPassphrase })
+  const tx = new TransactionBuilder(account, { fee: "100", networkPassphrase })
     .addOperation(contract.call(method, ...args))
     .setTimeout(30)
     .build();
@@ -140,11 +179,15 @@ async function simulate(
  * `leadingArgs` are whatever the method takes *before* the pagination pair.
  */
 async function readEntryPages<T>(
-  { method, leadingArgs, decode }: RegistryView & { decode: (entry: ContractEntryScVal) => T },
+  {
+    method,
+    leadingArgs,
+    decode,
+  }: RegistryView & { decode: (entry: ContractEntryScVal) => T },
   registryContractId: string,
   rpcUrl: string,
   readAccount: string,
-  networkPassphrase: string
+  networkPassphrase: string,
 ): Promise<T[]> {
   const entries: T[] = [];
 
@@ -154,13 +197,13 @@ async function readEntryPages<T>(
       method,
       [
         ...leadingArgs,
-        nativeToScVal(offset, { type: 'u32' }),
-        nativeToScVal(PAGE_LIMIT, { type: 'u32' }),
+        nativeToScVal(offset, { type: "u32" }),
+        nativeToScVal(PAGE_LIMIT, { type: "u32" }),
       ],
       registryContractId,
       rpcUrl,
       readAccount,
-      networkPassphrase
+      networkPassphrase,
     );
 
     const batch = scValToNative(retval) as ContractEntryScVal[];
@@ -185,14 +228,18 @@ export async function getContractsByOwner(
   registryContractId: string = REGISTRY_CONTRACT_ID,
   rpcUrl: string = SOROBAN_RPC_URL,
   readAccount: string = DEFAULT_READ_ACCOUNT,
-  networkPassphrase: string = NETWORK_PASSPHRASE
+  networkPassphrase: string = NETWORK_PASSPHRASE,
 ): Promise<RegistryEntry[]> {
   return readEntryPages(
-    { method: 'get_contracts_by_owner', leadingArgs: [nativeToScVal(owner, { type: 'address' })], decode: toRegistryEntry },
+    {
+      method: "get_contracts_by_owner",
+      leadingArgs: [nativeToScVal(owner, { type: "address" })],
+      decode: toRegistryEntry,
+    },
     registryContractId,
     rpcUrl,
     readAccount,
-    networkPassphrase
+    networkPassphrase,
   );
 }
 
@@ -200,14 +247,18 @@ export async function getActiveContracts(
   registryContractId: string = REGISTRY_CONTRACT_ID,
   rpcUrl: string = SOROBAN_RPC_URL,
   readAccount: string = DEFAULT_READ_ACCOUNT,
-  networkPassphrase: string = NETWORK_PASSPHRASE
+  networkPassphrase: string = NETWORK_PASSPHRASE,
 ): Promise<RegistryEntry[]> {
   return readEntryPages(
-    { method: 'get_active_contracts', leadingArgs: [], decode: toRegistryEntry },
+    {
+      method: "get_active_contracts",
+      leadingArgs: [],
+      decode: toRegistryEntry,
+    },
     registryContractId,
     rpcUrl,
     readAccount,
-    networkPassphrase
+    networkPassphrase,
   );
 }
 
@@ -220,7 +271,7 @@ export async function getActiveContractsByCategory(
   registryContractId: string = REGISTRY_CONTRACT_ID,
   rpcUrl: string = SOROBAN_RPC_URL,
   readAccount: string = DEFAULT_READ_ACCOUNT,
-  networkPassphrase: string = NETWORK_PASSPHRASE
+  networkPassphrase: string = NETWORK_PASSPHRASE,
 ): Promise<RegistryEntry[]> {
   return readEntryPages(
     {
@@ -231,7 +282,7 @@ export async function getActiveContractsByCategory(
     registryContractId,
     rpcUrl,
     readAccount,
-    networkPassphrase
+    networkPassphrase,
   );
 }
 
@@ -254,17 +305,27 @@ export async function withCategories<T extends RegistryEntry>(
     const contract = new Contract(registryContractId);
 
     return await Promise.all(
-      entries.map(async entry => {
-        const tx = new TransactionBuilder(account, { fee: '100', networkPassphrase })
-          .addOperation(contract.call('get_categories', nativeToScVal(entry.contractId, { type: 'address' })))
+      entries.map(async (entry) => {
+        const tx = new TransactionBuilder(account, {
+          fee: "100",
+          networkPassphrase,
+        })
+          .addOperation(
+            contract.call(
+              "get_categories",
+              nativeToScVal(entry.contractId, { type: "address" }),
+            ),
+          )
           .setTimeout(30)
           .build();
         const sim = await server.simulateTransaction(tx);
         if (rpc.Api.isSimulationError(sim)) return entry;
         const raw = scValToNative(sim.result!.retval) as (string | string[])[];
-        const categories = raw.map(c => (Array.isArray(c) ? c[0] : c)).filter(isCategory);
+        const categories = raw
+          .map((c) => (Array.isArray(c) ? c[0] : c))
+          .filter(isCategory);
         return { ...entry, categories };
-      })
+      }),
     );
   } catch {
     return entries;
@@ -314,13 +375,16 @@ export async function getStakeInfo(
   registryContractId: string = REGISTRY_CONTRACT_ID,
   rpcUrl: string = SOROBAN_RPC_URL,
   readAccount: string = DEFAULT_READ_ACCOUNT,
-  networkPassphrase: string = NETWORK_PASSPHRASE
+  networkPassphrase: string = NETWORK_PASSPHRASE,
 ): Promise<StakeInfo> {
   const server = new rpc.Server(rpcUrl);
   const account = await server.getAccount(readAccount);
-  const tx = new TransactionBuilder(account, { fee: '100', networkPassphrase })
+  const tx = new TransactionBuilder(account, { fee: "100", networkPassphrase })
     .addOperation(
-      new Contract(registryContractId).call('get_reputation', nativeToScVal(contractId, { type: 'address' }))
+      new Contract(registryContractId).call(
+        "get_reputation",
+        nativeToScVal(contractId, { type: "address" }),
+      ),
     )
     .setTimeout(30)
     .build();
@@ -329,7 +393,10 @@ export async function getStakeInfo(
   if (rpc.Api.isSimulationError(sim)) {
     throw new Error(`Registry simulation failed: ${sim.error}`);
   }
-  const rep = scValToNative(sim.result!.retval) as { stake: bigint; withdraw_locked_until: number };
+  const rep = scValToNative(sim.result!.retval) as {
+    stake: bigint;
+    withdraw_locked_until: number;
+  };
   const { sequence } = await server.getLatestLedger();
 
   return {
@@ -351,14 +418,18 @@ export async function getActiveProfiles(
   registryContractId: string = REGISTRY_CONTRACT_ID,
   rpcUrl: string = SOROBAN_RPC_URL,
   readAccount: string = DEFAULT_READ_ACCOUNT,
-  networkPassphrase: string = NETWORK_PASSPHRASE
+  networkPassphrase: string = NETWORK_PASSPHRASE,
 ): Promise<RegistryProfile[]> {
   return readEntryPages(
-    { method: 'get_active_profiles', leadingArgs: [], decode: toRegistryProfile },
+    {
+      method: "get_active_profiles",
+      leadingArgs: [],
+      decode: toRegistryProfile,
+    },
     registryContractId,
     rpcUrl,
     readAccount,
-    networkPassphrase
+    networkPassphrase,
   );
 }
 
@@ -375,15 +446,15 @@ export async function getReputation(
   registryContractId: string = REGISTRY_CONTRACT_ID,
   rpcUrl: string = SOROBAN_RPC_URL,
   readAccount: string = DEFAULT_READ_ACCOUNT,
-  networkPassphrase: string = NETWORK_PASSPHRASE
+  networkPassphrase: string = NETWORK_PASSPHRASE,
 ): Promise<RegistryReputation> {
   const retval = await simulate(
-    'get_reputation',
-    [nativeToScVal(contractId, { type: 'address' })],
+    "get_reputation",
+    [nativeToScVal(contractId, { type: "address" })],
     registryContractId,
     rpcUrl,
     readAccount,
-    networkPassphrase
+    networkPassphrase,
   );
   return toReputation(scValToNative(retval) as ReputationScVal);
 }
@@ -399,15 +470,15 @@ export async function getSlashes(
   registryContractId: string = REGISTRY_CONTRACT_ID,
   rpcUrl: string = SOROBAN_RPC_URL,
   readAccount: string = DEFAULT_READ_ACCOUNT,
-  networkPassphrase: string = NETWORK_PASSPHRASE
+  networkPassphrase: string = NETWORK_PASSPHRASE,
 ): Promise<SlashRecord[]> {
   const retval = await simulate(
-    'get_slashes',
-    [nativeToScVal(contractId, { type: 'address' })],
+    "get_slashes",
+    [nativeToScVal(contractId, { type: "address" })],
     registryContractId,
     rpcUrl,
     readAccount,
-    networkPassphrase
+    networkPassphrase,
   );
   return (scValToNative(retval) as SlashRecordScVal[]).map(toSlashRecord);
 }
@@ -424,7 +495,10 @@ export function toRegistryEntry(e: ContractEntryScVal): RegistryEntry {
 }
 
 export function toRegistryProfile(e: ContractEntryScVal): RegistryProfile {
-  return { ...toRegistryEntry(e), reputation: toReputation(e.reputation ?? zeroReputation()) };
+  return {
+    ...toRegistryEntry(e),
+    reputation: toReputation(e.reputation ?? zeroReputation()),
+  };
 }
 
 export function toReputation(r: ReputationScVal): RegistryReputation {
@@ -447,5 +521,10 @@ export function toSlashRecord(s: SlashRecordScVal): SlashRecord {
 /** What the contract stores for a registration that has no reputation record yet. */
 function zeroReputation(): ReputationScVal {
   // BigInt literals need an ES2020 target; this project builds for ES2017.
-  return { stake: BigInt(0), verified: false, slashed_total: BigInt(0), withdraw_locked_until: 0 };
+  return {
+    stake: BigInt(0),
+    verified: false,
+    slashed_total: BigInt(0),
+    withdraw_locked_until: 0,
+  };
 }

@@ -1,12 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import {
   SubscriptionClient,
   deriveWebSocketUrl,
   type ConnectionState,
   type FailureReason,
 } from "./subscriptions";
+import type { TypedDocumentString } from "./generated/graphql";
 import { PUBLIC_GRAPHQL_URL } from "./graphql";
 
 /**
@@ -17,7 +24,8 @@ import { PUBLIC_GRAPHQL_URL } from "./graphql";
  * `NEXT_PUBLIC_GRAPHQL_WS_URL` when they differ.
  */
 export const PUBLIC_GRAPHQL_WS_URL =
-  process.env.NEXT_PUBLIC_GRAPHQL_WS_URL ?? deriveWebSocketUrl(PUBLIC_GRAPHQL_URL);
+  process.env.NEXT_PUBLIC_GRAPHQL_WS_URL ??
+  deriveWebSocketUrl(PUBLIC_GRAPHQL_URL);
 
 let shared: SubscriptionClient | null = null;
 
@@ -39,7 +47,9 @@ export function getSubscriptionClient(): SubscriptionClient {
 }
 
 /** Test seam: swap in a client with an injected socket, or reset to default. */
-export function __setSubscriptionClient(client: SubscriptionClient | null): void {
+export function __setSubscriptionClient(
+  client: SubscriptionClient | null,
+): void {
   shared = client;
 }
 
@@ -61,11 +71,12 @@ export interface UseSubscriptionResult<T> {
  * caller passing an inline arrow function does not tear down and re-open the
  * subscription on every render.
  */
-export function useSubscription<T>(
-  query: string,
-  variables: Record<string, unknown> | undefined,
+export function useSubscription<T, V extends Record<string, unknown>>(
+  document: TypedDocumentString<T, V>,
+  variables: Record<string, never> extends V ? V | undefined : V,
   onData?: (data: T) => void,
 ): UseSubscriptionResult<T> {
+  const query = document.toString();
   const client = getSubscriptionClient();
   const [latest, setLatest] = useState<T | null>(null);
   const [error, setError] = useState<Error | null>(null);
@@ -74,7 +85,7 @@ export function useSubscription<T>(
   // than have the effect mirror it into local state — that mirroring is what
   // makes a subscribed component render twice and drift for a frame.
   const state = useSyncExternalStore<ConnectionState>(
-    useCallback(notify => client.onStateChange(notify), [client]),
+    useCallback((notify) => client.onStateChange(notify), [client]),
     useCallback(() => client.getState(), [client]),
     // No socket exists during a server render.
     useCallback(() => "idle" as ConnectionState, []),
@@ -93,10 +104,13 @@ export function useSubscription<T>(
   const variablesKey = JSON.stringify(variables ?? null);
 
   useEffect(() => {
-    const parsed = variablesKey === "null" ? undefined : (JSON.parse(variablesKey) as Record<string, unknown>);
+    const parsed =
+      variablesKey === "null"
+        ? undefined
+        : (JSON.parse(variablesKey) as Record<string, unknown>);
 
     const stop = client.subscribe<T>(query, parsed, {
-      onData: data => {
+      onData: (data) => {
         setLatest(data);
         setError(null);
         onDataRef.current?.(data);
@@ -109,5 +123,11 @@ export function useSubscription<T>(
 
   const retry = useCallback(() => client.retryNow(), [client]);
 
-  return { latest, state, failureReason: client.getFailureReason(), retry, error };
+  return {
+    latest,
+    state,
+    failureReason: client.getFailureReason(),
+    retry,
+    error,
+  };
 }

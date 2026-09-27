@@ -15,10 +15,25 @@ export function timeAgo(isoString: string): string {
   return `${days}d ago`;
 }
 
+export function absoluteTime(isoString: string): string {
+  return new Date(isoString).toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    timeZoneName: "short",
+  });
+}
+
 export function formatXLM(amount: string): string {
   const num = parseFloat(amount);
   if (isNaN(num)) return amount;
-  return num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 7 });
+  return num.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 7,
+  });
 }
 
 /**
@@ -46,7 +61,7 @@ export function formatStroops(stroops: bigint | number | string): string {
 export function formatOperationType(type: string): string {
   return type
     .split("_")
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
 }
 

@@ -1,4 +1,6 @@
-'use client';
+"use client";
+
+import { AccountTransactionsDocument as ACCOUNT_TRANSACTIONS_QUERY } from "@/lib/generated/graphql";
 
 /**
  * An account's transactions, paginated.
@@ -13,7 +15,8 @@
 import { useCallback, useState } from 'react';
 import { gqlFetch, PUBLIC_GRAPHQL_URL } from '@/lib/graphql';
 import type { Transaction } from '@/lib/types';
-import { timeAgo, truncateAddress } from '@/lib/formatters';
+import { truncateAddress } from '@/lib/formatters';
+import TimeAgo from './TimeAgo';
 import LoadMoreFooter from './LoadMoreFooter';
 
 const ACCOUNT_TRANSACTIONS_QUERY = `
@@ -35,7 +38,8 @@ export const SEED_LIMIT = 10;
 /** Each load more widens the window: 10 → 25 → 60 → 150 → 375. */
 const LIMIT_STEPS = [10, 25, 60, 150, 375];
 
-const th = 'text-left text-[11px] tracking-[0.06em] uppercase text-[#a6a3b0] px-3 py-2.5 border-b border-[#e5e3ea] bg-[#fafafa]';
+const th =
+  "text-left text-[11px] tracking-[0.06em] uppercase text-[#a6a3b0] px-3 py-2.5 border-b border-[#e5e3ea] bg-[#fafafa]";
 
 export default function AccountTransactionList({
   address,
@@ -60,21 +64,22 @@ export default function AccountTransactionList({
     setLoading(true);
     setError(null);
     try {
-      const data = await gqlFetch<{ account: { transactions: Transaction[] } }>(
+      const data = await gqlFetch(
         PUBLIC_GRAPHQL_URL,
         ACCOUNT_TRANSACTIONS_QUERY,
-        { address, limit: LIMIT_STEPS[step + 1] }
+        { address, limit: LIMIT_STEPS[step + 1] },
       );
-      const fetched = data.account.transactions;
-      setRows(prev => {
+      const fetched = data.account?.transactions;
+      if (!fetched) throw new Error("Account transactions unavailable");
+      setRows((prev) => {
         // The re-read overlaps what is shown (and new transactions may have
         // shifted it); a hash already shown is never rendered twice.
-        const seen = new Set(prev.map(tx => tx.hash));
-        return [...prev, ...fetched.filter(tx => !seen.has(tx.hash))];
+        const seen = new Set(prev.map((tx) => tx.hash));
+        return [...prev, ...fetched.filter((tx) => !seen.has(tx.hash))];
       });
-      setStep(s => s + 1);
+      setStep((s) => s + 1);
     } catch {
-      setError('Could not load more transactions.');
+      setError("Could not load more transactions.");
     } finally {
       setLoading(false);
     }
@@ -98,20 +103,33 @@ export default function AccountTransactionList({
         <table className="w-full text-sm border-collapse">
           <thead>
             <tr>
-              <th className={th}>Hash</th><th className={th}>Ledger</th><th className={th}>Ops</th><th className={th}>Time</th>
+              <th className={th}>Hash</th>
+              <th className={th}>Ledger</th>
+              <th className={th}>Ops</th>
+              <th className={th}>Time</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map(tx => (
-              <tr key={tx.hash} className="border-b border-[#f0eff3] last:border-0">
+            {rows.map((tx) => (
+              <tr
+                key={tx.hash}
+                className="border-b border-[#f0eff3] last:border-0"
+              >
                 <td className="py-2.5 px-3">
-                  <a href={`https://stellar.expert/explorer/public/tx/${tx.hash}`} target="_blank" rel="noopener noreferrer" className="mono text-xs text-[#7c3aed] hover:text-[#6d28d9] hover:underline transition-colors">
+                  <a
+                    href={`https://stellar.expert/explorer/public/tx/${tx.hash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mono text-xs text-[#7c3aed] hover:text-[#6d28d9] hover:underline transition-colors"
+                  >
                     {truncateAddress(tx.hash, 6)}
                   </a>
                 </td>
-                <td className="py-2.5 px-3 mono text-xs">{tx.ledger.toLocaleString()}</td>
+                <td className="py-2.5 px-3 mono text-xs">
+                  {tx.ledger.toLocaleString()}
+                </td>
                 <td className="py-2.5 px-3 text-xs">{tx.operationCount}</td>
-                <td className="py-2.5 px-3 text-xs text-[#c3c1cb]">{timeAgo(tx.createdAt)}</td>
+                <td className="py-2.5 px-3 text-xs text-[#c3c1cb]"><TimeAgo isoString={tx.createdAt} /></td>
               </tr>
             ))}
           </tbody>
