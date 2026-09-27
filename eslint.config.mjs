@@ -15,6 +15,7 @@ const eslintConfig = defineConfig([
     // Generated test output — istanbul's HTML report ships its own bundled
     // scripts, which have nothing to do with this codebase's rules.
     "coverage/**",
+    "lib/generated/**",
     "playwright-report/**",
     "test-results/**",
   ]),

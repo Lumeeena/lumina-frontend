@@ -1,5 +1,6 @@
+import { StatsDocument as STATS_QUERY } from "@/lib/generated/graphql";
 import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
-import type { Ledger, Operation } from "@/lib/types";
+import type { Operation } from "@/lib/types";
 import { getActiveContracts } from "@/lib/registry";
 import { formatOperationType } from "@/lib/formatters";
 import StatCard from "@/components/StatCard";
@@ -8,19 +9,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Network Stats | Lumina", description: "Lumina indexer health and Stellar network throughput." };
 
-export const dynamic = 'force-dynamic';
-
-const STATS_QUERY = `
-  query Stats($opLimit: Int) {
-    latestLedger {
-      sequence
-      transactionCount
-    }
-    operations(limit: $opLimit) {
-      items { type }
-    }
-  }
-`;
+export const dynamic = "force-dynamic";
 
 async function getStats() {
   try {
@@ -39,9 +28,10 @@ async function getContractsRegisteredCount(): Promise<{ count: number | null; un
   }
 }
 
-function opBreakdown(operations: Operation[]) {
+function opBreakdown(operations: Pick<Operation, "type">[]) {
   const counts = new Map<string, number>();
-  for (const op of operations) counts.set(op.type, (counts.get(op.type) ?? 0) + 1);
+  for (const op of operations)
+    counts.set(op.type, (counts.get(op.type) ?? 0) + 1);
   const total = operations.length;
   return [...counts.entries()]
     .sort((a, b) => b[1] - a[1])
@@ -72,20 +62,27 @@ export default async function StatsPage() {
         <StatCard title="Avg Ledger Time" value="~5s" subtitle="Protocol target, not a live average" />
       </div>
 
-      <h2 className="font-extrabold text-base mb-3.5 text-[#0e0e12]">Operation Type Breakdown</h2>
-      <p className="text-xs text-[#a6a3b0] mb-3">Based on the most recent {operations.items.length} indexed operations.</p>
+      <h2 className="font-extrabold text-base mb-3.5 text-[#0e0e12]">
+        Operation Type Breakdown
+      </h2>
+      <p className="text-xs text-[#a6a3b0] mb-3">
+        Based on the most recent {operations.items.length} indexed operations.
+      </p>
       <div className="border border-[#e5e3ea] rounded-xl p-5 flex flex-col gap-3.5">
         {breakdown.length === 0 ? (
           <p className="text-sm text-[#a6a3b0]">No operations indexed yet.</p>
         ) : (
-          breakdown.map(op => (
+          breakdown.map((op) => (
             <div key={op.label}>
               <div className="flex justify-between text-[13px] mb-1.5">
                 <span className="font-semibold text-[#0e0e12]">{op.label}</span>
                 <span className="mono text-[#a6a3b0]">{op.pct}%</span>
               </div>
               <div className="h-2 rounded-full bg-[#f0eff3] overflow-hidden">
-                <div className="h-full rounded-full bg-[#8b5cf6]" style={{ width: `${op.pct}%` }} />
+                <div
+                  className="h-full rounded-full bg-[#8b5cf6]"
+                  style={{ width: `${op.pct}%` }}
+                />
               </div>
             </div>
           ))

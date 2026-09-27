@@ -18,6 +18,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+      - run: git diff --exit-code -- lib/generated
       # Coverage rather than a plain run: the text summary lands in the job log
       # and the HTML/lcov report is uploaded below, so coverage cannot quietly
       # rot back toward zero without anyone noticing.

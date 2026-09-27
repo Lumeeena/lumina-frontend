@@ -24,14 +24,22 @@ export interface RegistrationInput {
 
 export interface RegisterContractFormProps {
   walletAddress: string;
-  register?: (input: RegistrationInput, owner: string, onPhase: (p: TxPhase) => void) => Promise<void>;
+  register?: (
+    input: RegistrationInput,
+    owner: string,
+    onPhase: (p: TxPhase) => void,
+    wait?: (ms: number) => Promise<void>
+  ) => Promise<void>;
+  /** Overrides transaction polling delay in integration tests. */
+  transactionWait?: (ms: number) => Promise<void>;
   onRegistered?: () => void;
 }
 
 const defaultRegister = async (
   input: RegistrationInput,
   owner: string,
-  onPhase: (p: TxPhase) => void
+  onPhase: (p: TxPhase) => void,
+  wait?: (ms: number) => Promise<void>
 ) => {
   // Lazy so the browser-only wallet kit stays out of this module's import
   // graph — see the matching note in OwnerContracts.
@@ -67,6 +75,7 @@ const defaultRegister = async (
     walletAddress: owner,
     networkPassphrase: NETWORK_PASSPHRASE,
     onPhase,
+    wait,
   });
 };
 
@@ -83,6 +92,7 @@ const SUBMIT_LABELS: Record<TxPhase, string> = {
 export default function RegisterContractForm({
   walletAddress,
   register = defaultRegister,
+  transactionWait,
   onRegistered,
 }: RegisterContractFormProps) {
   const [contractId, setContractId] = useState('');
@@ -127,7 +137,7 @@ export default function RegisterContractForm({
     // live, and the second click spends real fees.
     setPhase('building');
     try {
-      await register(input, walletAddress, setPhase);
+      await register(input, walletAddress, setPhase, transactionWait);
       setPhase('success');
       setMessage(`${input.name} registered — Lumina will begin indexing shortly.`);
       setContractId('');

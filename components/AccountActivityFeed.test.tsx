@@ -5,7 +5,9 @@ import { SubscriptionClient } from "@/lib/subscriptions";
 import { FakeSocket } from "@/lib/__fixtures__/fakeSocket";
 import { __setSubscriptionClient } from "@/lib/useSubscription";
 import type { Operation } from "@/lib/types";
-import AccountActivityFeed, { MAX_ACTIVITY_LENGTH } from "./AccountActivityFeed";
+import AccountActivityFeed, {
+  MAX_ACTIVITY_LENGTH,
+} from "./AccountActivityFeed";
 
 const ADDRESS = "GABCDEFGHIJKLMNOPQRSTUVWXYZ234567ABCDEFGHIJKLMNOPQRS";
 const OTHER = "GZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ";
@@ -13,7 +15,7 @@ const OTHER = "GZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ";
 function operation(id: string, overrides: Partial<Operation> = {}): Operation {
   return {
     id,
-    type: "payment",
+    type: "PAYMENT",
     createdAt: new Date().toISOString(),
     transactionHash: `tx${id}`,
     sourceAccount: ADDRESS,
@@ -38,7 +40,7 @@ function installClient(retry?: { maxAttempts?: number }) {
   __setSubscriptionClient(
     new SubscriptionClient({
       url: "ws://test/graphql",
-      createSocket: url => {
+      createSocket: (url) => {
         const socket = new FakeSocket(url);
         sockets.push(socket);
         return socket;
@@ -92,7 +94,9 @@ describe("AccountActivityFeed", () => {
     await connect();
 
     expect(screen.getByText(/Waiting for new activity/)).toBeTruthy();
-    expect(screen.getByTestId("connection-indicator").dataset.state).toBe("connected");
+    expect(screen.getByTestId("connection-indicator").dataset.state).toBe(
+      "connected",
+    );
   });
 
   it("shows an operation the account sent", async () => {
@@ -102,7 +106,7 @@ describe("AccountActivityFeed", () => {
     await connect();
     await push(operation("1"));
 
-    expect(screen.getByText("payment")).toBeTruthy();
+    expect(screen.getByText("PAYMENT")).toBeTruthy();
     expect(screen.getByText(/10\.0000000/)).toBeTruthy();
   });
 
@@ -111,9 +115,11 @@ describe("AccountActivityFeed", () => {
       render(<AccountActivityFeed address={ADDRESS} />);
     });
     await connect();
-    await push(operation("1", { sourceAccount: OTHER, from: OTHER, to: ADDRESS }));
+    await push(
+      operation("1", { sourceAccount: OTHER, from: OTHER, to: ADDRESS }),
+    );
 
-    expect(screen.getByText("payment")).toBeTruthy();
+    expect(screen.getByText("PAYMENT")).toBeTruthy();
   });
 
   it("drops an operation that has nothing to do with this account", async () => {
@@ -125,9 +131,11 @@ describe("AccountActivityFeed", () => {
     // The server filters by address, but this section is headed "Live Activity"
     // for *this* account — showing someone else's operation under it would be
     // straightforwardly wrong, so the component refuses it too.
-    await push(operation("1", { sourceAccount: OTHER, from: OTHER, to: OTHER }));
+    await push(
+      operation("1", { sourceAccount: OTHER, from: OTHER, to: OTHER }),
+    );
 
-    expect(screen.queryByText("payment")).toBeNull();
+    expect(screen.queryByText("PAYMENT")).toBeNull();
     expect(screen.getByText(/Waiting for new activity/)).toBeTruthy();
   });
 
@@ -139,7 +147,7 @@ describe("AccountActivityFeed", () => {
     await push(operation("dup"));
     await push(operation("dup"));
 
-    expect(screen.getAllByText("payment")).toHaveLength(1);
+    expect(screen.getAllByText("PAYMENT")).toHaveLength(1);
   });
 
   it("caps the list", async () => {
@@ -152,7 +160,7 @@ describe("AccountActivityFeed", () => {
       await push(operation(String(i)));
     }
 
-    expect(screen.getAllByText("payment")).toHaveLength(MAX_ACTIVITY_LENGTH);
+    expect(screen.getAllByText("PAYMENT")).toHaveLength(MAX_ACTIVITY_LENGTH);
   });
 
   it("renders nothing when live updates are unavailable and nothing arrived", async () => {
@@ -166,7 +174,9 @@ describe("AccountActivityFeed", () => {
 
     // The server-rendered transaction table already covers history, so an
     // empty live panel would be noise rather than information.
-    expect(container.querySelector('[data-testid="account-activity"]')).toBeNull();
+    expect(
+      container.querySelector('[data-testid="account-activity"]'),
+    ).toBeNull();
   });
 
   it("keeps showing what it received even after the connection gives up", async () => {
@@ -181,7 +191,9 @@ describe("AccountActivityFeed", () => {
       sockets[0].drop();
     });
 
-    expect(screen.getByText("payment")).toBeTruthy();
-    expect(screen.getByTestId("connection-indicator").dataset.state).toBe("disconnected");
+    expect(screen.getByText("PAYMENT")).toBeTruthy();
+    expect(screen.getByTestId("connection-indicator").dataset.state).toBe(
+      "disconnected",
+    );
   });
 });

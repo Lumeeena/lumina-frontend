@@ -1,33 +1,63 @@
 'use client';
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import CodeMirror from "@uiw/react-codemirror";
+import { StreamLanguage } from "@codemirror/language";
 import { QUERY_EXAMPLES, QueryExample } from "@/lib/queries";
 import { PUBLIC_GRAPHQL_URL } from "@/lib/graphql";
 import BackendUnavailable from "@/components/BackendUnavailable";
 
 function JsonHighlight({ data }: { data: object }) {
   const str = JSON.stringify(data, null, 2);
-  const highlighted = str
-    .replace(/("[\w\s]+"):/g, '<span style="color:#7c3aed">$1</span>:')
-    .replace(/:\s*(".*?")/g, ': <span style="color:#16a34a">$1</span>')
-    .replace(/:\s*(\d+\.?\d*)/g, ': <span style="color:#d97706">$1</span>')
-    .replace(/:\s*(true|false)/g, ': <span style="color:#8b5cf6">$1</span>')
-    .replace(/:\s*(null)/g, ': <span style="color:#a6a3b0">$1</span>');
   return (
-    <pre className="text-xs leading-relaxed mono text-[#3f3d47] whitespace-pre-wrap break-all"
-      dangerouslySetInnerHTML={{ __html: highlighted }} />
+    <pre className="text-xs leading-relaxed mono text-[#3f3d47] whitespace-pre-wrap break-all">{str}</pre>
   );
 }
 
+// A small GraphQL tokenizer keeps the editor's parser footprint minimal while
+// still providing proper syntax highlighting, bracket matching and editing.
+const graphqlLanguage = StreamLanguage.define({
+  token(stream) {
+    if (stream.eatSpace()) return null;
+    if (stream.match(/#[^\n]*/)) return "comment";
+    if (stream.match(/\$[A-Za-z_][\w]*/)) return "variableName";
+    if (stream.match(/"(?:\\.|[^"\\])*"/)) return "string";
+    if (stream.match(/-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/)) return "number";
+    if (stream.match(/\.\.\./)) return "punctuation";
+    if (stream.match(/[{}():!,=@|\[\]]/)) return "punctuation";
+    if (stream.match(/[A-Za-z_][\w]*/)) {
+      const word = stream.current();
+      if (["query", "mutation", "subscription", "fragment", "on"].includes(word)) return "keyword";
+      if (["true", "false", "null"].includes(word)) return "atom";
+      return "propertyName";
+    }
+    stream.next();
+    return null;
+  },
+});
+
 export default function GraphQLPage() {
-  const [selected, setSelected] = useState<QueryExample>(QUERY_EXAMPLES[0]);
+  const [selected, setSelected] = useState<QueryExample | null>(QUERY_EXAMPLES[0]);
   const [query, setQuery] = useState(QUERY_EXAMPLES[0].query);
+  const [history, setHistory] = useState<string[]>([]);
   const [result, setResult] = useState<object | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [unavailable, setUnavailable] = useState(false);
   const [running, setRunning] = useState(false);
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => setHistory(loadQueryHistory()), 0);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  function updateQuery(value: string) {
+    setQuery(value);
+    setSelected(null);
+    setHistory(saveQueryToHistory(value));
+  }
+
   async function runQuery() {
+    setHistory(saveQueryToHistory(query));
     setRunning(true);
     setError(null);
     setUnavailable(false);
@@ -80,9 +110,18 @@ export default function GraphQLPage() {
           <h2 className="text-xs font-bold tracking-wide uppercase text-[#a6a3b0] mb-1">Query Examples</h2>
           {QUERY_EXAMPLES.map(ex => (
             <button key={ex.name} onClick={() => selectExample(ex)}
-              className={`text-left rounded-[10px] p-3 border transition-colors ${selected.name === ex.name ? "border-[#c4b5fd] bg-[#f3effe] text-[#6d28d9]" : "border-[#e5e3ea] bg-white text-[#3f3d47] hover:border-[#c4b5fd]"}`}>
+              className={`text-left rounded-[10px] p-3 border transition-colors ${selected?.name === ex.name ? "border-[#c4b5fd] bg-[#f3effe] text-[#6d28d9]" : "border-[#e5e3ea] bg-white text-[#3f3d47] hover:border-[#c4b5fd]"}`}>
               <span className="block font-bold text-[13px] mb-0.5">{ex.name}</span>
               <span className="block text-[11px] opacity-70 leading-snug">{ex.description}</span>
+            </button>
+          ))}
+          <h2 className="text-xs font-bold tracking-wide uppercase text-[#a6a3b0] mt-4 mb-1">Recent Queries</h2>
+          {history.length === 0 ? (
+            <p className="text-xs text-[#a6a3b0]">Edited queries will appear here.</p>
+          ) : history.map((entry, index) => (
+            <button key={`${index}-${entry}`} onClick={() => { setQuery(entry); setSelected(null); setResult(null); setError(null); }}
+              className="text-left rounded-[10px] p-3 border border-[#e5e3ea] bg-white text-[#3f3d47] hover:border-[#c4b5fd]">
+              <span className="block text-[11px] mono leading-snug line-clamp-3">{entry}</span>
             </button>
           ))}
         </div>
@@ -95,8 +134,9 @@ export default function GraphQLPage() {
                 {running ? "Running…" : "Run Query"}
               </button>
             </div>
-            <textarea value={query} onChange={e => setQuery(e.target.value)}
-              className="flex-1 bg-transparent px-4 py-3.5 text-[13px] text-[#0e0e12] mono resize-none focus:outline-none leading-relaxed min-h-[280px]" spellCheck={false} />
+            <CodeMirror value={query} onChange={updateQuery} extensions={[graphqlLanguage]}
+              basicSetup={{ bracketMatching: true, closeBrackets: true, lineNumbers: true, foldGutter: true }}
+              className="graphql-editor min-h-[280px] text-[13px]" />
           </div>
 
           <div className="rounded-xl border border-[#e5e3ea] overflow-hidden">
