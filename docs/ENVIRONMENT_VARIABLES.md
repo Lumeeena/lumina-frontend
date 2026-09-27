@@ -55,6 +55,10 @@ Variables prefixed with `NEXT_PUBLIC_` are **baked into the JavaScript bundle at
   - Testnet: `Test SDF Network ; September 2015`
   - Mainnet: `Public Global Stellar Network ; September 2015`
 - **Effect**: Used in `lib/registry.ts` to construct and sign transactions for Soroban RPC calls.
+- **Not the same thing as the network in the URL**: this variable is baked in
+  at build time and says which network a *deployment* serves. The network a
+  reader selects lives in the page URL (`?network=testnet`) and is per-page —
+  see [NETWORKS.md](./NETWORKS.md).
 
 ### NEXT_PUBLIC_REGISTRY_READ_ACCOUNT
 
