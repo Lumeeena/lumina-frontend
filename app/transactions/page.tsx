@@ -3,11 +3,8 @@ import type { Metadata } from "next";
 import { routeMetadata } from "@/lib/metadata";
 import { TRANSACTIONS } from "@/lib/routes";
 import TransactionExplorer from "@/components/TransactionExplorer";
-import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Transactions | Lumina", description: "Browse recent Stellar transactions indexed by Lumina." };
-
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = routeMetadata(TRANSACTIONS);
 

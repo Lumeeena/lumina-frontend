@@ -8,6 +8,11 @@ import VirtualizedTransactionTable from "./VirtualizedTransactionTable";
 import { gqlFetch, PUBLIC_GRAPHQL_URL } from "@/lib/graphql";
 import type { Transaction } from "@/lib/types";
 import {
+  loadExplorerSnapshot,
+  saveExplorerSnapshot,
+  type ExplorerSnapshot,
+} from "@/lib/explorerSnapshot";
+import {
   EMPTY_FILTERS,
   applyFilters,
   filtersFromQueryString,
@@ -22,35 +27,7 @@ import {
   type FilterPreset,
 } from "@/lib/filterPresets";
 import TransactionFilters from "./TransactionFilters";
-import TransactionRow from "./TransactionRow";
 import BackendUnavailable from "./BackendUnavailable";
-
-const PAGE_QUERY = `
-  query TransactionPage($limit: Int, $cursor: String) {
-    transactions(limit: $limit, cursor: $cursor) {
-      items {
-        hash
-        ledger
-        createdAt
-        sourceAccount
-        feeCharged
-        operationCount
-        successful
-      }
-      pageInfo {
-        hasNextPage
-        cursor
-      }
-    }
-  }
-`;
-
-interface TransactionPage {
-  transactions: {
-    items: Transaction[];
-    pageInfo: { hasNextPage: boolean; cursor: string | null };
-  };
-}
 
 export const PAGE_SIZE = 50;
 
@@ -66,6 +43,13 @@ export const PAGE_SIZE = 50;
 const MIN_FILTERED_ROWS = 20;
 /** Ceiling on that chase, so a filter matching nothing cannot walk the chain forever. */
 const MAX_AUTO_PAGES = 5;
+
+/**
+ * Debounce for writing the scroll offset. A scroll fires continuously and a
+ * snapshot holds every loaded row, so serializing it on each one would cost
+ * more than it saves.
+ */
+const SNAPSHOT_SAVE_DELAY_MS = 150;
 
 export default function TransactionExplorer({
   initial,
@@ -83,6 +67,9 @@ export default function TransactionExplorer({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [presets, setPresets] = useState<FilterPreset[]>([]);
+  // Offset read back from this view's snapshot, handed to the table, which
+  // re-applies it once the virtualized rows exist to scroll against.
+  const [restoredScrollTop, setRestoredScrollTop] = useState(0);
 
   // The URL is the source of truth for filters, so a refresh, a back button
   // and a pasted link all land on the same view.
@@ -90,6 +77,7 @@ export default function TransactionExplorer({
     () => filtersFromQueryString(searchParams.toString()),
     [searchParams],
   );
+  const filterKey = useMemo(() => filtersToQueryString(filters), [filters]);
 
   const setFilters = useCallback(
     (next: Filters) => {
@@ -110,6 +98,40 @@ export default function TransactionExplorer({
 
   const loadedHashes = useRef(new Set<string>());
   const loadingRef = useRef(false);
+
+  // Key this view's snapshot is stored under. Kept in step with the filters on
+  // screen, so narrowing the list re-keys the saved view rather than
+  // overwriting the unfiltered one with a filtered offset.
+  const snapshotKeyRef = useRef<string>(filterKey);
+  useEffect(() => {
+    snapshotKeyRef.current = filterKey;
+  }, [filterKey]);
+
+  // Everything worth restoring, held in one ref so the scroll handler and the
+  // unmount flush below can save the current view without re-subscribing.
+  const latestRef = useRef<ExplorerSnapshot>({
+    txs: initial ?? [],
+    cursor: null,
+    hasNextPage: true,
+    scrollTop: 0,
+  });
+  const saveTimerRef = useRef<number | null>(null);
+
+  const scheduleSnapshotSave = useCallback(() => {
+    if (saveTimerRef.current !== null) return;
+    saveTimerRef.current = window.setTimeout(() => {
+      saveTimerRef.current = null;
+      saveExplorerSnapshot(snapshotKeyRef.current, latestRef.current);
+    }, SNAPSHOT_SAVE_DELAY_MS);
+  }, []);
+
+  const handleScrollTopChange = useCallback(
+    (scrollTop: number) => {
+      latestRef.current = { ...latestRef.current, scrollTop };
+      scheduleSnapshotSave();
+    },
+    [scheduleSnapshotSave],
+  );
 
   const loadMore = useCallback(() => {
     if (loadingRef.current) return;
@@ -150,14 +172,63 @@ export default function TransactionExplorer({
       });
   }, [cursor]);
 
-  // First page. `initial` is server-rendered, so only fetch when there is none.
-  const started = useRef(false);
+  // ── Return to where the reader was ──────────────────────────────────────
+  //
+  // A cursor is only meaningful against the rows it produced, so the loaded
+  // pages and the offset have to come back together. Restoring only the offset
+  // would land the reader at the top of page one, which is the bug this is
+  // here to fix.
+  const bootstrapped = useRef(false);
   useEffect(() => {
-    if (started.current) return;
-    started.current = true;
-    if (!initial || initial.length === 0) void loadMore();
-    else for (const tx of initial) loadedHashes.current.add(tx.hash);
-  }, [initial, loadMore]);
+    if (bootstrapped.current) return;
+    bootstrapped.current = true;
+
+    const snapshot = loadExplorerSnapshot(
+      filtersToQueryString(filtersFromQueryString(searchParams.toString())),
+    );
+    if (snapshot && snapshot.txs.length > 0) {
+      for (const tx of snapshot.txs) loadedHashes.current.add(tx.hash);
+      latestRef.current = snapshot;
+      // sessionStorage does not exist during the server pass, so this cannot be
+      // the `useState` initial value without the first client render
+      // disagreeing with the server's HTML. One update on mount is the point.
+      /* eslint-disable react-hooks/set-state-in-effect -- post-hydration restore, see above */
+      setTxs(snapshot.txs);
+      setCursor(snapshot.cursor);
+      setHasNextPage(snapshot.hasNextPage);
+      setRestoredScrollTop(snapshot.scrollTop);
+      /* eslint-enable react-hooks/set-state-in-effect */
+      return;
+    }
+
+    // Nothing to restore: `initial` is server-rendered, so only fetch when
+    // there is none.
+    if (initial && initial.length > 0) {
+      for (const tx of initial) loadedHashes.current.add(tx.hash);
+    } else {
+      void loadMore();
+    }
+  }, [initial, loadMore, searchParams]);
+
+  // Keep the stored view in step with the rows on screen, so a page loaded now
+  // is part of what come-back restores.
+  useEffect(() => {
+    latestRef.current = { ...latestRef.current, txs, cursor, hasNextPage };
+    if (txs.length === 0) return;
+    saveExplorerSnapshot(snapshotKeyRef.current, latestRef.current);
+  }, [txs, cursor, hasNextPage]);
+
+  // Leaving the page is the moment the offset matters most and the last scroll
+  // event may still be sitting in the debounce, so flush it on the way out.
+  useEffect(
+    () => () => {
+      if (saveTimerRef.current === null) return;
+      window.clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
+      saveExplorerSnapshot(snapshotKeyRef.current, latestRef.current);
+    },
+    [],
+  );
 
   useEffect(() => {
     const retry = () => { if (error || txs.length === 0) void loadMore(); };
@@ -182,7 +253,6 @@ export default function TransactionExplorer({
   }, [filters, filtered.length, hasNextPage, loading, loadMore]);
 
   // Reset the chase budget whenever the filter itself changes.
-  const filterKey = filtersToQueryString(filters);
   useEffect(() => {
     autoPages.current = 0;
   }, [filterKey]);
@@ -246,46 +316,17 @@ export default function TransactionExplorer({
         )}
       </div>
 
-      <div
-        ref={scrollRef}
-        data-testid="transaction-scroll"
-        className="rounded-xl border border-[#e5e3ea] overflow-auto max-h-[70vh]"
-      >
-        <table className="w-full text-sm border-collapse">
-          <thead className="sticky top-0 z-10">
-            <tr>
-              <th className={`${th} w-6`} />
-              <th className={th}>Hash</th>
-              <th className={th}>Ledger</th>
-              <th className={th}>Source</th>
-              <th className={th}>Ops</th>
-              <th className={th}>Fee</th>
-              <th className={th}>Time</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paddingTop > 0 && (
-              <tr aria-hidden="true">
-                <td colSpan={7} style={{ height: paddingTop }} />
-              </tr>
-            )}
-            {virtualRows.map(virtualRow => (
-              <TransactionRow key={filtered[virtualRow.index].hash} tx={filtered[virtualRow.index]} />
-            ))}
-            {paddingBottom > 0 && (
-              <tr aria-hidden="true">
-                <td colSpan={7} style={{ height: paddingBottom }} />
-              </tr>
-            )}
-          </tbody>
-        </table>
-
-        {filtered.length === 0 && !loading && !error && (
-          <div className="p-8 text-center text-[#a6a3b0] text-sm">
-            {txs.length === 0
+      <VirtualizedTransactionTable
+        transactions={filtered}
+        emptyMessage={
+          !loading && !error
+            ? txs.length === 0
               ? "No transactions indexed yet."
               : "No transactions match these filters."
+            : null
         }
+        initialScrollTop={restoredScrollTop}
+        onScrollTopChange={handleScrollTopChange}
       >
         <div ref={sentinelRef} data-testid="scroll-sentinel" className="h-px" />
       </VirtualizedTransactionTable>

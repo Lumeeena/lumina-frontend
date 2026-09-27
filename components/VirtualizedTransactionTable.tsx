@@ -14,10 +14,20 @@ export default function VirtualizedTransactionTable({
   transactions,
   emptyMessage,
   children,
+  initialScrollTop = 0,
+  onScrollTopChange,
 }: {
   transactions: Transaction[];
   emptyMessage: string | null;
   children: ReactNode;
+  /**
+   * Offset to restore once the rows are laid out. The virtualizer only renders
+   * the visible window, so restoring the offset before the spacer rows exist
+   * would be clamped to the top of a one-row list.
+   */
+  initialScrollTop?: number;
+  /** Reports the scroll offset so the parent can remember it. */
+  onScrollTopChange?: (scrollTop: number) => void;
 }) {
   // TanStack Virtual exposes mutable instance methods that cannot be memoized.
   // Keep that boundary here so filtering, fetching and presets remain eligible.
@@ -52,6 +62,18 @@ export default function VirtualizedTransactionTable({
     virtualRows.length > 0
       ? totalSize - virtualRows[virtualRows.length - 1].end
       : 0;
+
+  // Restore the reader's offset once, after the rows that give the container its
+  // full height are on screen. The ref keeps a scroll from re-applying an old
+  // offset on every re-render.
+  const restoredRef = useRef(false);
+  useEffect(() => {
+    if (restoredRef.current) return;
+    const element = scrollRef.current;
+    if (!element || initialScrollTop <= 0 || virtualRows.length === 0) return;
+    restoredRef.current = true;
+    element.scrollTop = initialScrollTop;
+  }, [initialScrollTop, virtualRows.length]);
 
   if (isMobile && transactions.length > 0) {
     return (
@@ -96,6 +118,11 @@ export default function VirtualizedTransactionTable({
     <div
       ref={scrollRef}
       data-testid="transaction-scroll"
+      onScroll={
+        onScrollTopChange
+          ? (event) => onScrollTopChange(event.currentTarget.scrollTop)
+          : undefined
+      }
       className="rounded-xl border border-[#e5e3ea] overflow-auto max-h-[70vh]"
     >
       <table className="w-full text-sm border-collapse">
