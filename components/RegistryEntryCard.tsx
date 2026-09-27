@@ -11,6 +11,7 @@
  */
 import { useState } from 'react';
 import { getSlashes, type RegistryProfile, type SlashRecord } from '@/lib/registry';
+import { CATEGORY_LABELS } from '@/lib/registry';
 import { formatStroops, truncateAddress } from '@/lib/formatters';
 import { LifetimeSlashedBadge, StakeBadge, VerifiedBadge } from './RegistryBadges';
 
@@ -55,6 +56,18 @@ export default function RegistryEntryCard({ profile, loadSlashes = defaultLoadSl
         <span className="mono text-[11px] text-[#a6a3b0]">{truncateAddress(profile.contractId, 5)}</span>
       </div>
       <p className="text-xs text-[#6b6975] m-0">{profile.description}</p>
+      {profile.categories && profile.categories.length > 0 && (
+        <ul className="flex flex-wrap gap-1.5 mt-2 list-none p-0 m-0" aria-label="Categories">
+          {profile.categories.map(category => (
+            <li
+              key={category}
+              className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#f5f3ff] text-[#7c3aed]"
+            >
+              {CATEGORY_LABELS[category]}
+            </li>
+          ))}
+        </ul>
+      )}
       <div className="flex items-center gap-1.5 mt-2 flex-wrap">
         {reputation.verified && <VerifiedBadge />}
         <StakeBadge stake={reputation.stake} />

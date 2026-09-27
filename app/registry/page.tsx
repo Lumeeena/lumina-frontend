@@ -206,22 +206,7 @@ function RegistryContent() {
           ) : (
             <div className="flex flex-col gap-2">
               {entries.map(entry => (
-                <div key={entry.contractId} className="border border-[#e5e3ea] rounded-[10px] p-3.5 px-4">
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="font-bold text-sm text-[#0e0e12]">{entry.name}</span>
-                    <span className="mono text-[11px] text-[#a6a3b0]">{truncateAddress(entry.contractId, 5)}</span>
-                  </div>
-                  <p className="text-xs text-[#6b6975] m-0">{entry.description}</p>
-                  {entry.categories && entry.categories.length > 0 && (
-                    <ul className="flex flex-wrap gap-1.5 mt-2 list-none p-0 m-0" aria-label="Categories">
-                      {entry.categories.map(c => (
-                        <li key={c} className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#f5f3ff] text-[#7c3aed]">
-                          {CATEGORY_LABELS[c]}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
+                <RegistryEntryCard key={entry.contractId} profile={entry} />
               ))}
             </div>
           )}

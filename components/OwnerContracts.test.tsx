@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { RegistryEntry } from '@/lib/registry';
 import { parseRegistryEvents } from '@/lib/registryHistory';
@@ -185,7 +185,9 @@ describe('OwnerContracts', () => {
     const toggle = await screen.findByRole('button', { name: /history \(2\)/i });
     await userEvent.click(toggle);
 
-    const items = screen.getAllByRole('listitem');
+    // Scoped to the history panel: the withdrawal blockers are a list of their
+    // own, and they sit above this one.
+    const items = within(screen.getByTestId('history-list')).getAllByRole('listitem');
     expect(items[0].textContent).toContain('Deactivated');
     expect(items[1].textContent).toContain('Registered');
   });

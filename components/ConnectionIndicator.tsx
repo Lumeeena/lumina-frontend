@@ -63,7 +63,7 @@ export default function ConnectionIndicator({ state, failureReason = null, onRet
         className={`w-[7px] h-[7px] rounded-full ${dot} ${pulse ? "animate-pulse" : ""}`}
         style={{ boxShadow: `0 0 0 3px ${ring}` }}
       />
-      {label}
+      <span data-testid="connection-label">{label}</span>
       {reason && (
         <span className="font-normal text-[11px] text-[#a6a3b0]" data-testid="connection-reason">
           {reason}

@@ -6,9 +6,12 @@ import ConnectionIndicator from "./ConnectionIndicator";
 
 afterEach(cleanup);
 
+// The status line carries a reason and sometimes a retry button alongside the
+// label, so the label is read from its own element rather than from the whole
+// element's text.
 const labelFor = (state: ConnectionState) => {
   render(<ConnectionIndicator state={state} />);
-  return screen.getByTestId("connection-indicator").textContent;
+  return screen.getByTestId("connection-label").textContent;
 };
 
 describe("ConnectionIndicator", () => {

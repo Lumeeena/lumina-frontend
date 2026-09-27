@@ -29,7 +29,17 @@ function Badge({ icon, label, title }: { icon: React.ReactNode; label: string; t
 export function VerifiedBadge() {
   return (
     <Badge
-      icon={<BadgeCheck className="w-3 h-3 text-[#7c3aed]" aria-hidden="true" />}
+      // `role="img"` is explicit because an `<svg>` with a label but no role is
+      // not reliably announced, and this icon is the part that disappears in
+      // greyscale — it needs to carry the same words for anyone who cannot see
+      // it.
+      icon={
+        <BadgeCheck
+          className="w-3 h-3 text-[#7c3aed]"
+          role="img"
+          aria-label="Attested by registry governance"
+        />
+      }
       label="Verified"
       title="Attested by registry governance"
     />

@@ -467,7 +467,7 @@ export default function OwnerContracts({
 
             {isOpen && (
               <div className="mt-2.5 border-t border-[#f0eff3] pt-2.5 flex flex-col gap-3">
-                <ul className="flex flex-col gap-1.5">
+                <ul className="flex flex-col gap-1.5" data-testid="history-list">
                   {entryHistory.length === 0 ? (
                     <li className="text-xs text-[#a6a3b0]">
                       No registry events indexed for this contract yet.
@@ -505,7 +505,8 @@ export default function OwnerContracts({
                     <p className="text-xs text-[#a6a3b0]">No slashes recorded.</p>
                   ) : (
                     slashes[entry.contractId] && (
-                      <ul className="flex flex-col gap-1.5">
+                      <ul className="flex flex-col gap-1.5" data-testid="slash-list">
+
                         {slashes[entry.contractId].map((slash, i) => (
                           <li key={`${slash.slashedAt}-${i}`} className="flex items-baseline justify-between gap-3">
                             <span className="text-xs text-[#0e0e12] min-w-0">

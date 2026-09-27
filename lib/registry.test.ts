@@ -90,9 +90,10 @@ function simResult(retval: xdr.ScVal) {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  // TransactionBuilder needs a live-ish account object to build against.
+  // TransactionBuilder needs a live-ish account object to build against. Any
+  // funded account works here — these reads simulate, they never sign or send.
   getAccount.mockResolvedValue({
-    accountId: () => ADDRESS,
+    accountId: () => OWNER,
     sequenceNumber: () => '1',
     incrementSequenceNumber: () => {},
   });
