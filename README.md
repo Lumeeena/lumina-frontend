@@ -104,6 +104,9 @@ components/     React components
 lib/            GraphQL client + formatters
 ```
 
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the server/client
+component split, the data-fetching patterns and the wallet/transaction pipeline.
+
 ## License
 
 MIT
