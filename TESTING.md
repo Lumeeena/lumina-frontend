@@ -84,6 +84,39 @@ on the real server/client component split.
 Assertions about specific data belong in component and page tests, where the
 response can be pinned exactly. Don't reach for E2E to check a number.
 
+### Two things E2E cannot see, and where they are covered instead
+
+Both of these look like E2E work and are not:
+
+**The server-rendered loading skeleton.** The suite's backend refuses the
+connection immediately, so a server route spends a few milliseconds in its
+loading boundary — gone before a browser can poll for it. `page.route`
+intercepts the *browser's* requests, not the app server's own fetch, so it
+cannot stall one either. Asserting on a frame that brief would be a flaky test
+disguised as coverage. `app/slowApi.test.tsx` holds the response open with a
+promise the test resolves itself, which is the only way to observe the skeleton
+actually appearing, and what it must announce while it is there. What E2E
+*can* check is the thing after: that no route comes to rest still showing a
+skeleton it never left.
+
+**A `role="status"` element is not a loading state.** The live-feed connection
+indicator is one too, and against a dead socket it sits in `RECONNECTING` for
+the whole test. Match skeletons by their accessible name
+(`getByRole("status", { name: /^Loading / })`) rather than by role, or a
+perfectly healthy indicator reads as a stuck page.
+
+### Crawling metadata
+
+`e2e/seo.spec.ts` asserts the metadata *files* the way a crawler meets them:
+the served `Content-Type`, absolute canonical and `og:image` URLs, and the
+`IHDR` chunk of the generated PNGs to confirm they really are 1200×630. A page
+can build a flawless metadata object and still serve a 404 image or a relative
+URL, and only a request against the running app catches that.
+
+Pin the canonical's *path*, never its host. The host comes from
+`NEXT_PUBLIC_SITE_URL` at build time, so asserting it fails on every machine
+that is not production.
+
 ## Visual regression
 
 `e2e/visual.spec.ts` takes a full-page screenshot of each stable route and

@@ -29,7 +29,43 @@ Runs against `http://localhost:4000/graphql` by default — start [lumina-backen
 | `NEXT_PUBLIC_NETWORK_PASSPHRASE` | Same, and the Registry page's wallet-signed transactions | testnet passphrase |
 | `NEXT_PUBLIC_REGISTRY_READ_ACCOUNT` | Any funded account used only for read-only simulation (no secret key needed) | a funded testnet account |
 
+| `NEXT_PUBLIC_SITE_URL` | Canonical URLs, `og:image` and the sitemap — **build-time inlined** | `http://localhost:3000` |
+
 `NEXT_PUBLIC_*` values must be set as Docker build `ARG`s (see `Dockerfile`), not runtime env vars — Next.js inlines them into the client bundle at build time, so setting them only at container-run time has no effect.
+
+`NEXT_PUBLIC_SITE_URL` is the one that has to be right in production. Every canonical link, share-card URL and sitemap entry is resolved against it at build time, so a site served from another origin while this still says `localhost` emits absolute URLs that point nowhere.
+
+## Crawling and link previews
+
+`lib/routes.ts` is the single inventory of the site's routes — path, nav label,
+description and crawl policy — and everything else reads from it: the navbar,
+`sitemap.ts`, `robots.txt` and the per-route metadata. Adding a route means
+adding one entry there, not editing four files and hoping they agree.
+
+**Indexed.** The seven stable routes (`/`, `/explorer`, `/transactions`,
+`/events`, `/graphql`, `/registry`, `/stats`) are in `sitemap.xml` and each
+carries its own title, description, canonical URL and 1200×630 share card.
+
+**Crawl-blocked, still linkable.**
+
+| Path | Why |
+|---|---|
+| `/accounts/*` | One page per Stellar address, unbounded and unguessable, so there is no finite set for a crawler to walk. A link shared into a chat still previews correctly, because `/accounts/[address]` has its own `generateMetadata` and its own generated image. |
+| `/*?` | Filter and search views — `?status=failed`, `?contractId=…`. They are the same page as the route they filter, not separate pages, and each one declares the bare route as its canonical. |
+
+`app/robots.ts` carries the reasoning inline, as a `reason` on each entry in
+`CRAWL_EXCLUDED`, so the next person to touch the policy can see why it is what
+it is instead of re-deriving it. Account pages are blocked in `robots.txt` but
+**not** `noindex`ed: blocking a page in robots prevents a crawler from reading
+the `noindex` in the first place, and these pages are meant to be reachable from
+external links — a `noindex` would drop them from search results for exactly the
+people who linked them.
+
+Share images are generated rather than stored: `app/opengraph-image.tsx` draws
+the site card, and `app/accounts/[address]/opengraph-image.tsx` draws one per
+account from the address in the URL alone. The account card deliberately never
+waits on GraphQL — a preview bot does not retry, so a card that depends on the
+indexer being up is a card that is missing exactly when it is most often shared.
 
 ## Live updates
 
