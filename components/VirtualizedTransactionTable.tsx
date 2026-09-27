@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, type ReactNode } from "react";
+import { useRef, useEffect, useState, type ReactNode } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { Transaction } from "@/lib/types";
 import TransactionRow from "./TransactionRow";
@@ -23,6 +23,15 @@ export default function VirtualizedTransactionTable({
   // Keep that boundary here so filtering, fetching and presets remain eligible.
   "use no memo";
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    setIsMobile(window.innerWidth < 768);
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // ── Virtualization ──────────────────────────────────────────────────────
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -43,6 +52,45 @@ export default function VirtualizedTransactionTable({
     virtualRows.length > 0
       ? totalSize - virtualRows[virtualRows.length - 1].end
       : 0;
+
+  if (isMobile && transactions.length > 0) {
+    return (
+      <div className="space-y-3">
+        {transactions.map((tx) => (
+          <div
+            key={tx.hash}
+            className="rounded-lg border border-[#e5e3ea] p-4 bg-[#fafafa]"
+          >
+            <div className="flex justify-between items-start mb-2">
+              <span className="text-xs font-semibold text-[#a6a3b0]">Hash</span>
+              <span className="mono text-xs text-[#0e0e12] font-semibold truncate ml-2">{tx.hash.slice(0, 12)}…</span>
+            </div>
+            <div className="flex justify-between items-start mb-2">
+              <span className="text-xs font-semibold text-[#a6a3b0]">Ledger</span>
+              <span className="mono text-xs text-[#0e0e12]">{tx.ledger}</span>
+            </div>
+            <div className="flex justify-between items-start mb-2">
+              <span className="text-xs font-semibold text-[#a6a3b0]">Source</span>
+              <span className="mono text-xs text-[#0e0e12] truncate ml-2">{tx.sourceAccount.slice(0, 12)}…</span>
+            </div>
+            <div className="flex justify-between items-start mb-2">
+              <span className="text-xs font-semibold text-[#a6a3b0]">Operations</span>
+              <span className="mono text-xs text-[#0e0e12]">{tx.operationCount}</span>
+            </div>
+            <div className="flex justify-between items-start mb-2">
+              <span className="text-xs font-semibold text-[#a6a3b0]">Fee</span>
+              <span className="mono text-xs text-[#0e0e12]">{tx.feeCharged}</span>
+            </div>
+            <div className="flex justify-between items-start">
+              <span className="text-xs font-semibold text-[#a6a3b0]">Time</span>
+              <span className="text-xs text-[#0e0e12]">{new Date(tx.createdAt).toLocaleDateString()}</span>
+            </div>
+          </div>
+        ))}
+        {children}
+      </div>
+    );
+  }
 
   return (
     <div

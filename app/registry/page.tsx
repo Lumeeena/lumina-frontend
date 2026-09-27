@@ -57,6 +57,7 @@ function RegistryContent() {
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [connecting, setConnecting] = useState(false);
   const [connectError, setConnectError] = useState<string | null>(null);
+  const [walletLocked, setWalletLocked] = useState(false);
 
   const [entries, setEntries] = useState<RegistryProfile[]>([]);
   const [entriesLoading, setEntriesLoading] = useState(true);
@@ -132,12 +133,15 @@ function RegistryContent() {
   async function handleConnect() {
     setConnecting(true);
     setConnectError(null);
+    setWalletLocked(false);
     const result = await connectWallet();
     if ("error" in result) {
       setConnectError(result.error);
+      setWalletLocked(result.isLocked ?? false);
     } else {
       setWalletAddress(result.address);
       setTab("mine");
+      setWalletLocked(false);
     }
     setConnecting(false);
   }
@@ -181,7 +185,14 @@ function RegistryContent() {
                   role="alert"
                   className="text-xs text-[#dc2626] bg-[#fef2f2] rounded-lg px-3 py-2"
                 >
-                  {connectError}
+                  {walletLocked ? (
+                    <div>
+                      <p className="font-semibold mb-1">Your wallet is locked</p>
+                      <p className="text-[#991b1b]">Unlock your wallet extension and try again.</p>
+                    </div>
+                  ) : (
+                    connectError
+                  )}
                 </div>
               )}
             </div>
