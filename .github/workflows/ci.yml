@@ -51,3 +51,46 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 14
+
+  e2e-live-backend:
+    name: E2E (seeded backend)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: Lumeeena/lumina-backend
+          ref: main
+          path: backend
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Start seeded GraphQL backend
+        run: docker compose -f backend/docker/docker-compose.yml up -d --build postgres graphql
+      - name: Wait for GraphQL health
+        run: |
+          for attempt in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:4000/health >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose -f backend/docker/docker-compose.yml logs graphql postgres
+          exit 1
+      - name: Run seeded-backend E2E tests
+        env:
+          E2E_GRAPHQL_URL: http://127.0.0.1:4000/graphql
+        run: npx playwright test e2e/live-backend.spec.ts
+      - name: Upload live Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-live-backend-report
+          path: playwright-report/
+          retention-days: 14
+      - name: Stop seeded backend
+        if: always()
+        run: docker compose -f backend/docker/docker-compose.yml down -v
