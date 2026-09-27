@@ -8,7 +8,7 @@
  * form has never had a test. As a component taking an injectable `register`, it
  * can have one.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { nativeToScVal } from '@stellar/stellar-sdk';
 import { REGISTRY_CATEGORIES, type RegistryCategory } from '@/lib/categories';
 import { NETWORK_PASSPHRASE, REGISTRY_CONTRACT_ID, SOROBAN_RPC_URL } from '@/lib/registry';
@@ -29,7 +29,7 @@ export interface RegisterContractFormProps {
     owner: string,
     onPhase: (p: TxPhase) => void,
     wait?: (ms: number) => Promise<void>
-  ) => Promise<void>;
+  ) => Promise<{ hash: string } | void>;
   /** Overrides transaction polling delay in integration tests. */
   transactionWait?: (ms: number) => Promise<void>;
   onRegistered?: () => void;
@@ -45,7 +45,7 @@ const defaultRegister = async (
   // graph — see the matching note in OwnerContracts.
   const { signWithWallet } = await import('@/lib/wallet');
 
-  await submitContractCall({
+  const result = await submitContractCall({
     driver: createStellarDriver({
       rpcUrl: SOROBAN_RPC_URL,
       networkPassphrase: NETWORK_PASSPHRASE,
@@ -77,6 +77,7 @@ const defaultRegister = async (
     onPhase,
     wait,
   });
+  return { hash: result.hash };
 };
 
 const SUBMIT_LABELS: Record<TxPhase, string> = {
@@ -102,8 +103,21 @@ export default function RegisterContractForm({
   const [categoryError, setCategoryError] = useState('');
   const [phase, setPhase] = useState<TxPhase>('idle');
   const [message, setMessage] = useState('');
+  const [transactionHash, setTransactionHash] = useState<string | null>(null);
 
   const busy = phase === 'building' || phase === 'awaiting-signature' || phase === 'submitting' || phase === 'confirming';
+
+  useEffect(() => {
+    if (!busy) return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [busy]);
 
   function toggleCategory(category: RegistryCategory) {
     setCategoryError('');
@@ -131,23 +145,27 @@ export default function RegisterContractForm({
     }
 
     setMessage('');
-    // Enter the busy phase here rather than waiting for `register` to report
-    // it. Deriving the double-submit guard from the callee's progress
-    // callback means a submit path that never reports one leaves the button
-    // live, and the second click spends real fees.
     setPhase('building');
     try {
-      await register(input, walletAddress, setPhase, transactionWait);
+      const result = await register(input, walletAddress, setPhase, transactionWait);
+      if (result?.hash) {
+        setTransactionHash(result.hash);
+        sessionStorage.setItem(`tx-${Date.now()}`, result.hash);
+      }
       setPhase('success');
       setMessage(`${input.name} registered — Lumina will begin indexing shortly.`);
       setContractId('');
       setName('');
       setDescription('');
       setCategories([]);
+      setTransactionHash(null);
       onRegistered?.();
     } catch (err) {
       setPhase('error');
       setMessage(err instanceof Error ? err.message : 'Registration failed.');
+      if (transactionHash) {
+        sessionStorage.setItem(`tx-${Date.now()}`, transactionHash);
+      }
     }
   }
 

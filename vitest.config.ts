@@ -28,9 +28,14 @@ export default defineConfig({
         "lib/generated/**",
         "app/layout.tsx",
       ],
-      // Deliberately not a hard gate yet: the point of reporting it is to stop
-      // coverage silently rotting back toward zero, and a gate set today would
-      // be chosen to pass today rather than to mean anything.
+      // Gate at the current level to prevent erosion without setting an aspirational target.
+      // Raise by fixing the reported uncovered lines, not by lowering the threshold.
+      thresholds: {
+        lines: 90,
+        functions: 90,
+        branches: 90,
+        statements: 90,
+      },
     },
   },
 });

@@ -25,11 +25,15 @@ test("the home page renders and links into the app", async ({ page }) => {
   await expect(page.getByRole("navigation")).toBeVisible();
   // `exact` because the home page also links to cards whose text contains the
   // product name, and the wordmark is the one being asserted here.
-  await expect(page.getByRole("link", { name: "Lumina", exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Lumina", exact: true }),
+  ).toBeVisible();
 });
 
 for (const { label, path } of NAV) {
-  test(`nav: ${label} reaches ${path} and renders a heading`, async ({ page }) => {
+  test(`nav: ${label} reaches ${path} and renders a heading`, async ({
+    page,
+  }) => {
     await page.goto("/");
     await page.getByRole("link", { name: label, exact: true }).click();
 
@@ -40,7 +44,9 @@ for (const { label, path } of NAV) {
   });
 }
 
-test("every route renders directly, not only via client navigation", async ({ page }) => {
+test("every route renders directly, not only via client navigation", async ({
+  page,
+}) => {
   // Server-rendered first paint is a different code path from a client-side
   // transition, and only this catches a server-component crash.
   for (const { path } of NAV) {
@@ -57,7 +63,9 @@ test("the nav marks the section you are in", async ({ page }) => {
   await expect(active).toHaveClass(/bg-\[#f6f5f8\]/);
 });
 
-test("an account page degrades to a not-found state when the backend is down", async ({ page }) => {
+test("an account page degrades to a not-found state when the backend is down", async ({
+  page,
+}) => {
   const address = "GBWKFFXZ5CJESIHP2EOID5IOXMF472RO5XOJ36X475D5LJGI3AF5R5KY";
   const response = await page.goto(`/accounts/${address}`);
 
@@ -69,20 +77,81 @@ test("an account page degrades to a not-found state when the backend is down", a
   await expect(page.locator("body")).not.toContainText("Application error");
 });
 
-test("the accounts search route redirects rather than dead-ending", async ({ page }) => {
+test("the accounts search route redirects rather than dead-ending", async ({
+  page,
+}) => {
   await page.goto("/accounts");
   await expect(page).toHaveURL(/\/explorer$/);
 });
 
-test("the registry page offers wallet connection when no wallet is present", async ({ page }) => {
+test("the universal search routes an account address to its account page", async ({
+  page,
+}) => {
+  const address = "GBWKFFXZ5CJESIHP2EOID5IOXMF472RO5XOJ36X475D5LJGI3AF5R5KY";
+  await page.goto("/");
+
+  // The backend is unreachable in this suite, so what is asserted is the
+  // routing: the address lands on its account page, which renders its own
+  // degraded state rather than white-screening.
+  await page.getByLabelText("Search").fill(address);
+  await page.getByRole("button", { name: "Search" }).click();
+
+  await expect(page).toHaveURL(`/accounts/${address}`);
+  await expect(page.getByText(/temporarily unavailable/i)).toBeVisible();
+  await expect(page.locator("body")).not.toContainText("Application error");
+});
+
+test("the universal search routes a transaction hash to its transaction page", async ({
+  page,
+}) => {
+  const hash =
+    "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890";
+  await page.goto("/explorer");
+
+  await page.getByLabelText("Search").fill(hash);
+  await page.getByRole("button", { name: "Search" }).click();
+
+  await expect(page).toHaveURL(`/transactions/${hash}`);
+  await expect(page.getByText(/temporarily unavailable/i)).toBeVisible();
+  await expect(page.locator("body")).not.toContainText("Application error");
+});
+
+test("the universal search sends anything unrecognised to the memo search", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  await page.getByLabelText("Search").fill("order 12345");
+  await page.getByRole("button", { name: "Search" }).click();
+
+  // The memo search itself needs the indexer, so the URL is the assertion:
+  // the query is carried in it, ready to run the moment the backend is up.
+  await expect(page).toHaveURL(/\/search\?q=order/);
+  await expect(page.locator("body")).not.toContainText("Application error");
+});
+
+test("the / keyboard shortcut focuses the search box", async ({ page }) => {
+  await page.goto("/");
+
+  await page.keyboard.press("/");
+  await expect(page.getByLabelText("Search")).toBeFocused();
+});
+
+test("the registry page offers wallet connection when no wallet is present", async ({
+  page,
+}) => {
   await page.goto("/registry");
 
   // No extension in a clean browser context, so the connect affordance is what
   // should render — not a half-built form.
-  await expect(page.getByRole("button", { name: /connect wallet/i })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /connect wallet/i }),
+  ).toBeVisible();
 });
 
-test("the transactions explorer renders its filters with the backend down", async ({ page }) => {
+test("the transactions explorer renders its filters with the backend down", async ({
+  page,
+}) => {
   await page.goto("/transactions");
 
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();

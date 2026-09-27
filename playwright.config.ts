@@ -7,11 +7,9 @@ import { defineConfig, devices } from "@playwright/test";
  * that is what CI and users actually run — a dev-server-only E2E suite passes
  * happily while the built app is broken.
  *
- * `NEXT_PUBLIC_GRAPHQL_URL` deliberately points at a port nothing is listening
- * on. These tests assert the app's navigation and its unreachable-backend
- * fallbacks, which is the behaviour that has to hold without a live indexer;
- * data-shape assertions belong in the component and page tests, where the
- * response can be pinned exactly.
+ * The default suite deliberately points at a dead port so it exercises the
+ * unreachable-backend fallbacks. The live-backend CI job overrides
+ * `E2E_GRAPHQL_URL` and runs the focused seeded-data spec separately.
  */
 export default defineConfig({
   testDir: "./e2e",
@@ -31,8 +29,8 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
     env: {
-      GRAPHQL_URL: "http://127.0.0.1:59999/graphql",
-      NEXT_PUBLIC_GRAPHQL_URL: "http://127.0.0.1:59999/graphql",
+      GRAPHQL_URL: process.env.E2E_GRAPHQL_URL ?? "http://127.0.0.1:59999/graphql",
+      NEXT_PUBLIC_GRAPHQL_URL: process.env.E2E_GRAPHQL_URL ?? "http://127.0.0.1:59999/graphql",
     },
   },
 });

@@ -12,7 +12,7 @@ import { OwnerContractEventsDocument as EVENTS_QUERY } from "@/lib/generated/gra
  * or a live network, which the issue asked for and which the registration form
  * has never had.
  */
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { nativeToScVal, type xdr } from "@stellar/stellar-sdk";
 import {
   getContractsByOwner,
@@ -73,9 +73,9 @@ export interface OwnerContractsProps {
   loadHistory?: () => Promise<RegistryHistoryEntry[]>;
   loadActivity?: (contractIds: string[]) => Promise<Map<string, ActivityState>>;
   loadStake?: (contractId: string) => Promise<StakeInfo>;
-  deactivate?: (contractId: string, owner: string) => Promise<void>;
-  stake?: (contractId: string, owner: string, amount: bigint) => Promise<void>;
-  withdraw?: (contractId: string, owner: string) => Promise<void>;
+  deactivate?: (contractId: string, owner: string) => Promise<{ hash: string } | void>;
+  stake?: (contractId: string, owner: string, amount: bigint) => Promise<{ hash: string } | void>;
+  withdraw?: (contractId: string, owner: string) => Promise<{ hash: string } | void>;
   /** Notifies the parent so the global list can refresh after a change. */
   onChanged?: () => void;
 }
@@ -90,7 +90,7 @@ const defaultLoadActivity = (contractIds: string[]) =>
 
 const defaultLoadStake = (contractId: string) => getStakeInfo(contractId);
 
-async function callRegistry(owner: string, method: string, args: xdr.ScVal[]) {
+async function callRegistry(owner: string, method: string, args: xdr.ScVal[]): Promise<{ hash: string }> {
   // Imported lazily rather than at module scope: the wallet kit pulls in
   // browser-only CommonJS (Freighter et al) that cannot be loaded outside a
   // browser, which would otherwise make this component untestable — the exact
@@ -98,7 +98,7 @@ async function callRegistry(owner: string, method: string, args: xdr.ScVal[]) {
   // static bundle until someone actually signs something.
   const { signWithWallet } = await import("@/lib/wallet");
 
-  await submitContractCall({
+  const result = await submitContractCall({
     driver: createStellarDriver({
       rpcUrl: SOROBAN_RPC_URL,
       networkPassphrase: NETWORK_PASSPHRASE,
@@ -109,6 +109,7 @@ async function callRegistry(owner: string, method: string, args: xdr.ScVal[]) {
     walletAddress: owner,
     networkPassphrase: NETWORK_PASSPHRASE,
   });
+  return { hash: result.hash };
 }
 
 const defaultDeactivate = (contractId: string, owner: string) =>
@@ -194,6 +195,7 @@ export default function OwnerContracts({
   const [stakeInfo, setStakeInfo] = useState<Record<string, StakeInfo>>({});
   const [stakeInput, setStakeInput] = useState<Record<string, string>>({});
   const [rowError, setRowError] = useState<Record<string, string>>({});
+  const [pendingTxHash, setPendingTxHash] = useState<string | null>(null);
 
   const applyLoaded = useCallback(
     (owned: RegistryEntry[], isCurrent: () => boolean) => {
@@ -258,6 +260,20 @@ export default function OwnerContracts({
     };
   }, [walletAddress, loadContracts, applyLoaded, applyError]);
 
+  const pendingTxInFlight = pendingPhase === 'building' || pendingPhase === 'awaiting-signature' || pendingPhase === 'submitting' || pendingPhase === 'confirming';
+
+  useEffect(() => {
+    if (!pendingTxInFlight) return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [pendingTxInFlight]);
+
   /** Retry, driven by a click rather than an effect. */
   const retry = useCallback(() => {
     const isCurrent = () => true;
@@ -302,7 +318,7 @@ export default function OwnerContracts({
   async function runRowAction(
     entry: RegistryEntry,
     action: "stake" | "withdraw",
-    work: () => Promise<void>,
+    work: () => Promise<{ hash: string } | void>,
     fallback: string,
   ) {
     setPendingId(entry.contractId);
@@ -315,7 +331,11 @@ export default function OwnerContracts({
     });
 
     try {
-      await work();
+      const result = await work();
+      if (result?.hash) {
+        setPendingTxHash(result.hash);
+        sessionStorage.setItem(`tx-${Date.now()}`, result.hash);
+      }
       refreshStake(entry.contractId);
       loadHistory()
         .then(setHistory)
@@ -324,9 +344,13 @@ export default function OwnerContracts({
       const message =
         err instanceof Error && err.message ? err.message : fallback;
       setRowError((prev) => ({ ...prev, [entry.contractId]: message }));
+      if (pendingTxHash) {
+        sessionStorage.setItem(`tx-${Date.now()}`, pendingTxHash);
+      }
     } finally {
       setPendingId(null);
       setPendingPhase("idle");
+      setPendingTxHash(null);
     }
   }
 
@@ -368,7 +392,11 @@ export default function OwnerContracts({
     });
 
     try {
-      await deactivate(entry.contractId, walletAddress);
+      const result = await deactivate(entry.contractId, walletAddress);
+      if (result?.hash) {
+        setPendingTxHash(result.hash);
+        sessionStorage.setItem(`tx-${Date.now()}`, result.hash);
+      }
       // Reflect the new state without a page reload, as the issue requires —
       // the registry read is eventually consistent behind the ledger, so
       // trusting the confirmed transaction is more accurate than re-reading
@@ -391,9 +419,13 @@ export default function OwnerContracts({
             ? err.message
             : "Deactivation failed.";
       setRowError((prev) => ({ ...prev, [entry.contractId]: message }));
+      if (pendingTxHash) {
+        sessionStorage.setItem(`tx-${Date.now()}`, pendingTxHash);
+      }
     } finally {
       setPendingId(null);
       setPendingPhase("idle");
+      setPendingTxHash(null);
     }
   }
 

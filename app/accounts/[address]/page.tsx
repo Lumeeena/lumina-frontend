@@ -105,12 +105,13 @@ export default async function AccountPage({
 
   return (
     <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
-      <Link
-        href="/explorer"
-        className="inline-block text-[13px] font-semibold text-[#7c3aed] hover:text-[#6d28d9] mb-[18px]"
-      >
-        &larr; Back to Explorer
-      </Link>
+      <Breadcrumbs
+        items={[
+          { label: "Explorer", href: "/explorer" },
+          { label: "Accounts", href: "/accounts" },
+          { label: truncateAddress(address, 8) },
+        ]}
+      />
       {result.unavailable ? (
         <BackendUnavailable />
       ) : !account ? (
@@ -169,32 +170,45 @@ export default async function AccountPage({
           <h2 className="font-extrabold text-base mb-3 text-[#0e0e12]">
             Balances
           </h2>
-          <div className="rounded-xl border border-[#e5e3ea] overflow-hidden mb-9">
+          <div className="rounded-xl border border-[#e5e3ea] overflow-x-auto mb-9">
             <table className="w-full text-sm border-collapse">
               <thead>
                 <tr>
                   <th className={th}>Asset</th>
+                  <th className={th}>Issuer</th>
                   <th className={th}>Balance</th>
                   <th className={th}>Limit</th>
                 </tr>
               </thead>
               <tbody>
-                {account.balances.map((b, i) => (
-                  <tr
-                    key={i}
-                    className="border-b border-[#f0eff3] last:border-0"
-                  >
-                    <td className="py-2.5 px-3 font-semibold text-[#0e0e12]">
-                      {b.assetType === "native" ? "XLM" : b.assetCode}
-                    </td>
-                    <td className="py-2.5 px-3 mono text-[#0e0e12]">
-                      {formatXLM(b.balance)}
-                    </td>
-                    <td className="py-2.5 px-3 mono text-[#a6a3b0] text-xs">
-                      {b.limit ? formatXLM(b.limit) : "—"}
-                    </td>
-                  </tr>
-                ))}
+                {account.balances
+                  .slice()
+                  .sort((a, b) => {
+                    if (a.assetType === "native") return -1;
+                    if (b.assetType === "native") return 1;
+                    const aVal = parseFloat(a.balance) || 0;
+                    const bVal = parseFloat(b.balance) || 0;
+                    return bVal - aVal;
+                  })
+                  .map((b, i) => (
+                    <tr
+                      key={i}
+                      className="border-b border-[#f0eff3] last:border-0"
+                    >
+                      <td className="py-2.5 px-3 font-semibold text-[#0e0e12]">
+                        {b.assetType === "native" ? "XLM" : b.assetCode}
+                      </td>
+                      <td className="py-2.5 px-3 mono text-[#a6a3b0] text-xs max-w-xs truncate">
+                        {b.assetType === "native" ? "—" : b.assetIssuer}
+                      </td>
+                      <td className="py-2.5 px-3 mono text-[#0e0e12]">
+                        {formatXLM(b.balance)}
+                      </td>
+                      <td className="py-2.5 px-3 mono text-[#a6a3b0] text-xs">
+                        {b.limit ? formatXLM(b.limit) : "—"}
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>

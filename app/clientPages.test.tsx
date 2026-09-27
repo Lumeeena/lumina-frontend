@@ -17,7 +17,14 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/lib/graphql", () => ({
-  gqlFetch: vi.fn().mockResolvedValue({ transactions: { items: [], pageInfo: { hasNextPage: false, cursor: null } } }),
+  gqlFetch: vi
+    .fn()
+    .mockResolvedValue({
+      transactions: {
+        items: [],
+        pageInfo: { hasNextPage: false, cursor: null },
+      },
+    }),
   GRAPHQL_URL: "http://test/graphql",
   PUBLIC_GRAPHQL_URL: "http://test/graphql",
 }));
@@ -25,8 +32,18 @@ vi.mock("@/lib/graphql", () => ({
 vi.mock("@uiw/react-codemirror", async () => {
   const React = await import("react");
   return {
-    default: ({ value, onChange }: { value: string; onChange: (value: string) => void }) =>
-      React.createElement("textarea", { value, onChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => onChange(event.target.value) }),
+    default: ({
+      value,
+      onChange,
+    }: {
+      value: string;
+      onChange: (value: string) => void;
+    }) =>
+      React.createElement("textarea", {
+        value,
+        onChange: (event: React.ChangeEvent<HTMLTextAreaElement>) =>
+          onChange(event.target.value),
+      }),
   };
 });
 
@@ -43,27 +60,33 @@ describe("HomePage", () => {
     render(await HomePage());
 
     expect(screen.getByRole("heading", { level: 1 })).toBeTruthy();
-    const hrefs = screen.getAllByRole("link").map(a => a.getAttribute("href"));
+    const hrefs = screen
+      .getAllByRole("link")
+      .map((a) => a.getAttribute("href"));
     expect(hrefs).toContain("/graphql");
   });
 });
 
 describe("ExplorerPage", () => {
-  it("renders an account search that submits to the accounts route", () => {
+  it("renders the universal search box the / shortcut focuses", () => {
     render(<ExplorerPage />);
 
-    const input = screen.getByPlaceholderText(/stellar account address/i);
-    // The search is a plain GET form, so the field name is what builds the URL.
-    expect(input.getAttribute("name")).toBe("address");
-    expect(input.closest("form")?.getAttribute("action")).toBe("/accounts");
+    const input = screen.getByLabelText("Search");
+    // The attribute is what the keyboard shortcut queries for; losing it
+    // would silently break `/` focusing the search.
+    expect(input).toHaveAttribute("data-shortcut-search");
   });
 
   it("mounts the shared transaction explorer", async () => {
     render(<ExplorerPage />);
 
-    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Explorer");
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(
+      "Explorer",
+    );
     await waitFor(() =>
-      expect(screen.getByRole("heading", { level: 2, name: /recent transactions/i })).toBeTruthy()
+      expect(
+        screen.getByRole("heading", { level: 2, name: /recent transactions/i }),
+      ).toBeTruthy(),
     );
   });
 });
@@ -75,7 +98,9 @@ describe("TransactionsPage", () => {
     // rather than a test, so this pins it.
     render(<TransactionsPage />);
 
-    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Transactions");
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(
+      "Transactions",
+    );
   });
 });
 
@@ -113,13 +138,19 @@ describe("GraphQLPage", () => {
   });
 
   it("reports a failed query instead of silently showing nothing", async () => {
-    (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValue(new Error("fetch failed"));
+    (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new Error("fetch failed"),
+    );
     render(<GraphQLPage />);
 
     await userEvent.click(screen.getByRole("button", { name: /run/i }));
 
     // The page reports an unreachable server in its own words rather than
     // surfacing the raw fetch rejection.
-    await waitFor(() => expect(screen.getByText(/couldn't reach the graphql server/i)).toBeTruthy());
+    await waitFor(() =>
+      expect(
+        screen.getByText(/couldn't reach the graphql server/i),
+      ).toBeTruthy(),
+    );
   });
 });

@@ -70,6 +70,7 @@ function RegistryContent() {
   const [connecting, setConnecting] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
   const [connectError, setConnectError] = useState<string | null>(null);
+  const [walletLocked, setWalletLocked] = useState(false);
 
   // Convenience: address is still used in several places below.
   const walletAddress = wallet?.address ?? null;
@@ -149,14 +150,17 @@ function RegistryContent() {
   async function handleConnect() {
     setConnecting(true);
     setConnectError(null);
+    setWalletLocked(false);
     const result = await connectWallet();
     if ("error" in result) {
       setConnectError(result.error);
+      setWalletLocked(result.isLocked ?? false);
     } else {
       // Re-fetch full session so we get name + icon too (#88).
       const session = await getConnectedWallet();
       setWallet(session);
       setTab("mine");
+      setWalletLocked(false);
     }
     setConnecting(false);
   }
@@ -216,7 +220,14 @@ function RegistryContent() {
                   role="alert"
                   className="text-xs text-[#dc2626] bg-[#fef2f2] rounded-lg px-3 py-2"
                 >
-                  {connectError}
+                  {walletLocked ? (
+                    <div>
+                      <p className="font-semibold mb-1">Your wallet is locked</p>
+                      <p className="text-[#991b1b]">Unlock your wallet extension and try again.</p>
+                    </div>
+                  ) : (
+                    connectError
+                  )}
                 </div>
               )}
             </div>
