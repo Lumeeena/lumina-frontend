@@ -54,8 +54,9 @@ export default function ConnectionIndicator({ state, failureReason = null, onRet
 
   return (
     <div
-      className="flex items-center gap-2 text-xs font-bold tracking-wide text-[#0e0e12]"
-      title={TITLE[state]}
+      // `relative` so the expanded explanation is positioned against this
+      // status line rather than against whatever ancestor happens to be laid out.
+      className="relative flex items-center gap-2 text-xs font-bold tracking-wide text-[#0e0e12]"
       // Announced politely so a reconnect is heard without interrupting, and
       // exposed as status text rather than only as a coloured dot.
       role="status"
@@ -67,36 +68,53 @@ export default function ConnectionIndicator({ state, failureReason = null, onRet
         className={`w-[7px] h-[7px] rounded-full ${dot} ${pulse ? "animate-pulse" : ""}`}
         style={{ boxShadow: `0 0 0 3px ${ring}` }}
       />
-      <span data-testid="connection-label">{label}</span>
-      {reason && (
-        <span className="font-normal text-[11px] text-[#a6a3b0]" data-testid="connection-reason">
-          {reason}
-        </span>
-      )}
+      {/* The reason sits inside the label rather than beside it: the two are one
+          statement ("POLLING, server unreachable") and reading them as
+          separate fragments loses that. */}
+      <span data-testid="connection-label">
+        {label}
+        {reason && (
+          <span
+            className="font-normal text-[11px] text-[#a6a3b0]"
+            data-testid="connection-reason"
+          >
+            {reason}
+          </span>
+        )}
+      </span>
+      {/* Available in every state. A green LIVE dot that has quietly stalled is
+          the exact thing this component exists to rule out, so the way to ask
+          "is this actually current?" cannot depend on already suspecting it. */}
+      <button
+        type="button"
+        aria-expanded={expanded}
+        aria-controls={explanationId}
+        aria-label={`What does ${label} mean?`}
+        onClick={() => setExpanded((open) => !open)}
+        className="relative inline-flex size-7 shrink-0 select-none items-center justify-center rounded-md text-[#6b6975] hover:bg-[#f0eff3] hover:text-[#0e0e12]"
+      >
+        <Info aria-hidden="true" className="size-4 shrink-0" strokeWidth={2} />
+        <span
+          className="absolute left-1/2 top-1/2 size-[max(100%,3rem)] -translate-1/2 pointer-fine:hidden"
+          aria-hidden="true"
+        />
+      </button>
+
+      {/* Only offered once the client has actually given up. A retry while it is
+          still backing off would just queue a second attempt behind the first. */}
       {state === "disconnected" && onRetry && (
         <button
           type="button"
-          aria-expanded={expanded}
-          aria-controls={explanationId}
-          aria-label={`What does ${label} mean?`}
-          onClick={() => setExpanded(open => !open)}
-          className="relative inline-flex size-7 shrink-0 select-none items-center justify-center rounded-md text-[#6b6975] hover:bg-[#f0eff3] hover:text-[#0e0e12]"
+          onClick={onRetry}
+          className="relative select-none font-medium text-[0.6875rem] text-[#7c3aed] hover:text-[#6d28d9] hover:underline"
         >
-          <Info aria-hidden="true" className="size-4 shrink-0" strokeWidth={2} />
-          <span className="absolute left-1/2 top-1/2 size-[max(100%,3rem)] -translate-1/2 pointer-fine:hidden" aria-hidden="true" />
+          Retry
+          <span
+            className="absolute left-1/2 top-1/2 size-[max(100%,3rem)] -translate-1/2 pointer-fine:hidden"
+            aria-hidden="true"
+          />
         </button>
-
-        {state === "disconnected" && onRetry && (
-          <button
-            type="button"
-            onClick={onRetry}
-            className="relative select-none font-medium text-[0.6875rem] text-[#7c3aed] hover:text-[#6d28d9] hover:underline"
-          >
-            Retry connection
-            <span className="absolute left-1/2 top-1/2 size-[max(100%,3rem)] -translate-1/2 pointer-fine:hidden" aria-hidden="true" />
-          </button>
-        )}
-      </div>
+      )}
 
       {expanded && (
         <p

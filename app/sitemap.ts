@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { STABLE_ROUTES } from "@/lib/routes";
+import { INDEXABLE_ROUTES } from "@/lib/routes";
 import { SITE_URL } from "@/lib/site";
 
 /**
@@ -21,11 +21,16 @@ import { SITE_URL } from "@/lib/site";
  *   out rather than publish a value that is always wrong; a crawler that
  *   distrusts `lastmod` starts ignoring the whole file.
  *
+ * - **`/watch`.** It renders from the visitor's own localStorage, so a crawler
+ *   gets the empty state. It is in the nav, and a route marked `indexable:
+ *   false` in the inventory is what keeps the two from having to agree by
+ *   accident.
+ *
  * The route list itself comes from `lib/routes.ts`, which is the same list the
  * nav renders, so a new page cannot ship without appearing here.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
-  return STABLE_ROUTES.map(route => ({
+  return INDEXABLE_ROUTES.map(route => ({
     // The trailing slash of the origin is trimmed, so the home page's URL is
     // the bare origin rather than a doubled slash.
     url: `${SITE_URL}${route.path === "/" ? "" : route.path}`,

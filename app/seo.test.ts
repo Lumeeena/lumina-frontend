@@ -10,24 +10,39 @@
 import { describe, expect, it } from "vitest";
 import sitemap from "@/app/sitemap";
 import robots from "@/app/robots";
-import { CRAWL_EXCLUDED, HOME, NAV_ROUTES, STABLE_ROUTES } from "@/lib/routes";
+import { CRAWL_EXCLUDED, HOME, INDEXABLE_ROUTES, NAV_ROUTES } from "@/lib/routes";
 import { SITE_URL } from "@/lib/site";
 
 describe("sitemap", () => {
-  it("lists every stable route exactly once, at an absolute URL", () => {
+  it("lists every indexable route exactly once, at an absolute URL", () => {
     const urls = sitemap().map(entry => entry.url);
 
-    expect(urls).toEqual(STABLE_ROUTES.map(route => `${SITE_URL}${route.path === "/" ? "" : route.path}`));
+    expect(urls).toEqual(INDEXABLE_ROUTES.map(route => `${SITE_URL}${route.path === "/" ? "" : route.path}`));
     expect(new Set(urls).size).toBe(urls.length);
     // A relative or schemeless URL is silently dropped by every crawler.
     for (const url of urls) expect(url).toMatch(/^https?:\/\//);
   });
 
-  it("includes the routes the nav offers, so the two cannot drift", () => {
+  it("includes the nav routes, so the two cannot drift", () => {
     const paths = sitemap().map(entry => new URL(entry.url).pathname || "/");
 
-    for (const route of STABLE_ROUTES) expect(paths).toContain(route.path);
-    for (const route of NAV_ROUTES) expect(paths).toContain(route.path);
+    for (const route of INDEXABLE_ROUTES) expect(paths).toContain(route.path);
+    // A nav route only has to be in the sitemap if it has anything to crawl, so
+    // a route absent from both is a drift and a route present in the nav but
+    // marked `indexable: false` is deliberate.
+    for (const route of NAV_ROUTES) {
+      if (route.indexable === false) continue;
+      expect(paths).toContain(route.path);
+    }
+  });
+
+  it("keeps a page that renders from localStorage out of the sitemap", () => {
+    // `/watch` is built entirely from the visitor's own watch list, so a
+    // crawler would only ever index the empty state.
+    const paths = sitemap().map(entry => new URL(entry.url).pathname || "/");
+
+    expect(paths).not.toContain("/watch");
+    expect(NAV_ROUTES.map(route => route.path)).toContain("/watch");
   });
 
   it("omits the per-address pages, which are unbounded", () => {
