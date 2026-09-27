@@ -10,7 +10,7 @@ import AccountActivityFeed from "@/components/AccountActivityFeed";
 import AccountTransactionList from "@/components/AccountTransactionList";
 import AccountOperationList from "@/components/AccountOperationList";
 import BackendUnavailable from "@/components/BackendUnavailable";
-import type { Metadata } from "next";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 export const dynamic = "force-dynamic";
 
@@ -111,12 +111,13 @@ export default async function AccountPage({
 
   return (
     <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
-      <Link
-        href="/explorer"
-        className="inline-block text-[13px] font-semibold text-[#7c3aed] hover:text-[#6d28d9] mb-[18px]"
-      >
-        &larr; Back to Explorer
-      </Link>
+      <Breadcrumbs
+        items={[
+          { label: "Explorer", href: "/explorer" },
+          { label: "Accounts", href: "/accounts" },
+          { label: truncateAddress(address, 8) },
+        ]}
+      />
       {result.unavailable ? (
         <BackendUnavailable />
       ) : !account ? (
