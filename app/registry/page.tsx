@@ -9,11 +9,9 @@ import {
   isCategory,
   withCategories,
   type Category,
-  type RegistryEntry,
   type RegistryProfile,
 } from "@/lib/registry";
 import { connectWallet, getConnectedAddress } from "@/lib/wallet";
-import { truncateAddress } from "@/lib/formatters";
 import RegisterContractForm from "@/components/RegisterContractForm";
 import OwnerContracts from "@/components/OwnerContracts";
 import RegistryEntryCard from "@/components/RegistryEntryCard";
