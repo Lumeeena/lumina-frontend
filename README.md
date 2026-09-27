@@ -31,6 +31,8 @@ Runs against `http://localhost:4000/graphql` by default — start [lumina-backen
 
 | `NEXT_PUBLIC_SITE_URL` | Canonical URLs, `og:image` and the sitemap — **build-time inlined** | `http://localhost:3000` |
 
+`NEXT_PUBLIC_VAPID_PUBLIC_KEY` enables the optional push notifications on `/watch`. It is unset by default and push stays off unless someone opts in — see [docs/PUSH_NOTIFICATIONS.md](docs/PUSH_NOTIFICATIONS.md) for the backend endpoint the delivery path still needs.
+
 `NEXT_PUBLIC_*` values must be set as Docker build `ARG`s (see `Dockerfile`), not runtime env vars — Next.js inlines them into the client bundle at build time, so setting them only at container-run time has no effect.
 
 `NEXT_PUBLIC_SITE_URL` is the one that has to be right in production. Every canonical link, share-card URL and sitemap entry is resolved against it at build time, so a site served from another origin while this still says `localhost` emits absolute URLs that point nowhere.
@@ -91,6 +93,31 @@ server has no memory of the previous one.
 After the retry budget is exhausted, or where `WebSocket` is unavailable at all
 (a restrictive proxy, a server-rendered pass), the feed falls back to the
 original 30-second polling rather than going dead.
+
+## Watching accounts
+
+`/watch` is where several accounts are followed at once, and it is the reason the
+shared socket above is shared. A watch list of eight accounts means **one**
+`WebSocket` carrying eight multiplexed subscriptions, not eight connections — so
+the connection count does not grow with the list, and the server has one view of
+whether the tab is connected rather than eight disagreeing ones. Adding a watch
+sends one more subscription frame on the open socket; it does not reconnect.
+
+Each watch carries its own filter (`lib/filterModel.ts`), defaulting to payments
+so a quiet watch stays quiet. Filters are part of the watch, not the page, which
+is what lets one watch alert on large payments while another takes everything.
+
+New activity on a watch surfaces in two places. The `ActivityBell` in the navbar
+is the always-available one: it survives navigation and reloads, marks the count
+read when opened, and links through to the account. A system notification is
+raised only when the tab is actually in the background, and only after someone
+opts in by clicking — permission is never requested on page load. See
+[docs/PUSH_NOTIFICATIONS.md](docs/PUSH_NOTIFICATIONS.md) for the VAPID key and
+the backend endpoint that delivery still requires.
+
+`/watch` is deliberately excluded from the sitemap (`WATCHES.indexable = false`)
+so a per-person list never ends up indexed, while staying linked from the navbar
+for people who want it.
 
 ## Wallet-connected Registry page
 

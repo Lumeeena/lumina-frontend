@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_ROUTES } from "@/lib/routes";
+import ActivityBell from "./ActivityBell";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -33,6 +34,10 @@ export default function Navbar() {
           </Link>
         );
       })}
+
+      {/* The unread indicator, and the only place alerts are read from. It sits
+          outside the scrollable link row so the count is always visible. */}
+      <ActivityBell />
     </nav>
   );
 }

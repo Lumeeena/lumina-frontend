@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import SkipLink from "@/components/SkipLink";
 import KeyboardShortcuts from "@/components/KeyboardShortcuts";
+import WatchActivityWatcher from "@/components/WatchActivityWatcher";
 import { shareCard } from "@/lib/metadata";
 import { DEFAULT_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
 
@@ -51,11 +52,14 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-white text-[#0e0e12]">
         <SkipLink />
+        {/* Alerts for watched addresses have to keep arriving on every route,
+            which is the whole point of a watch. It subscribes and records; it
+            renders nothing. */}
+        <WatchActivityWatcher />
         <Navbar />
         <KeyboardShortcuts />
         <main id="main" className="flex-1">{children}</main>
         <Footer />
-        <KeyboardShortcuts />
       </body>
     </html>
   );

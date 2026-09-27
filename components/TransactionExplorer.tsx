@@ -246,45 +246,17 @@ export default function TransactionExplorer({
         )}
       </div>
 
-      <div
-        ref={scrollRef}
-        data-testid="transaction-scroll"
-        className="rounded-xl border border-[#e5e3ea] overflow-auto max-h-[70vh]"
-      >
-        <table className="w-full text-sm border-collapse">
-          <thead className="sticky top-0 z-10">
-            <tr>
-              <th className={`${th} w-6`} />
-              <th className={th}>Hash</th>
-              <th className={th}>Ledger</th>
-              <th className={th}>Source</th>
-              <th className={th}>Ops</th>
-              <th className={th}>Fee</th>
-              <th className={th}>Time</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paddingTop > 0 && (
-              <tr aria-hidden="true">
-                <td colSpan={7} style={{ height: paddingTop }} />
-              </tr>
-            )}
-            {virtualRows.map(virtualRow => (
-              <TransactionRow key={filtered[virtualRow.index].hash} tx={filtered[virtualRow.index]} />
-            ))}
-            {paddingBottom > 0 && (
-              <tr aria-hidden="true">
-                <td colSpan={7} style={{ height: paddingBottom }} />
-              </tr>
-            )}
-          </tbody>
-        </table>
-
-        {filtered.length === 0 && !loading && !error && (
-          <div className="p-8 text-center text-[#a6a3b0] text-sm">
-            {txs.length === 0
-              ? "No transactions indexed yet."
-              : "No transactions match these filters."
+      {/* The table itself lives in `VirtualizedTransactionTable`, which owns the
+          scroll container and the spacer rows. This component passes the
+          filtered set down and hands the infinite-scroll sentinel back as a
+          child, so the sentinel is measured inside the scroll area it belongs
+          to rather than in a sibling div that is not scrolled. */}
+      <VirtualizedTransactionTable
+        transactions={filtered}
+        emptyMessage={
+          txs.length === 0
+            ? "No transactions indexed yet."
+            : "No transactions match these filters."
         }
       >
         <div ref={sentinelRef} data-testid="scroll-sentinel" className="h-px" />

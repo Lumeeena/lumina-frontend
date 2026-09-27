@@ -16,6 +16,15 @@ export interface RouteInfo {
   label: string;
   /** One sentence about the page, used for its meta description and social card. */
   description: string;
+  /**
+   * Whether the sitemap should list this route. Defaults to true.
+   *
+   * False is for a route that exists but has nothing for a crawler: `/watch`
+   * renders from the visitor's own localStorage, so an anonymous request gets an
+   * empty page. It is still a real page and still in the nav — a watch list
+   * cannot be in anyone's bookmarks if it is not linked from anywhere.
+   */
+  indexable?: boolean;
 }
 
 export const HOME: RouteInfo = {
@@ -74,6 +83,16 @@ export const STATS: RouteInfo = {
     "Indexer health and Stellar network throughput: latest ledger, transaction volume and the mix of operation types.",
 };
 
+export const WATCHES: RouteInfo = {
+  path: "/watch",
+  label: "Watch",
+  description:
+    "Follow Stellar addresses: one live feed of activity across everything you watch, with per-address alert filters.",
+  // Every byte of this page comes from the visitor's own localStorage, so a
+  // crawler fetching it sees the empty state and nothing else.
+  indexable: false,
+};
+
 /**
  * The routes a crawler should be pointed at, in the order the sitemap lists
  * them — most important first, which is also the order Google's docs suggest
@@ -91,7 +110,13 @@ export const STABLE_ROUTES: readonly RouteInfo[] = [
   GRAPHQL,
   REGISTRY,
   STATS,
+  WATCHES,
 ];
+
+/** The sitemap lists the indexable subset of the inventory. */
+export const INDEXABLE_ROUTES: readonly RouteInfo[] = STABLE_ROUTES.filter(
+  (route) => route.indexable !== false,
+);
 
 /** The nav shows every route except the home page, which the wordmark links to. */
 export const NAV_ROUTES: readonly RouteInfo[] = STABLE_ROUTES.filter(
