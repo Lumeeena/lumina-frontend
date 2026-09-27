@@ -25,14 +25,29 @@ function ensureInit() {
 }
 
 /** Opens the wallet-picker modal; resolves once the user connects a wallet. */
-export async function connectWallet(): Promise<{ address: string } | { error: string }> {
+export async function connectWallet(): Promise<{ address: string } | { error: string; isLocked?: boolean }> {
   ensureInit();
   try {
     const { address } = await StellarWalletsKit.authModal();
     return { address };
   } catch (err) {
-    return { error: err instanceof Error ? err.message : 'Wallet connection was cancelled.' };
+    const message = err instanceof Error ? err.message : 'Wallet connection was cancelled.';
+    const isLocked = detectLockedWallet(message, err);
+    return { error: message, isLocked };
   }
+}
+
+function detectLockedWallet(message: string, err: unknown): boolean {
+  const lowerMessage = message.toLowerCase();
+  if (lowerMessage.includes('locked')) return true;
+  if (lowerMessage.includes('not unlocked')) return true;
+  if (lowerMessage.includes('extension not active')) return false;
+  if (lowerMessage.includes('extension not found')) return false;
+  if (lowerMessage.includes('not installed')) return false;
+  if (lowerMessage.includes('no extension')) return false;
+
+  const errStr = String(err).toLowerCase();
+  return errStr.includes('locked') || errStr.includes('not unlocked');
 }
 
 /** Returns the already-connected address without opening the modal, or null if none. */
