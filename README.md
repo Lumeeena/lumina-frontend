@@ -42,16 +42,18 @@ description and crawl policy — and everything else reads from it: the navbar,
 `sitemap.ts`, `robots.txt` and the per-route metadata. Adding a route means
 adding one entry there, not editing four files and hoping they agree.
 
-**Indexed.** The seven stable routes (`/`, `/explorer`, `/transactions`,
-`/events`, `/graphql`, `/registry`, `/stats`) are in `sitemap.xml` and each
-carries its own title, description, canonical URL and 1200×630 share card.
+**Indexed.** The eight stable routes (`/`, `/explorer`, `/transactions`,
+`/search`, `/events`, `/graphql`, `/registry`, `/stats`) are in `sitemap.xml`
+and each carries its own title, description, canonical URL and 1200×630 share
+card.
 
 **Crawl-blocked, still linkable.**
 
-| Path | Why |
-|---|---|
-| `/accounts/*` | One page per Stellar address, unbounded and unguessable, so there is no finite set for a crawler to walk. A link shared into a chat still previews correctly, because `/accounts/[address]` has its own `generateMetadata` and its own generated image. |
-| `/*?` | Filter and search views — `?status=failed`, `?contractId=…`. They are the same page as the route they filter, not separate pages, and each one declares the bare route as its canonical. |
+| Path              | Why                                                                                                                                                                                                                                                     |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/accounts/*`     | One page per Stellar address, unbounded and unguessable, so there is no finite set for a crawler to walk. A link shared into a chat still previews correctly, because `/accounts/[address]` has its own `generateMetadata` and its own generated image. |
+| `/transactions/*` | One page per transaction hash, unbounded for the same reason. A shared link still previews correctly from the hash in the URL alone.                                                                                                                    |
+| `/*?`             | Filter and search views — `?status=failed`, `?contractId=…`, `?q=…`. They are the same page as the route they filter, not separate pages, and each one declares the bare route as its canonical.                                                        |
 
 `app/robots.ts` carries the reasoning inline, as a `reason` on each entry in
 `CRAWL_EXCLUDED`, so the next person to touch the policy can see why it is what

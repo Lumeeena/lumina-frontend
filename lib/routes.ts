@@ -39,16 +39,25 @@ export const TRANSACTIONS: RouteInfo = {
     "Every indexed Stellar transaction, with filters, saved presets and cursor pagination.",
 };
 
+export const SEARCH: RouteInfo = {
+  path: "/search",
+  label: "Search",
+  description:
+    "Memo search across every indexed transaction — order references and short codes, ranked by the backend's trigram similarity.",
+};
+
 export const EVENTS: RouteInfo = {
   path: "/events",
   label: "Contract Events",
-  description: "Soroban contract events indexed by Lumina, filterable by contract id.",
+  description:
+    "Soroban contract events indexed by Lumina, filterable by contract id.",
 };
 
 export const GRAPHQL: RouteInfo = {
   path: "/graphql",
   label: "GraphQL",
-  description: "Run queries against the Lumina GraphQL API from the browser, with worked examples.",
+  description:
+    "Run queries against the Lumina GraphQL API from the browser, with worked examples.",
 };
 
 export const REGISTRY: RouteInfo = {
@@ -77,6 +86,7 @@ export const STABLE_ROUTES: readonly RouteInfo[] = [
   HOME,
   EXPLORER,
   TRANSACTIONS,
+  SEARCH,
   EVENTS,
   GRAPHQL,
   REGISTRY,
@@ -84,7 +94,9 @@ export const STABLE_ROUTES: readonly RouteInfo[] = [
 ];
 
 /** The nav shows every route except the home page, which the wordmark links to. */
-export const NAV_ROUTES: readonly RouteInfo[] = STABLE_ROUTES.filter(route => route.path !== HOME.path);
+export const NAV_ROUTES: readonly RouteInfo[] = STABLE_ROUTES.filter(
+  (route) => route.path !== HOME.path,
+);
 
 export interface CrawlExclusion {
   /** A robots.txt path prefix; the trailing `*` is a Google/Bing wildcard. */
@@ -108,8 +120,13 @@ export const CRAWL_EXCLUDED: readonly CrawlExclusion[] = [
       "one page per Stellar address — an unbounded set, and none of them is a route anyone arrives on directly",
   },
   {
+    pattern: "/transactions/",
+    reason:
+      "one page per transaction hash — an unbounded set for the same reason as account pages",
+  },
+  {
     pattern: "/*?",
     reason:
-      "filter and search permutations (?contractId=, ?category=, ?status=…) are the same content as the canonical route, so they multiply the URL space without adding anything to crawl",
+      "filter and search permutations (?contractId=, ?category=, ?status=, ?q=…) are the same content as the canonical route, so they multiply the URL space without adding anything to crawl",
   },
 ];

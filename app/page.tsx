@@ -6,11 +6,15 @@ import { shareCard } from "@/lib/metadata";
 import { DEFAULT_DESCRIPTION, SITE_TITLE } from "@/lib/site";
 import type { Ledger } from "@/lib/types";
 import StatCard from "@/components/StatCard";
+import SearchBar from "@/components/SearchBar";
 import LiveFeed from "@/components/LiveFeed";
 import BackendUnavailable from "@/components/BackendUnavailable";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Home | Lumina", description: "Illuminate Stellar network data with Lumina." };
+export const metadata: Metadata = {
+  title: "Home | Lumina",
+  description: "Illuminate Stellar network data with Lumina.",
+};
 
 export const metadata: Metadata = {
   // `absolute` because this is the route the title template's own default
@@ -18,7 +22,11 @@ export const metadata: Metadata = {
   // read "Lumina — Stellar Data Layer — Lumina".
   title: { absolute: SITE_TITLE },
   description: DEFAULT_DESCRIPTION,
-  ...shareCard({ label: SITE_TITLE, description: DEFAULT_DESCRIPTION, path: "/" }),
+  ...shareCard({
+    label: SITE_TITLE,
+    description: DEFAULT_DESCRIPTION,
+    path: "/",
+  }),
 };
 
 const LATEST_LEDGER_QUERY = `
@@ -32,9 +40,15 @@ const LATEST_LEDGER_QUERY = `
   }
 `;
 
-async function getLatestLedger(): Promise<{ ledger: Ledger | null; unavailable: boolean }> {
+async function getLatestLedger(): Promise<{
+  ledger: Ledger | null;
+  unavailable: boolean;
+}> {
   try {
-    const data = await gqlFetch<{ latestLedger: Ledger | null }>(GRAPHQL_URL, LATEST_LEDGER_QUERY);
+    const data = await gqlFetch<{ latestLedger: Ledger | null }>(
+      GRAPHQL_URL,
+      LATEST_LEDGER_QUERY,
+    );
     return { ledger: data.latestLedger, unavailable: false };
   } catch {
     return { ledger: null, unavailable: true };
@@ -110,28 +124,19 @@ export default async function Home() {
             <div className="text-xs font-semibold text-[#6b6975] mb-2.5">
               Search the network
             </div>
-            <form
-              action="/accounts"
-              method="get"
-              className="flex flex-col gap-2.5"
-            >
-              <input
-                name="address"
-                placeholder="Stellar address (G...)"
-                className="w-full min-h-[44px] px-3 py-2.5 text-[13px] mono text-[#0e0e12] bg-white border border-[#e5e3ea] rounded-lg"
-              />
-              <button
-                type="submit"
-                className="bg-[#0e0e12] hover:bg-[#28262f] text-white font-bold text-sm py-3 rounded-lg transition-colors"
-              >
-                Search Account
-              </button>
-            </form>
+            {/* The one search box: it classifies an account, transaction hash
+                or contract id by shape and routes to the right page, and sends
+                anything unrecognised to the backend's memo search. */}
+            <SearchBar />
           </div>
         </div>
       </section>
 
-      {result.unavailable && <div className="max-w-[1160px] mx-auto px-4 sm:px-7 pt-8"><BackendUnavailable /></div>}
+      {result.unavailable && (
+        <div className="max-w-[1160px] mx-auto px-4 sm:px-7 pt-8">
+          <BackendUnavailable />
+        </div>
+      )}
       <section className="px-4 sm:px-7 py-8 border-b border-[#e5e3ea] bg-[#fafafa]">
         <div className="max-w-[1160px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard
