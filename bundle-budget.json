@@ -1,0 +1,19 @@
+{
+  "headroomBytes": 5120,
+  "routes": {
+    "/": 173672,
+    "/_global-error": 146671,
+    "/_not-found": 161496,
+    "/accounts": 162099,
+    "/accounts/[address]": 167429,
+    "/events": 163100,
+    "/explorer": 177704,
+    "/graphql": 293862,
+    "/registry": 254324,
+    "/search": 162901,
+    "/stats": 163100,
+    "/transactions": 177413,
+    "/transactions/[hash]": 163427,
+    "/watch": 166921
+  }
+}

@@ -14,6 +14,9 @@
     "codegen": "graphql-codegen --config codegen.ts",
     "prebuild": "npm run codegen",
     "analyze": "node scripts/analyze.mjs",
+    "build:bundle": "next build --experimental-build-mode compile",
+    "bundle:report": "node scripts/bundle-report.mjs",
+    "bundle:update": "npm run build:bundle && node scripts/bundle-report.mjs --update",
     "prepare": "node scripts/prepare.mjs",
     "lint:staged": "lint-staged",
     "measure:compiler": "node scripts/measure-compiler.mjs"

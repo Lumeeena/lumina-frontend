@@ -150,6 +150,12 @@ otherwise grow without bound on a tab left open overnight; it is a "what is
 happening now" panel, not scrollback. React Compiler memoization is enabled per
 component via an annotation, and the boundary is measured rather than assumed.
 
+First-load JavaScript is budgeted per route in `bundle-budget.json` and checked
+on every pull request, so a dependency that grows a page fails CI instead of
+arriving as a slow page on a slow connection. The commands and the meaning of
+the numbers are in the Bundle report section of
+[CONTRIBUTING.md](../CONTRIBUTING.md).
+
 ## Where new code goes
 
 - **New page** — add a `RouteInfo` to `lib/routes.ts`, then a server component

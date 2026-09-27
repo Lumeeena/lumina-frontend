@@ -125,6 +125,8 @@ that gate honest — if a change adds an uncovered branch, the coverage job fail
 
 ## Bundle report
 
+### Investigating a heavy route
+
 Run `npm run analyze`. This validates GraphQL operations and makes a production
 Webpack build with `@next/bundle-analyzer`, writing interactive treemaps to
 `.next/analyze/client.html`, `.next/analyze/nodejs.html` and (when present)
@@ -136,11 +138,46 @@ and gzip sizes, and search for packages such as the Stellar SDK or wallet kit.
 Server report totals are not browser download sizes. Reports are ignored build
 artifacts and are regenerated each run. Normal builds keep Next.js's default
 Turbopack bundler; the analyzer explicitly selects Webpack, so do not treat its
-chunk sizes as exact Turbopack production budgets.
+chunk sizes as the budget below.
 
-This supplies the investigation tool for the separate
-[bundle budget issue #34](https://github.com/Lumeeena/lumina-frontend/issues/34).
-It does not set a budget or CI threshold.
+### The budget
+
+`bundle-budget.json` records how much first-load JavaScript each route may
+ship. A route's size is the chunks its client-reference manifest lists as
+synchronous plus the shared Next runtime, gzipped — polyfills are left out
+because Next serves them with `noModule`, so no current browser downloads them.
+Route handlers are excluded; they have no browser bundle.
+
+`scripts/bundle-report.mjs` measures that from the build in `.next` and
+compares it with the budget:
+
+- `npm run bundle:report` prints the per-route table with size, delta and
+  budget, writes `.next/bundle-report.json` (the chunk list per route is what
+  makes a diff say what moved), and exits non-zero when a route is over budget
+  or has no entry at all.
+- `npm run bundle:update` rebuilds in compile mode and rewrites
+  `bundle-budget.json` to the sizes that build produced. Committing that diff is
+  how a raise is accepted; it is meant to be as visible as any other line of
+  the pull request.
+- `npm run build:bundle` is a compile-only Next build: it skips type checking
+  and prerendering, neither of which changes which chunks a route loads. Run it
+  before `bundle:report` when you have no build yet; `bundle:update` runs it for
+  you, and CI uses it so the budget still reports sizes while the build job is
+  red for unrelated reasons.
+
+CI runs `npm run bundle:report` in the **Bundle Budget** job on every push and
+pull request, appends the same table to the workflow summary and uploads the
+JSON report. A route that is over budget fails the job and annotates the pull
+request with the overage; a route with no budget entry fails too, so a new page
+cannot ship unsized.
+
+The budget for a route is its last accepted size plus 5 kB of headroom
+(`headroomBytes` in the file). That absorbs byte-level churn — a zlib or
+Next.js bump moves gzip sizes slightly — while a new dependency is still far
+beyond it.
+
+This, with the analyzer above, closes [bundle budget issue
+#34](https://github.com/Lumeeena/lumina-frontend/issues/34).
 
 ## Virtualizer and React Compiler
 
@@ -164,8 +201,10 @@ because they double the diff without doubling the review's value.
   limitation if you could not verify something rather than leaving it implied.
 - **Link the issue** — reference it in the body and end with `Closes #<number>`
   so merging closes it.
-- **Keep CI green** — build, unit tests with coverage, and the Playwright suites
-  run on every pull request, along with the generated-files drift check.
+- **Keep CI green** — build, unit tests with coverage, the Playwright suites
+  and the bundle budget run on every pull request, along with the
+  generated-files drift check. A route over budget needs shrinking or an
+  explicit `npm run bundle:update` (see [Bundle report](#bundle-report)).
 - **Include the tests** — see [Testing](#testing); a behaviour change without a
   test that would fail without the change is usually incomplete, and a bug fix is
   best accompanied by the test that reproduces it.

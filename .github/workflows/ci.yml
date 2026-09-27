@@ -31,6 +31,29 @@ jobs:
           path: coverage/
           retention-days: 14
 
+  bundle:
+    name: Bundle Budget
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      # The report measures compiled client chunks, so this job builds in
+      # compile mode: type checking belongs to the build job above, and
+      # prerendering does not change which chunks a route loads.
+      - run: npm run build:bundle
+      - run: npm run bundle:report
+      - name: Upload bundle report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-report
+          path: .next/bundle-report.json
+          retention-days: 14
+
   e2e:
     name: E2E (Playwright)
     runs-on: ubuntu-latest
