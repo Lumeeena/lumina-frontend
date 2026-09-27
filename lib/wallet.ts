@@ -103,7 +103,7 @@ export async function getConnectedWallet(): Promise<WalletSession | null> {
   try {
     const { address } = await StellarWalletsKit.getAddress();
     if (!address) return null;
-    const mod = StellarWalletsKit.selectedModule();
+    const mod = StellarWalletsKit.selectedModule;
     return {
       address,
       walletId: mod.productId,

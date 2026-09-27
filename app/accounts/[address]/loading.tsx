@@ -6,5 +6,5 @@ import RouteSkeleton from "@/components/RouteSkeleton";
  * balances and activity lists rather than for a header.
  */
 export default function Loading() {
-  return <RouteSkeleton label="Loading account" cards={3} rows={3} />;
+  return <RouteSkeleton label="Loading account" cards={4} rows={8} />;
 }

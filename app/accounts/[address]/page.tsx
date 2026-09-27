@@ -1,5 +1,5 @@
-import Link from "next/link";
 import type { Metadata } from "next";
+import { AccountDetailDocument as ACCOUNT_QUERY } from "@/lib/generated/graphql";
 import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
 import { accountOgImage, routeMetadata } from "@/lib/metadata";
 import type { Account } from "@/lib/types";
@@ -10,6 +10,7 @@ import AccountActivityFeed from "@/components/AccountActivityFeed";
 import AccountTransactionList from "@/components/AccountTransactionList";
 import AccountOperationList from "@/components/AccountOperationList";
 import BackendUnavailable from "@/components/BackendUnavailable";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 export const dynamic = "force-dynamic";
 
@@ -35,44 +36,9 @@ export function generateMetadata({ params }: { params: Promise<{ address: string
   });
 }
 
-const ACCOUNT_QUERY = `
-  query AccountDetail($address: String!) {
-    account(address: $address) {
-      address
-      sequence
-      subentryCount
-      lastModifiedLedger
-      numSponsored
-      numSponsoring
-      balances { assetType assetCode assetIssuer balance limit }
-      flags { authRequired authRevocable authImmutable authClawbackEnabled }
-      transactions(limit: 10) {
-        hash
-        ledger
-        createdAt
-        sourceAccount
-        feeCharged
-        operationCount
-        successful
-      }
-      operations(limit: 10) {
-        id
-        type
-        createdAt
-        transactionHash
-        sourceAccount
-        from
-        to
-        amount
-        asset
-      }
-    }
-  }
-`;
-
 async function getAccount(address: string): Promise<{ account: Account | null; unavailable: boolean }> {
   try {
-    const data = await gqlFetch<{ account: Account | null }>(GRAPHQL_URL, ACCOUNT_QUERY, { address });
+    const data = await gqlFetch(GRAPHQL_URL, ACCOUNT_QUERY, { address });
     return { account: data.account, unavailable: false };
   } catch {
     return { account: null, unavailable: true };

@@ -50,16 +50,8 @@ import TimeAgo from './TimeAgo';
 import { LifetimeSlashedBadge, StakeBadge, VerifiedBadge } from './RegistryBadges';
 import BackendUnavailable from './BackendUnavailable';
 
-const EVENTS_QUERY = `
-  query ContractEvents($contractId: String!, $limit: Int) {
-    events(contractId: $contractId, limit: $limit) {
-      items { id type contractId ledger createdAt pagingToken topics value }
-    }
-  }
-`;
-
 async function fetchEvents(contractId: string, limit: number): Promise<ContractEvent[]> {
-  const data = await gqlFetch<{ events: { items: ContractEvent[] } }>(
+  const data = await gqlFetch(
     PUBLIC_GRAPHQL_URL,
     EVENTS_QUERY,
     { contractId, limit }
@@ -237,12 +229,6 @@ export default function OwnerContracts({
   // History is per row, and the panels are long enough that leaving several
   // open at once turns the dashboard into a wall — so opening one closes the
   // last.
-  const toggleHistory = useCallback(
-    (entry: { contractId: string }) =>
-      setExpanded(current => (current === entry.contractId ? null : entry.contractId)),
-    []
-  );
-
   useEffect(() => {
     // The effect body only starts the fetch; every setState happens in a
     // settled-promise handler. `cancelled` stops a slow read writing into a
@@ -278,7 +264,6 @@ export default function OwnerContracts({
   const retry = useCallback(() => {
     const isCurrent = () => true;
     setState("loading");
-    setError(null);
     loadContracts(walletAddress).then(
       (owned) => applyLoaded(owned, isCurrent),
       (err) => applyError(err, isCurrent),

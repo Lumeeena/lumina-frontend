@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { TransactionDetailDocument as TRANSACTION_QUERY } from "@/lib/generated/graphql";
 import Link from "next/link";
 import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
 import { routeMetadata } from "@/lib/metadata";
@@ -10,38 +11,12 @@ import {
 // The schema-level types rather than the list-page aliases in `lib/types`:
 // this selection set includes the transaction's operations, which the
 // transactions table does not select.
-import type { Operation, Transaction } from "@/lib/generated/graphql";
+import type { TransactionDetailQuery } from "@/lib/generated/graphql";
 import BackendUnavailable from "@/components/BackendUnavailable";
 import CopyAddressButton from "@/components/CopyAddressButton";
 import TimeAgo from "@/components/TimeAgo";
 
 export const dynamic = "force-dynamic";
-
-const TRANSACTION_QUERY = `
-  query TransactionDetail($hash: String!) {
-    transaction(hash: $hash) {
-      hash
-      ledger
-      createdAt
-      sourceAccount
-      feeCharged
-      operationCount
-      successful
-      memoType
-      memo
-      operations {
-        id
-        type
-        createdAt
-        sourceAccount
-        from
-        to
-        amount
-        asset
-      }
-    }
-  }
-`;
 
 /**
  * Metadata from the hash alone, for the same reason the account page's is:
@@ -64,15 +39,11 @@ export function generateMetadata({
 }
 
 async function getTransaction(hash: string): Promise<{
-  transaction: Transaction | null;
+  transaction: TransactionDetailQuery["transaction"];
   unavailable: boolean;
 }> {
   try {
-    const data = await gqlFetch<{ transaction: Transaction | null }>(
-      GRAPHQL_URL,
-      TRANSACTION_QUERY,
-      { hash },
-    );
+    const data = await gqlFetch(GRAPHQL_URL, TRANSACTION_QUERY, { hash });
     return { transaction: data.transaction, unavailable: false };
   } catch {
     return { transaction: null, unavailable: true };
@@ -208,7 +179,7 @@ export default async function TransactionPage({
                   </tr>
                 </thead>
                 <tbody>
-                  {transaction.operations.map((op: Operation) => (
+                  {transaction.operations.map((op) => (
                     <tr
                       key={op.id}
                       className="border-b border-[#f0eff3] last:border-0"

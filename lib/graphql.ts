@@ -8,14 +8,15 @@ interface GraphQLResponse<T> {
 export async function gqlFetch<T, V extends Record<string, unknown>>(
   url: string,
   document: TypedDocumentString<T, V>,
-  ...[variables]: Record<string, never> extends V
-    ? [variables?: V]
-    : [variables: V]
+  ...[variables, options]: Record<string, never> extends V
+    ? [variables?: V, options?: Pick<RequestInit, "signal">]
+    : [variables: V, options?: Pick<RequestInit, "signal">]
 ): Promise<T> {
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ query: document.toString(), variables }),
+    signal: options?.signal,
   });
 
   if (!res.ok) {

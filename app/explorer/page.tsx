@@ -4,12 +4,7 @@ import { routeMetadata } from "@/lib/metadata";
 import { EXPLORER } from "@/lib/routes";
 import SearchBar from "@/components/SearchBar";
 import TransactionExplorer from "@/components/TransactionExplorer";
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Account Explorer | Lumina",
-  description: "Search Stellar accounts and browse recent transactions.",
-};
+import TransactionExplorerSkeleton from "@/components/TransactionExplorerSkeleton";
 
 export const dynamic = "force-dynamic";
 
@@ -36,11 +31,7 @@ export default function ExplorerPage() {
       {/* Shares the transactions page's explorer, so filters, presets and the
           shareable URL behave identically in both places. */}
       <Suspense
-        fallback={
-          <div className="p-8 text-center text-[#a6a3b0] text-sm">
-            Loading transactions…
-          </div>
-        }
+        fallback={<TransactionExplorerSkeleton />}
       >
         <TransactionExplorer />
       </Suspense>
