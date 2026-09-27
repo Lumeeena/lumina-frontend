@@ -229,10 +229,164 @@ describe("LiveFeed", () => {
       render(<LiveFeed />);
     });
     await connect();
-
     cleanup();
 
     expect(sockets[0].framesOfType("complete")).toHaveLength(1);
     expect(sockets[0].closed).toBe(true);
   });
 });
+
+describe("LiveFeed through a reconnect", () => {
+  /** The retries the client scheduled, so a test runs them instead of waiting. */
+  let scheduled: { run: () => void; delayMs: number }[] = [];
+  let states: string[] = [];
+
+  function installReconnectingClient() {
+    scheduled = [];
+    sockets = [];
+    const client = new SubscriptionClient({
+      url: "ws://test/graphql",
+      createSocket: url => {
+        const socket = new FakeSocket(url);
+        sockets.push(socket);
+        return socket;
+      },
+      // Held rather than scheduled, so the retry happens when the test says so.
+      schedule: (run, delayMs) => {
+        scheduled.push({ run, delayMs });
+        return scheduled.length;
+      },
+      cancel: () => {},
+      random: () => 1,
+    });
+    __setSubscriptionClient(client);
+
+    states = [];
+    client.onStateChange(state => states.push(state));
+    return client;
+  }
+
+  async function deliverNewest(tx: Transaction) {
+    await act(async () => {
+      sockets[sockets.length - 1].deliver({
+        id: "1",
+        type: "next",
+        payload: { data: { newTransaction: tx } },
+      });
+    });
+  }
+
+  beforeEach(() => {
+    mocks.gqlFetch.mockResolvedValue({ transactions: { items: [] } });
+    installReconnectingClient();
+  });
+
+  it("reconnects, resubscribes and resumes the stream", async () => {
+    await act(async () => {
+      render(<LiveFeed />);
+    });
+    await connect();
+    await deliverNewest(transaction("before1"));
+
+    // 1. The connection drops.
+    await act(async () => {
+      sockets[0].drop();
+    });
+    expect(screen.getByTestId("connection-indicator").dataset.state).toBe("reconnecting");
+    expect(screen.queryByText("LIVE")).toBeNull();
+    // The row from before the drop is still on screen — a feed that blanks on a
+    // blip looks like data loss.
+    expect(screen.getAllByRole("link")).toHaveLength(1);
+
+    // 2. The retry fires and opens a new socket.
+    expect(scheduled).toHaveLength(1);
+    await act(async () => {
+      scheduled[0].run();
+    });
+    expect(sockets).toHaveLength(2);
+
+    // 3. The new socket is brought up, and the subscription is restored on it
+    //    rather than left silently dead.
+    await connect();
+    expect(screen.getByTestId("connection-indicator").dataset.state).toBe("connected");
+    expect(sockets[1].framesOfType("subscribe")).toHaveLength(1);
+    expect(sockets[1].framesOfType("subscribe")[0].payload).toMatchObject({
+      query: expect.stringContaining("subscription LiveFeedNewTransaction"),
+    });
+
+    // 4. Pushes flow again on the new socket.
+    await deliverNewest(transaction("after11"));
+    const links = screen.getAllByRole("link");
+    expect(links[0].textContent).toContain("after11");
+    expect(links).toHaveLength(2);
+  });
+
+  it("does not duplicate rows when the server replays the feed on resubscribe", async () => {
+    await act(async () => {
+      render(<LiveFeed />);
+    });
+    await connect();
+    await deliverNewest(transaction("seen111"));
+
+    await act(async () => {
+      sockets[0].drop();
+    });
+    await act(async () => {
+      scheduled[0].run();
+    });
+    await connect();
+
+    // What a subscription server does on resubscribe: it replays what the
+    // subscriber has already been sent. Those rows are already on screen.
+    await deliverNewest(transaction("seen111"));
+    await deliverNewest(transaction("fresh22"));
+
+    const hashes = screen.getAllByRole("link").map(link => link.getAttribute("href"));
+    expect(hashes.filter(href => href?.endsWith("seen111"))).toHaveLength(1);
+    expect(hashes.filter(href => href?.endsWith("fresh22"))).toHaveLength(1);
+    expect(hashes).toHaveLength(2);
+  });
+
+  it("passes through every state in order, so the indicator never claims LIVE early", async () => {
+    await act(async () => {
+      render(<LiveFeed />);
+    });
+    await connect();
+    await act(async () => {
+      sockets[0].drop();
+    });
+    await act(async () => {
+      scheduled[0].run();
+    });
+    await connect();
+
+    // A retry stays in `reconnecting` rather than dropping back to
+    // `connecting`: from the reader's side nothing has been recovered yet, and
+    // a panel that keeps claiming to be connecting forever hides a retry loop.
+    expect(states).toEqual(["connecting", "connected", "reconnecting", "connected"]);
+    // LIVE is only claimed once the socket is actually back — never between
+    // the drop and the retry.
+    expect(states.indexOf("connected")).toBeLessThan(states.lastIndexOf("reconnecting"));
+  });
+
+  it("backs off before retrying rather than reconnecting in a tight loop", async () => {
+    await act(async () => {
+      render(<LiveFeed />);
+    });
+    await connect();
+
+    await act(async () => {
+      sockets[0].drop();
+    });
+    await act(async () => {
+      sockets[0].drop();
+    });
+
+    // Each failure schedules exactly one retry, and the delay grows.
+    expect(scheduled.length).toBeGreaterThanOrEqual(1);
+    const delays = scheduled.map(entry => entry.delayMs);
+    expect(new Set(delays).size).toBe(delays.length);
+    expect(delays).toEqual([...delays].sort((a, b) => a - b));
+  });
+});
+
