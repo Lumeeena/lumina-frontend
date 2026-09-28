@@ -33,6 +33,7 @@ import {
   type TxPhase,
 } from "@/lib/sorobanTx";
 import { gqlFetch, PUBLIC_GRAPHQL_URL } from "@/lib/graphql";
+import { useAbortScope, type AbortHandle } from "@/lib/useAbortScope";
 import {
   historyFor,
   parseRegistryEvents,
@@ -50,19 +51,28 @@ import TimeAgo from './TimeAgo';
 import { LifetimeSlashedBadge, StakeBadge, VerifiedBadge } from './RegistryBadges';
 import BackendUnavailable from './BackendUnavailable';
 
-async function fetchEvents(contractId: string, limit: number): Promise<ContractEvent[]> {
-  const data = await gqlFetch(PUBLIC_GRAPHQL_URL, EVENTS_QUERY, {
-    contractId,
-    limit,
-  });
+async function fetchEvents(
+  contractId: string,
+  limit: number,
+  signal?: AbortSignal,
+): Promise<ContractEvent[]> {
+  const data = await gqlFetch(
+    PUBLIC_GRAPHQL_URL,
+    EVENTS_QUERY,
+    { contractId, limit },
+    { signal },
+  );
   return data.events.items;
 }
 
 export interface OwnerContractsProps {
   walletAddress: string;
   loadContracts?: (owner: string) => Promise<RegistryEntry[]>;
-  loadHistory?: () => Promise<RegistryHistoryEntry[]>;
-  loadActivity?: (contractIds: string[]) => Promise<Map<string, ActivityState>>;
+  loadHistory?: (signal?: AbortSignal) => Promise<RegistryHistoryEntry[]>;
+  loadActivity?: (
+    contractIds: string[],
+    signal?: AbortSignal,
+  ) => Promise<Map<string, ActivityState>>;
   loadStake?: (contractId: string) => Promise<StakeInfo>;
   deactivate?: (contractId: string, owner: string) => Promise<{ hash: string } | void>;
   stake?: (contractId: string, owner: string, amount: bigint) => Promise<{ hash: string } | void>;
@@ -73,11 +83,11 @@ export interface OwnerContractsProps {
 
 const defaultLoadContracts = (owner: string) => getContractsByOwner(owner);
 
-const defaultLoadHistory = async () =>
-  parseRegistryEvents(await fetchEvents(REGISTRY_CONTRACT_ID, 100));
+const defaultLoadHistory = async (signal?: AbortSignal) =>
+  parseRegistryEvents(await fetchEvents(REGISTRY_CONTRACT_ID, 100, signal));
 
-const defaultLoadActivity = (contractIds: string[]) =>
-  probeContractActivity(contractIds, (id) => fetchEvents(id, 1));
+const defaultLoadActivity = (contractIds: string[], signal?: AbortSignal) =>
+  probeContractActivity(contractIds, (id) => fetchEvents(id, 1, signal));
 
 const defaultLoadStake = (contractId: string) => getStakeInfo(contractId);
 
@@ -188,29 +198,34 @@ export default function OwnerContracts({
   const [rowError, setRowError] = useState<Record<string, string>>({});
   const [pendingTxHash, setPendingTxHash] = useState<string | null>(null);
 
+  // Every read below is started through this scope, so a wallet switch or an
+  // unmount cancels them instead of letting a slow answer land afterwards.
+  const scope = useAbortScope(walletAddress);
+
   const applyLoaded = useCallback(
-    (owned: RegistryEntry[], isCurrent: () => boolean) => {
-      if (!isCurrent()) return;
+    (owned: RegistryEntry[], req: AbortHandle) => {
+      if (!req.isCurrent()) return;
       setEntries(owned);
       setState("ready");
 
       // History, activity and reputation are decoration: a registry read that
       // succeeded should render even if the indexer is unreachable, so these
-      // are deliberately not chained onto the read above.
-      loadHistory()
-        .then((h) => isCurrent() && setHistory(h))
-        .catch(() => isCurrent() && setHistory([]));
+      // are deliberately not chained onto the read above. They share the
+      // registry read's signal — what cancels it cancels them too.
+      loadHistory(req.signal)
+        .then((h) => req.isCurrent() && setHistory(h))
+        .catch(() => req.isCurrent() && setHistory([]));
       if (owned.length > 0) {
-        loadActivity(owned.map((e) => e.contractId))
-          .then((a) => isCurrent() && setActivity(a))
-          .catch(() => isCurrent() && setActivity(new Map()));
+        loadActivity(owned.map((e) => e.contractId), req.signal)
+          .then((a) => req.isCurrent() && setActivity(a))
+          .catch(() => req.isCurrent() && setActivity(new Map()));
         // Stake is decoration too: without it the controls still work, they
         // just cannot pre-explain a blocked withdrawal.
         owned.forEach((e) =>
           loadStake(e.contractId)
             .then(
               (info) =>
-                isCurrent() &&
+                req.isCurrent() &&
                 setStakeInfo((prev) => ({ ...prev, [e.contractId]: info })),
             )
             .catch(() => {}),
@@ -220,27 +235,22 @@ export default function OwnerContracts({
     [loadHistory, loadActivity, loadStake],
   );
 
-  const applyError = useCallback((_err: unknown, isCurrent: () => boolean) => {
-    if (!isCurrent()) return;
+  const applyError = useCallback((_err: unknown, req: AbortHandle) => {
+    if (!req.isCurrent()) return;
     setState('error');
   }, []);
 
   useEffect(() => {
-    // The effect body only starts the fetch; every setState happens in a
-    // settled-promise handler. `cancelled` stops a slow read writing into a
-    // component that has since unmounted or switched wallet.
-    let cancelled = false;
-    const isCurrent = () => !cancelled;
+    // The effect body only starts the reads; every setState happens in a
+    // settled-promise handler, and only while its request is still the current
+    // one — a wallet switch or an unmount has already cancelled the rest.
+    const req = scope.next();
 
     loadContracts(walletAddress).then(
-      (owned) => applyLoaded(owned, isCurrent),
-      (err) => applyError(err, isCurrent),
+      (owned) => applyLoaded(owned, req),
+      (err) => applyError(err, req),
     );
-
-    return () => {
-      cancelled = true;
-    };
-  }, [walletAddress, loadContracts, applyLoaded, applyError]);
+  }, [scope, walletAddress, loadContracts, applyLoaded, applyError]);
 
   const pendingTxInFlight = pendingPhase === 'building' || pendingPhase === 'awaiting-signature' || pendingPhase === 'submitting' || pendingPhase === 'confirming';
 
@@ -258,13 +268,24 @@ export default function OwnerContracts({
 
   /** Retry, driven by a click rather than an effect. */
   const retry = useCallback(() => {
-    const isCurrent = () => true;
+    const req = scope.next();
     setState("loading");
     loadContracts(walletAddress).then(
-      (owned) => applyLoaded(owned, isCurrent),
-      (err) => applyError(err, isCurrent),
+      (owned) => applyLoaded(owned, req),
+      (err) => applyError(err, req),
     );
-  }, [walletAddress, loadContracts, applyLoaded, applyError]);
+  }, [scope, walletAddress, loadContracts, applyLoaded, applyError]);
+
+  /**
+   * Re-read the history after a change, on the same lifetime as the rest: if
+   * the component goes away mid-read the answer is cancelled, not applied.
+   */
+  const refreshHistory = useCallback(() => {
+    const req = scope.next();
+    loadHistory(req.signal)
+      .then((h) => req.isCurrent() && setHistory(h))
+      .catch(() => {});
+  }, [scope, loadHistory]);
 
   async function toggleHistory(entry: RegistryEntry) {
     const id = entry.contractId;
@@ -318,9 +339,7 @@ export default function OwnerContracts({
         sessionStorage.setItem(`tx-${Date.now()}`, result.hash);
       }
       refreshStake(entry.contractId);
-      loadHistory()
-        .then(setHistory)
-        .catch(() => {});
+      refreshHistory();
     } catch (err) {
       const message =
         err instanceof Error && err.message ? err.message : fallback;
@@ -388,9 +407,7 @@ export default function OwnerContracts({
         ),
       );
       onChanged?.();
-      loadHistory()
-        .then(setHistory)
-        .catch(() => {});
+      refreshHistory();
       refreshStake(entry.contractId);
     } catch (err) {
       const message =

@@ -14,6 +14,7 @@ import { AccountTransactionsDocument as ACCOUNT_TRANSACTIONS_QUERY } from "@/lib
  */
 import { useCallback, useState } from 'react';
 import { gqlFetch, PUBLIC_GRAPHQL_URL } from '@/lib/graphql';
+import { useAbortScope } from '@/lib/useAbortScope';
 import type { Transaction } from '@/lib/types';
 import { truncateAddress } from '@/lib/formatters';
 import TimeAgo from './TimeAgo';
@@ -45,16 +46,23 @@ export default function AccountTransactionList({
   // explorer reads pageInfo for.
   const hasMore = rows.length >= limit && step < LIMIT_STEPS.length - 1;
 
+  // Keyed on the account: a window requested for one address is never applied
+  // to another, and neither is one that arrives after the component is gone.
+  const scope = useAbortScope(address);
+
   const loadMore = useCallback(async () => {
     if (loading) return;
     setLoading(true);
     setError(null);
+    const req = scope.next();
     try {
       const data = await gqlFetch(
         PUBLIC_GRAPHQL_URL,
         ACCOUNT_TRANSACTIONS_QUERY,
         { address, limit: LIMIT_STEPS[step + 1] },
+        { signal: req.signal },
       );
+      if (!req.isCurrent()) return;
       const fetched = data.account?.transactions;
       if (!fetched) throw new Error("Account transactions unavailable");
       setRows((prev) => {
@@ -65,11 +73,12 @@ export default function AccountTransactionList({
       });
       setStep((s) => s + 1);
     } catch {
+      if (!req.isCurrent()) return;
       setError("Could not load more transactions.");
     } finally {
       setLoading(false);
     }
-  }, [address, step, loading]);
+  }, [scope, address, step, loading]);
 
   if (rows.length === 0) {
     return <p className="text-sm text-[var(--color-text-muted)]">No transactions yet.</p>;

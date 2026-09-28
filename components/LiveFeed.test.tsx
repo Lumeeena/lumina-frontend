@@ -308,6 +308,69 @@ describe("LiveFeed", () => {
   });
 });
 
+describe("LiveFeed responses that arrive out of order", () => {
+  type Seed = { transactions: { items: Transaction[] } };
+
+  /** A promise the test settles by hand, so one request can outlive another. */
+  function deferred<T>() {
+    let resolve!: (value: T) => void;
+    const promise = new Promise<T>((res) => {
+      resolve = res;
+    });
+    return { promise, resolve };
+  }
+
+  it("never lets a superseded request overwrite the newer answer", async () => {
+    const slow = deferred<Seed>();
+    const fast = deferred<Seed>();
+    mocks.gqlFetch
+      .mockReturnValueOnce(slow.promise)
+      .mockReturnValueOnce(fast.promise);
+
+    await act(async () => {
+      render(<LiveFeed />);
+    });
+    expect(mocks.gqlFetch).toHaveBeenCalledTimes(1);
+
+    // The reconnect listener asks the same question again while the seed is
+    // still on its way — the case a slow connection makes routine.
+    await act(async () => {
+      window.dispatchEvent(new Event("lumina:online"));
+    });
+    expect(mocks.gqlFetch).toHaveBeenCalledTimes(2);
+    // Nobody is waiting for the first answer any more, so it is cancelled
+    // rather than left running to land on top of the newer one.
+    expect(mocks.gqlFetch.mock.calls[0][3].signal.aborted).toBe(true);
+
+    await act(async () => {
+      fast.resolve({ transactions: { items: [transaction("new111")] } });
+    });
+    // The superseded answer arrives afterwards and must change nothing.
+    await act(async () => {
+      slow.resolve({ transactions: { items: [transaction("old000")] } });
+    });
+
+    expect(screen.getByText("new111")).toBeTruthy();
+    expect(screen.queryByText("old000")).toBeNull();
+  });
+
+  it("cancels a request still in flight when the panel unmounts", async () => {
+    const { promise } = deferred<Seed>();
+    mocks.gqlFetch.mockReturnValue(promise);
+
+    const { unmount } = render(<LiveFeed />);
+    expect(mocks.gqlFetch).toHaveBeenCalledTimes(1);
+    const signal = mocks.gqlFetch.mock.calls[0][3].signal as AbortSignal;
+    expect(signal.aborted).toBe(false);
+
+    unmount();
+    // The teardown is queued a microtask ahead; wait for it to land.
+    await act(async () => {});
+
+    expect(signal.aborted).toBe(true);
+  });
+});
+
 describe("LiveFeed through a reconnect", () => {
   /** The retries the client scheduled, so a test runs them instead of waiting. */
   let scheduled: { run: () => void; delayMs: number }[] = [];

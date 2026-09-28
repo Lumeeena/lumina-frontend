@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { Transaction } from '@/lib/types';
 
@@ -138,4 +138,74 @@ describe("AccountTransactionList", () => {
       expect(screen.getByRole("button", { name: /retry/i })).toBeTruthy();
     },
   );
+
+  it("never applies a page that was requested for a previous account", async () => {
+    let settle!: (page: unknown) => void;
+    gqlFetch.mockReturnValue(
+      new Promise((resolve) => {
+        settle = resolve;
+      }),
+    );
+
+    const { rerender } = render(
+      <AccountTransactionList address={ADDRESS} initial={count(10)} />,
+    );
+    await userEvent.click(
+      await screen.findByRole("button", { name: /load more/i }),
+    );
+    expect(gqlFetch).toHaveBeenCalledTimes(1);
+
+    // Navigating away while that page is still on its way cancels it.
+    rerender(
+      <AccountTransactionList
+        address="GOTHERACCOUNT234567ABCDEFGHIJKLMNOPQRSTUV"
+        initial={count(10)}
+      />,
+    );
+    expect(gqlFetch.mock.calls[0][3].signal.aborted).toBe(true);
+
+    // Even a transport that lets the answer land cannot repopulate the list.
+    await act(async () => {
+      settle({ account: { transactions: count(25) } });
+    });
+
+    expect(screen.getByTestId("transaction-count")).toHaveTextContent(
+      "Showing the 10 most recent transactions",
+    );
+    expect(screen.queryByText("End of results")).toBeNull();
+  });
+
+  it("stays quiet when a superseded request fails on its way out", async () => {
+    let fail!: (error: Error) => void;
+    gqlFetch.mockReturnValue(
+      new Promise((_resolve, reject) => {
+        fail = reject;
+      }),
+    );
+
+    const { rerender } = render(
+      <AccountTransactionList address={ADDRESS} initial={count(10)} />,
+    );
+    await userEvent.click(
+      await screen.findByRole("button", { name: /load more/i }),
+    );
+    rerender(
+      <AccountTransactionList
+        address="GOTHERACCOUNT234567ABCDEFGHIJKLMNOPQRSTUV"
+        initial={count(10)}
+      />,
+    );
+
+    await act(async () => {
+      fail(new Error("GraphQL request failed (502)"));
+    });
+
+    // The failure belongs to a list nobody shows any more.
+    expect(
+      screen.queryByText("Could not load more transactions."),
+    ).toBeNull();
+    expect(screen.getByTestId("transaction-count")).toHaveTextContent(
+      "Showing the 10 most recent transactions",
+    );
+  });
 });

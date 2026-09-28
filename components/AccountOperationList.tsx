@@ -11,6 +11,7 @@ import { AccountOperationsDocument as ACCOUNT_OPERATIONS_QUERY } from "@/lib/gen
  */
 import { useCallback, useState } from 'react';
 import { gqlFetch, PUBLIC_GRAPHQL_URL } from '@/lib/graphql';
+import { useAbortScope } from '@/lib/useAbortScope';
 import type { Operation } from '@/lib/types';
 import { formatOperationType, truncateAddress } from '@/lib/formatters';
 import TimeAgo from './TimeAgo';
@@ -36,16 +37,23 @@ export default function AccountOperationList({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Keyed on the account: a page requested for one address is never applied to
+  // another, and neither is one that arrives after the component is gone.
+  const scope = useAbortScope(address);
+
   const loadMore = useCallback(async () => {
     if (loading) return;
     setLoading(true);
     setError(null);
+    const req = scope.next();
     try {
       const data = await gqlFetch(
         PUBLIC_GRAPHQL_URL,
         ACCOUNT_OPERATIONS_QUERY,
         { address, limit: PAGE_SIZE, cursor },
+        { signal: req.signal },
       );
+      if (!req.isCurrent()) return;
       const page = data.operations;
 
       setRows((prev) => {
@@ -59,6 +67,7 @@ export default function AccountOperationList({
         page.pageInfo.hasNextPage && page.pageInfo.cursor !== null,
       );
     } catch {
+      if (!req.isCurrent()) return;
       setError("Could not load more operations.");
       // Stop the button from immediately retrying in a tight loop; the
       // footer's Retry puts the user back in control.
@@ -66,7 +75,7 @@ export default function AccountOperationList({
     } finally {
       setLoading(false);
     }
-  }, [address, cursor, loading]);
+  }, [scope, address, cursor, loading]);
 
   if (rows.length === 0) {
     return <p className="text-sm text-[var(--color-text-muted)]">No operations yet.</p>;

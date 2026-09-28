@@ -63,6 +63,41 @@ describe("typed GraphQL transport", () => {
       }),
     ).toEqual({ account: null });
   });
+
+  it("hands the caller's signal to fetch so it can cancel the request", async () => {
+    const fetch = vi
+      .fn()
+      .mockResolvedValue({ ok: true, json: async () => ({ data: {} }) });
+    vi.stubGlobal("fetch", fetch);
+    const controller = new AbortController();
+
+    await gqlFetch(
+      "/graphql",
+      TransactionPageDocument,
+      { limit: 50, cursor: null },
+      { signal: controller.signal },
+    );
+
+    expect(fetch.mock.calls[0][1].signal).toBe(controller.signal);
+  });
+
+  it("propagates a cancellation rather than reporting it as an API failure", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockRejectedValue(new DOMException("Aborted", "AbortError")),
+    );
+
+    await expect(
+      gqlFetch(
+        "/graphql",
+        TransactionPageDocument,
+        { limit: 50, cursor: null },
+        {
+          signal: new AbortController().signal,
+        },
+      ),
+    ).rejects.toThrow("Aborted");
+  });
 });
 
 // Checked by tsc/next build; never executed or sent to the API.

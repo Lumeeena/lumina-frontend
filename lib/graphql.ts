@@ -5,17 +5,29 @@ interface GraphQLResponse<T> {
   errors?: { message: string }[];
 }
 
+/** How a caller stays in control of a request it may no longer want. */
+export interface RequestOptions {
+  /** Cancels the request — see `useAbortScope`, which owns the signal's lifetime. */
+  signal?: AbortSignal;
+}
+
+/** `…(variables, options?)`, where the variables are what decide the rest. */
+type GqlArgs<V extends Record<string, unknown>> =
+  Record<string, never> extends V
+    ? [variables?: V, options?: RequestOptions]
+    : [variables: V, options?: RequestOptions];
+
 export async function gqlFetch<T, V extends Record<string, unknown>>(
   url: string,
   document: TypedDocumentString<T, V>,
-  ...[variables]: Record<string, never> extends V
-    ? [variables?: V]
-    : [variables: V]
+  ...args: GqlArgs<V>
 ): Promise<T> {
+  const [variables, options] = args;
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ query: document.toString(), variables }),
+    signal: options?.signal,
   });
 
   if (!res.ok) {

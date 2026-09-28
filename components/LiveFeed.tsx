@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Pause, Play } from "lucide-react";
 import { gqlFetch, PUBLIC_GRAPHQL_URL } from "@/lib/graphql";
+import { useAbortScope } from "@/lib/useAbortScope";
 import { useSubscription } from "@/lib/useSubscription";
 import type { Transaction } from "@/lib/types";
 import { truncateAddress } from "@/lib/formatters";
@@ -99,14 +100,22 @@ export default function LiveFeed() {
   const live =
     state === "connected" || state === "connecting" || state === "reconnecting";
 
+  // Seed, reconnect and poll all ask the same question, so they share one
+  // scope: whichever asked last is the answer that counts, and a poll that is
+  // still in flight when the next one starts is cancelled rather than allowed
+  // to arrive afterwards and overwrite the newer one.
+  const scope = useAbortScope();
+
   const fetchRecent = useCallback(async () => {
+    const req = scope.next();
     try {
       const data = await gqlFetch(
         PUBLIC_GRAPHQL_URL,
         RECENT_TRANSACTIONS_QUERY,
         { limit: SEED_LIMIT },
+        { signal: req.signal },
       );
-      if (data.transactions.items.length > 0) {
+      if (req.isCurrent() && data.transactions.items.length > 0) {
         setTxs(data.transactions.items.slice(0, MAX_FEED_LENGTH));
         setLastUpdated(new Date());
       }
@@ -114,7 +123,7 @@ export default function LiveFeed() {
       // Keep showing the last successful fetch rather than blanking the panel.
     }
     setLoading(false);
-  }, []);
+  }, [scope]);
 
   // Seed once on mount. Without this the feed is empty until the network
   // happens to produce a transaction, which reads as broken.

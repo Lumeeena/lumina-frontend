@@ -7,7 +7,7 @@
  * mocks do not coexist cleanly in one file.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 vi.mock("next/navigation", () => ({
@@ -152,5 +152,22 @@ describe("GraphQLPage", () => {
         /temporarily unavailable/i,
       ),
     );
+  });
+
+  it("cancels a run still in flight when the playground is left", async () => {
+    const fetchMock = global.fetch as ReturnType<typeof vi.fn>;
+    fetchMock.mockReturnValue(new Promise(() => {}));
+
+    const { unmount } = render(<GraphQLPage />);
+    await userEvent.click(screen.getByRole("button", { name: /run/i }));
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const signal = fetchMock.mock.calls[0][1].signal as AbortSignal;
+    expect(signal.aborted).toBe(false);
+
+    unmount();
+    // The teardown is queued a microtask ahead; wait for it to land.
+    await act(async () => {});
+
+    expect(signal.aborted).toBe(true);
   });
 });

@@ -5,6 +5,7 @@ import CodeMirror from "@uiw/react-codemirror";
 import { StreamLanguage } from "@codemirror/language";
 import { QUERY_EXAMPLES, QueryExample } from "@/lib/queries";
 import { PUBLIC_GRAPHQL_URL } from "@/lib/graphql";
+import { useAbortScope } from "@/lib/useAbortScope";
 import { loadQueryHistory, saveQueryToHistory } from "@/lib/queryHistory";
 import BackendUnavailable from "@/components/BackendUnavailable";
 
@@ -57,7 +58,13 @@ export default function GraphQLPage() {
     setHistory(saveQueryToHistory(value));
   }
 
+  // A run is only believed while it is the latest one: leaving the page, or
+  // starting another run, cancels it rather than letting its answer land on a
+  // result the user has moved on from.
+  const scope = useAbortScope();
+
   async function runQuery() {
+    const req = scope.next();
     setHistory(saveQueryToHistory(query));
     setRunning(true);
     setError(null);
@@ -67,8 +74,10 @@ export default function GraphQLPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query }),
+        signal: req.signal,
       });
       const body = await res.json();
+      if (!req.isCurrent()) return;
       if (body.errors?.length) {
         setError(body.errors.map((e: { message: string }) => e.message).join("; "));
         setResult(null);
@@ -76,6 +85,7 @@ export default function GraphQLPage() {
         setResult(body.data);
       }
     } catch {
+      if (!req.isCurrent()) return;
       setUnavailable(true);
       setError(`Couldn't reach the GraphQL server at ${PUBLIC_GRAPHQL_URL}. Is it running?`);
       setResult(null);
