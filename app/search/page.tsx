@@ -45,7 +45,9 @@ export default async function SearchPage({
   if (!query) {
     return (
       <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
-        <h1 className="font-extrabold text-3xl mb-2 text-[var(--color-text-primary)]">Search</h1>
+        <h1 className="font-extrabold text-3xl mb-2 text-[var(--color-text-primary)]">
+          Search
+        </h1>
         <p className="text-[var(--color-text-secondary)] mb-7">
           One box for everything on the network. Type what you have — no need to
           say what it is.
@@ -57,7 +59,9 @@ export default async function SearchPage({
                 <td className="py-2.5 px-3 mono text-xs text-[var(--color-accent-text)] w-[170px]">
                   G… (56 chars)
                 </td>
-                <td className="py-2.5 px-3 text-[var(--color-text-primary)]">Account address</td>
+                <td className="py-2.5 px-3 text-[var(--color-text-primary)]">
+                  Account address
+                </td>
               </tr>
               <tr className="border-b border-[var(--color-bg-overlay)]">
                 <td className="py-2.5 px-3 mono text-xs text-[var(--color-accent-text)]">
@@ -71,7 +75,9 @@ export default async function SearchPage({
                 <td className="py-2.5 px-3 mono text-xs text-[var(--color-accent-text)]">
                   64 hex chars
                 </td>
-                <td className="py-2.5 px-3 text-[var(--color-text-primary)]">Transaction hash</td>
+                <td className="py-2.5 px-3 text-[var(--color-text-primary)]">
+                  Transaction hash
+                </td>
               </tr>
               <tr>
                 <td className="py-2.5 px-3 mono text-xs text-[var(--color-accent-text)]">
@@ -92,15 +98,19 @@ export default async function SearchPage({
 
   return (
     <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
-      <h1 className="font-extrabold text-3xl mb-2 text-[var(--color-text-primary)]">Search</h1>
+      <h1 className="font-extrabold text-3xl mb-2 text-[var(--color-text-primary)]">
+        Search
+      </h1>
       <p className="text-[var(--color-text-secondary)] mb-7">
         {unavailable
           ? "Searching the index…"
           : `${items.length} transaction${items.length === 1 ? "" : "s"} matching `}
         {!unavailable && (
           <>
-            <span className="mono text-[var(--color-text-primary)]">“{query}”</span>, ranked by
-            memo relevance.
+            <span className="mono text-[var(--color-text-primary)]">
+              “{query}”
+            </span>
+            , ranked by memo relevance.
           </>
         )}
       </p>
@@ -117,15 +127,28 @@ export default async function SearchPage({
       ) : (
         <div className="rounded-xl border border-[var(--color-border-default)] overflow-x-auto">
           <table className="w-full text-sm border-collapse">
+            <caption className="sr-only">Search results</caption>
             <thead>
               <tr>
-                <th className={`${th} w-6`} />
-                <th className={th}>Hash</th>
-                <th className={th}>Ledger</th>
-                <th className={th}>Source</th>
-                <th className={th}>Ops</th>
-                <th className={th}>Fee</th>
-                <th className={th}>Time</th>
+                <th scope="col" className={`${th} w-6`} />
+                <th scope="col" className={th}>
+                  Hash
+                </th>
+                <th scope="col" className={th}>
+                  Ledger
+                </th>
+                <th scope="col" className={th}>
+                  Source
+                </th>
+                <th scope="col" className={th}>
+                  Ops
+                </th>
+                <th scope="col" className={th}>
+                  Fee
+                </th>
+                <th scope="col" className={th}>
+                  Time
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -139,7 +162,10 @@ export default async function SearchPage({
 
       <p className="text-[var(--color-text-muted)] text-xs mt-4">
         Looking for an account or contract? Paste its full address —{" "}
-        <Link href="/explorer" className="text-[var(--color-accent-text)] hover:underline">
+        <Link
+          href="/explorer"
+          className="text-[var(--color-accent-text)] hover:underline"
+        >
           the explorer
         </Link>{" "}
         takes you straight there.

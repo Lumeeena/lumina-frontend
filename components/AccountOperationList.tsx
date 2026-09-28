@@ -7,15 +7,15 @@
  * is the explorer's pagination approach exactly: follow the cursor, accumulate
  * pages, dedupe by id, and say so when the list is truncated.
  */
-import { useCallback, useState } from 'react';
-import { AccountOperationsDocument as ACCOUNT_OPERATIONS_QUERY } from '@/lib/generated/graphql';
-import { gqlFetch, PUBLIC_GRAPHQL_URL } from '@/lib/graphql';
-import { useAbortScope } from '@/lib/useAbortScope';
-import type { Operation } from '@/lib/types';
-import { formatOperationType, truncateAddress } from '@/lib/formatters';
-import TimeAgo from './TimeAgo';
-import LoadMoreFooter from './LoadMoreFooter';
-import { t } from '@/lib/i18n';
+import { useCallback, useState } from "react";
+import { AccountOperationsDocument as ACCOUNT_OPERATIONS_QUERY } from "@/lib/generated/graphql";
+import { gqlFetch, PUBLIC_GRAPHQL_URL } from "@/lib/graphql";
+import { useAbortScope } from "@/lib/useAbortScope";
+import type { Operation } from "@/lib/types";
+import { formatOperationType, truncateAddress } from "@/lib/formatters";
+import TimeAgo from "./TimeAgo";
+import LoadMoreFooter from "./LoadMoreFooter";
+import { t } from "@/lib/i18n";
 
 const PAGE_SIZE = 25;
 /** Matches the seed the server component renders. */
@@ -78,7 +78,11 @@ export default function AccountOperationList({
   }, [scope, address, cursor, loading]);
 
   if (rows.length === 0) {
-    return <p className="text-sm text-[var(--color-text-muted)]">{t("accountOps.noOperations")}</p>;
+    return (
+      <p className="text-sm text-[var(--color-text-muted)]">
+        {t("accountOps.noOperations")}
+      </p>
+    );
   }
 
   return (
@@ -91,14 +95,29 @@ export default function AccountOperationList({
         </span>
       </div>
 
-      <div className="rounded-xl border border-[var(--color-border-default)] overflow-hidden">
+      <div
+        role="region"
+        aria-label="Account operations"
+        aria-busy={loading || undefined}
+        tabIndex={0}
+        className="rounded-xl border border-[var(--color-border-default)] overflow-x-auto"
+      >
         <table className="w-full text-sm border-collapse">
+          <caption className="sr-only">Account operations</caption>
           <thead>
             <tr>
-              <th className={th}>Type</th>
-              <th className={th}>Transaction</th>
-              <th className={th}>Detail</th>
-              <th className={th}>Time</th>
+              <th scope="col" className={th}>
+                Type
+              </th>
+              <th scope="col" className={th}>
+                Transaction
+              </th>
+              <th scope="col" className={th}>
+                Detail
+              </th>
+              <th scope="col" className={th}>
+                Time
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -140,7 +159,9 @@ export default function AccountOperationList({
                     <span className="text-[var(--color-text-muted)]">—</span>
                   )}
                 </td>
-                <td className="py-2.5 px-3 text-xs text-[var(--color-text-faint)]"><TimeAgo isoString={op.createdAt} /></td>
+                <td className="py-2.5 px-3 text-xs text-[var(--color-text-faint)]">
+                  <TimeAgo isoString={op.createdAt} />
+                </td>
               </tr>
             ))}
           </tbody>

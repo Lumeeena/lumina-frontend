@@ -10,15 +10,15 @@
  * *approach* — an explicit Load more, an honest truncation label, and an
  * end-of-results state — on the one read shape offered here.
  */
-import { useCallback, useState } from 'react';
-import { AccountTransactionsDocument as ACCOUNT_TRANSACTIONS_QUERY } from '@/lib/generated/graphql';
-import { gqlFetch, PUBLIC_GRAPHQL_URL } from '@/lib/graphql';
-import { useAbortScope } from '@/lib/useAbortScope';
-import type { Transaction } from '@/lib/types';
-import { truncateAddress } from '@/lib/formatters';
-import TimeAgo from './TimeAgo';
-import LoadMoreFooter from './LoadMoreFooter';
-import { t } from '@/lib/i18n';
+import { useCallback, useState } from "react";
+import { AccountTransactionsDocument as ACCOUNT_TRANSACTIONS_QUERY } from "@/lib/generated/graphql";
+import { gqlFetch, PUBLIC_GRAPHQL_URL } from "@/lib/graphql";
+import { useAbortScope } from "@/lib/useAbortScope";
+import type { Transaction } from "@/lib/types";
+import { truncateAddress } from "@/lib/formatters";
+import TimeAgo from "./TimeAgo";
+import LoadMoreFooter from "./LoadMoreFooter";
+import { t } from "@/lib/i18n";
 
 /** The seed the server component renders; the first client fetch widens past it. */
 export const SEED_LIMIT = 10;
@@ -81,7 +81,11 @@ export default function AccountTransactionList({
   }, [scope, address, step, loading]);
 
   if (rows.length === 0) {
-    return <p className="text-sm text-[var(--color-text-muted)]">{t("accountTxs.noTransactions")}</p>;
+    return (
+      <p className="text-sm text-[var(--color-text-muted)]">
+        {t("accountTxs.noTransactions")}
+      </p>
+    );
   }
 
   return (
@@ -94,14 +98,29 @@ export default function AccountTransactionList({
         </span>
       </div>
 
-      <div className="rounded-xl border border-[var(--color-border-default)] overflow-hidden">
+      <div
+        role="region"
+        aria-label="Account transactions"
+        aria-busy={loading || undefined}
+        tabIndex={0}
+        className="rounded-xl border border-[var(--color-border-default)] overflow-x-auto"
+      >
         <table className="w-full text-sm border-collapse">
+          <caption className="sr-only">Account transactions</caption>
           <thead>
             <tr>
-              <th className={th}>Hash</th>
-              <th className={th}>Ledger</th>
-              <th className={th}>Ops</th>
-              <th className={th}>Time</th>
+              <th scope="col" className={th}>
+                Hash
+              </th>
+              <th scope="col" className={th}>
+                Ledger
+              </th>
+              <th scope="col" className={th}>
+                Ops
+              </th>
+              <th scope="col" className={th}>
+                Time
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -124,7 +143,9 @@ export default function AccountTransactionList({
                   {tx.ledger.toLocaleString()}
                 </td>
                 <td className="py-2.5 px-3 text-xs">{tx.operationCount}</td>
-                <td className="py-2.5 px-3 text-xs text-[var(--color-text-faint)]"><TimeAgo isoString={tx.createdAt} /></td>
+                <td className="py-2.5 px-3 text-xs text-[var(--color-text-faint)]">
+                  <TimeAgo isoString={tx.createdAt} />
+                </td>
               </tr>
             ))}
           </tbody>

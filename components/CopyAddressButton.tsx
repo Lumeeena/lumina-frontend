@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useState } from "react";
 import { t } from "@/lib/i18n";
@@ -33,8 +33,17 @@ async function copyToClipboard(text: string): Promise<boolean> {
   }
 }
 
-export default function CopyAddressButton({ address }: { address: string }) {
+export default function CopyAddressButton({
+  address,
+  variant = "address",
+}: {
+  address: string;
+  variant?: "address" | "hash";
+}) {
   const [state, setState] = useState<CopyState>("idle");
+
+  const ariaLabel =
+    variant === "hash" ? t("copy.copyHash") : t("copy.copyAddress");
 
   async function copyAddress() {
     const ok = await copyToClipboard(address);
@@ -43,11 +52,27 @@ export default function CopyAddressButton({ address }: { address: string }) {
   }
 
   return (
-    <button
-      onClick={copyAddress}
-      className="bg-[var(--color-bg-raised)] border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] font-semibold text-[11px] px-2.5 py-[5px] rounded-[7px] shrink-0 transition-colors"
-    >
-      {state === "copied" ? t("copy.copied") : state === "failed" ? t("copy.failed") : t("copy.copy")}
-    </button>
+    <>
+      <button
+        onClick={copyAddress}
+        aria-label={ariaLabel}
+        className="bg-[var(--color-bg-raised)] border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] font-semibold text-[11px] px-2.5 py-[5px] rounded-[7px] shrink-0 transition-colors"
+      >
+        {state === "copied"
+          ? t("copy.copied")
+          : state === "failed"
+            ? t("copy.failed")
+            : t("copy.copy")}
+      </button>
+      <span role="status" aria-live="polite" className="sr-only">
+        {state === "copied"
+          ? variant === "hash"
+            ? t("copy.copiedHash")
+            : t("copy.copiedAddress")
+          : state === "failed"
+            ? t("copy.failed")
+            : ""}
+      </span>
+    </>
   );
 }

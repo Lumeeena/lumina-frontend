@@ -53,6 +53,12 @@ export interface MessageCatalogue {
   "liveFeed.fetching": string;
   "liveFeed.noTransactions": string;
   "liveFeed.updated": string;
+  "liveFeed.pauseFeed": string;
+  "liveFeed.resumeFeed": string;
+  "liveFeed.resumeFeedCount": string;
+  "liveFeed.updatesWaiting": string;
+  "liveFeed.updatesArrived": string;
+  "liveFeed.newTransactions": string;
 
   // ── Account operations ────────────────────────────────────────────────
   "accountOps.noOperations": string;
@@ -87,6 +93,10 @@ export interface MessageCatalogue {
   "copy.copy": string;
   "copy.copied": string;
   "copy.failed": string;
+  "copy.copyAddress": string;
+  "copy.copiedAddress": string;
+  "copy.copyHash": string;
+  "copy.copiedHash": string;
 
   // ── Load more footer ──────────────────────────────────────────────────
   "loadMore.loadMore": string;

@@ -104,10 +104,7 @@ export default function TransactionExplorer({
     setPresets(loadPresets());
   }, []);
 
-  useEffect(
-    () => () => requestControllerRef.current?.abort(),
-    [],
-  );
+  useEffect(() => () => requestControllerRef.current?.abort(), []);
 
   // Key this view's snapshot is stored under. Kept in step with the filters on
   // screen, so narrowing the list re-keys the saved view rather than
@@ -257,7 +254,9 @@ export default function TransactionExplorer({
   );
 
   useEffect(() => {
-    const retry = () => { if (error || txs.length === 0) void loadMore(); };
+    const retry = () => {
+      if (error || txs.length === 0) void loadMore();
+    };
     window.addEventListener("lumina:online", retry);
     return () => window.removeEventListener("lumina:online", retry);
   }, [error, txs.length, loadMore]);
@@ -334,12 +333,19 @@ export default function TransactionExplorer({
       <div className="flex items-center justify-between mb-3 text-[13px] text-[var(--color-text-secondary)]">
         <span data-testid="result-count">
           {filtering
-            ? t("explorer.filteredCount", { filtered: filtered.length, total: txs.length })
+            ? t("explorer.filteredCount", {
+                filtered: filtered.length,
+                total: txs.length,
+              })
             : t("explorer.loadedCount", { count: txs.length })}
         </span>
-        {loading && (
-          <span className="text-[var(--color-text-muted)] animate-pulse">{t("explorer.loading")}</span>
-        )}
+        <span
+          role="status"
+          aria-live="polite"
+          className="text-[var(--color-text-muted)] animate-pulse"
+        >
+          {loading ? t("explorer.loading") : ""}
+        </span>
       </div>
 
       <VirtualizedTransactionTable
@@ -359,10 +365,17 @@ export default function TransactionExplorer({
 
       <div className="mt-4 flex items-center justify-center gap-3">
         {error && txs.length === 0 ? (
-          <BackendUnavailable onRetry={() => { setHasNextPage(true); void loadMore(); }} />
+          <BackendUnavailable
+            onRetry={() => {
+              setHasNextPage(true);
+              void loadMore();
+            }}
+          />
         ) : error ? (
           <>
-            <span className="text-[13px] text-[var(--color-error-text)]">{error}</span>
+            <span className="text-[13px] text-[var(--color-error-text)]">
+              {error}
+            </span>
             <button
               type="button"
               onClick={() => {
@@ -385,7 +398,9 @@ export default function TransactionExplorer({
           </button>
         ) : (
           txs.length > 0 && (
-            <span className="text-[13px] text-[var(--color-text-faint)]">{t("explorer.endOfResults")}</span>
+            <span className="text-[13px] text-[var(--color-text-faint)]">
+              {t("explorer.endOfResults")}
+            </span>
           )
         )}
       </div>

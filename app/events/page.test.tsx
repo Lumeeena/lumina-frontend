@@ -44,7 +44,9 @@ describe("EventsPage decoded values", () => {
     );
 
     expect(screen.getByText(amount)).toBeTruthy();
-    expect(screen.getAllByRole("button", { name: "Copy" })).toHaveLength(1);
+    expect(
+      screen.getAllByRole("button", { name: /copy address/i }),
+    ).toHaveLength(1);
     expect(screen.getByText("transfer")).toBeTruthy();
   });
 });

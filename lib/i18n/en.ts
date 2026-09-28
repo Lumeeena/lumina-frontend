@@ -64,19 +64,26 @@ const en: MessageCatalogue = {
   "liveFeed.fetching": "Fetching live data...",
   "liveFeed.noTransactions": "No transactions found.",
   "liveFeed.updated": "Updated {time}",
+  "liveFeed.pauseFeed": "Pause feed",
+  "liveFeed.resumeFeed": "Resume feed",
+  "liveFeed.resumeFeedCount": "Resume feed ({count})",
+  "liveFeed.updatesWaiting":
+    "{count} {count, plural, one {update} other {updates}} waiting",
+  "liveFeed.updatesArrived":
+    "{count} {count, plural, one {update} other {updates}} arrived while paused",
+  "liveFeed.newTransactions":
+    "{count} new {count, plural, one {transaction} other {transactions}}",
 
   // ── Account operations ────────────────────────────────────────────────
   "accountOps.noOperations": "No operations yet.",
-  "accountOps.showingRecent":
-    "Showing {count} of your recent operations",
+  "accountOps.showingRecent": "Showing {count} of your recent operations",
   "accountOps.allOperations": "All {count} operations",
   "accountOps.couldNotLoad": "Could not load more operations.",
   "accountOps.endOfResults": "End of results",
 
   // ── Account transactions ──────────────────────────────────────────────
   "accountTxs.noTransactions": "No transactions yet.",
-  "accountTxs.showingRecent":
-    "Showing the {count} most recent transactions",
+  "accountTxs.showingRecent": "Showing the {count} most recent transactions",
   "accountTxs.allTransactions": "All {count} transactions",
   "accountTxs.couldNotLoad": "Could not load more transactions.",
   "accountTxs.endOfResults": "End of results",
@@ -102,6 +109,10 @@ const en: MessageCatalogue = {
   "copy.copy": "Copy",
   "copy.copied": "Copied!",
   "copy.failed": "Failed",
+  "copy.copyAddress": "Copy address to clipboard",
+  "copy.copiedAddress": "Address copied to clipboard",
+  "copy.copyHash": "Copy transaction hash to clipboard",
+  "copy.copiedHash": "Transaction hash copied to clipboard",
 
   // ── Load more footer ──────────────────────────────────────────────────
   "loadMore.loadMore": "Load more",
@@ -160,8 +171,7 @@ const en: MessageCatalogue = {
   "owner.deactivationFailed": "Deactivation failed.",
   "owner.hideHistory": "Hide history",
   "owner.historyCount": "History ({count})",
-  "owner.noRegistryEvents":
-    "No registry events indexed for this contract yet.",
+  "owner.noRegistryEvents": "No registry events indexed for this contract yet.",
   "owner.slashHistory": "Slash history",
   "owner.lifetimeSlashed": "Lifetime slashed: {amount} XLM",
   "owner.loadingSlashHistory": "Loading slash history\u2026",

@@ -26,7 +26,10 @@ async function getEvents(contractId: string): Promise<{
   unavailable: boolean;
 }> {
   try {
-    const data = await gqlFetch(GRAPHQL_URL, EVENTS_QUERY, { contractId, limit: 20 });
+    const data = await gqlFetch(GRAPHQL_URL, EVENTS_QUERY, {
+      contractId,
+      limit: 20,
+    });
     return { events: data.events.items, unavailable: false };
   } catch {
     return { events: [], unavailable: true };
@@ -70,7 +73,9 @@ export default async function EventsPage({
       </form>
 
       <div className="rounded-xl border border-[var(--color-border-default)] overflow-x-auto">
-        {result.unavailable ? <BackendUnavailable /> : result.events.length === 0 ? (
+        {result.unavailable ? (
+          <BackendUnavailable />
+        ) : result.events.length === 0 ? (
           <div className="p-8 text-center text-[var(--color-text-muted)] text-sm">
             No events indexed for this contract yet. Event indexing is opt-in on
             the indexer (<span className="mono">INDEXED_CONTRACT_IDS</span>/
@@ -79,19 +84,35 @@ export default async function EventsPage({
           </div>
         ) : (
           <table className="w-full text-sm border-collapse">
+            <caption className="sr-only">Contract events</caption>
             <thead>
               <tr>
-                <th className={th}>Contract</th>
-                <th className={th}>Topic</th>
-                <th className={th}>Value</th>
-                <th className={th}>Ledger</th>
-                <th className={th}>Time</th>
+                <th scope="col" className={th}>
+                  Contract
+                </th>
+                <th scope="col" className={th}>
+                  Topic
+                </th>
+                <th scope="col" className={th}>
+                  Value
+                </th>
+                <th scope="col" className={th}>
+                  Ledger
+                </th>
+                <th scope="col" className={th}>
+                  Time
+                </th>
               </tr>
             </thead>
             <tbody>
-              {result.events.map(ev => (
-                <tr key={ev.id} className="border-b border-[var(--color-bg-overlay)] last:border-0">
-                  <td className="py-2.5 px-3 mono text-xs text-[var(--color-accent-text)]">{truncateAddress(ev.contractId, 6)}</td>
+              {result.events.map((ev) => (
+                <tr
+                  key={ev.id}
+                  className="border-b border-[var(--color-bg-overlay)] last:border-0"
+                >
+                  <td className="py-2.5 px-3 mono text-xs text-[var(--color-accent-text)]">
+                    {truncateAddress(ev.contractId, 6)}
+                  </td>
                   <td className="py-2.5 px-3">
                     {ev.topics[0] && (
                       <span className="text-[11px] font-semibold bg-[var(--color-accent-surface)] text-[var(--color-accent-text)] rounded-md px-2 py-[3px]">
@@ -102,9 +123,15 @@ export default async function EventsPage({
                       </span>
                     )}
                   </td>
-                  <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-secondary)] max-w-[280px] truncate">{ev.value ?? "—"}</td>
-                  <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-secondary)]">{ev.ledger.toLocaleString()}</td>
-                  <td className="py-2.5 px-3 text-xs text-[var(--color-text-faint)]"><TimeAgo isoString={ev.createdAt} /></td>
+                  <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-secondary)] max-w-[280px] truncate">
+                    {ev.value ?? "—"}
+                  </td>
+                  <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-secondary)]">
+                    {ev.ledger.toLocaleString()}
+                  </td>
+                  <td className="py-2.5 px-3 text-xs text-[var(--color-text-faint)]">
+                    <TimeAgo isoString={ev.createdAt} />
+                  </td>
                 </tr>
               ))}
             </tbody>

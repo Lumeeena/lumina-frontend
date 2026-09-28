@@ -52,8 +52,10 @@ async function getTransaction(hash: string): Promise<{
 
 const th =
   "text-left text-[11px] tracking-[0.06em] uppercase text-[var(--color-text-muted)] px-3 py-2.5 border-b border-[var(--color-border-default)] bg-[var(--color-bg-subtle)]";
-const stat = "bg-[var(--color-bg-subtle)] border border-[var(--color-border-default)] rounded-xl p-4";
-const statLabel = "text-[11px] text-[var(--color-text-muted)] uppercase tracking-[0.05em]";
+const stat =
+  "bg-[var(--color-bg-subtle)] border border-[var(--color-border-default)] rounded-xl p-4";
+const statLabel =
+  "text-[11px] text-[var(--color-text-muted)] uppercase tracking-[0.05em]";
 const statValue = "mono text-sm mt-1";
 
 export default async function TransactionPage({
@@ -81,9 +83,11 @@ export default async function TransactionPage({
           </p>
           <p className="text-[var(--color-text-muted)] text-sm max-w-md mx-auto">
             The transaction{" "}
-            <span className="mono text-[var(--color-text-secondary)] break-all">{hash}</span> is not
-            in the index — it may be too new, or it may never have been included
-            in a ledger.
+            <span className="mono text-[var(--color-text-secondary)] break-all">
+              {hash}
+            </span>{" "}
+            is not in the index — it may be too new, or it may never have been
+            included in a ledger.
           </p>
         </div>
       ) : (
@@ -92,7 +96,7 @@ export default async function TransactionPage({
             <h1 className="mono font-bold text-[22px] break-all text-[var(--color-text-primary)]">
               {transaction.hash}
             </h1>
-            <CopyAddressButton address={transaction.hash} />
+            <CopyAddressButton address={transaction.hash} variant="hash" />
           </div>
           <p className="text-[var(--color-text-muted)] text-[13px] mb-6">
             Included in ledger {transaction.ledger.toLocaleString()}
@@ -154,7 +158,9 @@ export default async function TransactionPage({
                   </td>
                 </tr>
                 <tr>
-                  <td className="py-2.5 px-3 text-[var(--color-text-muted)] text-xs">Memo</td>
+                  <td className="py-2.5 px-3 text-[var(--color-text-muted)] text-xs">
+                    Memo
+                  </td>
                   <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-primary)] break-all">
                     {transaction.memo ?? "—"}
                   </td>
@@ -169,13 +175,24 @@ export default async function TransactionPage({
           <div className="rounded-xl border border-[var(--color-border-default)] overflow-x-auto">
             {transaction.operations && transaction.operations.length > 0 ? (
               <table className="w-full text-sm border-collapse">
+                <caption className="sr-only">Transaction operations</caption>
                 <thead>
                   <tr>
-                    <th className={th}>Type</th>
-                    <th className={th}>From</th>
-                    <th className={th}>To</th>
-                    <th className={th}>Amount</th>
-                    <th className={th}>Time</th>
+                    <th scope="col" className={th}>
+                      Type
+                    </th>
+                    <th scope="col" className={th}>
+                      From
+                    </th>
+                    <th scope="col" className={th}>
+                      To
+                    </th>
+                    <th scope="col" className={th}>
+                      Amount
+                    </th>
+                    <th scope="col" className={th}>
+                      Time
+                    </th>
                   </tr>
                 </thead>
                 <tbody>

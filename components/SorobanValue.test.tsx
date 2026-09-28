@@ -19,7 +19,9 @@ describe("SorobanValue", () => {
     expect(screen.getByText("Vector · 2")).toBeTruthy();
     expect(screen.getByText("mode:")).toBeTruthy();
     expect(screen.getByText("safe")).toBeTruthy();
-    expect(screen.getAllByRole("button", { name: "Copy" })).toHaveLength(1);
+    expect(
+      screen.getAllByRole("button", { name: /copy address/i }),
+    ).toHaveLength(1);
     expect(screen.getByText("GABCDEF...NOPQRS")).toBeTruthy();
   });
 

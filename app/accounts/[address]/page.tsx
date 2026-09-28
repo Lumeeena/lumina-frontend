@@ -23,7 +23,11 @@ export const dynamic = "force-dynamic";
  * address, so a shared link shows which account it is without either request
  * depending on the indexer being up.
  */
-export function generateMetadata({ params }: { params: Promise<{ address: string }> }): Promise<Metadata> {
+export function generateMetadata({
+  params,
+}: {
+  params: Promise<{ address: string }>;
+}): Promise<Metadata> {
   return params.then(({ address }) => {
     const short = truncateAddress(address, 6);
     return routeMetadata({
@@ -36,7 +40,9 @@ export function generateMetadata({ params }: { params: Promise<{ address: string
   });
 }
 
-async function getAccount(address: string): Promise<{ account: Account | null; unavailable: boolean }> {
+async function getAccount(
+  address: string,
+): Promise<{ account: Account | null; unavailable: boolean }> {
   try {
     const data = await gqlFetch(GRAPHQL_URL, ACCOUNT_QUERY, { address });
     return { account: data.account, unavailable: false };
@@ -45,9 +51,12 @@ async function getAccount(address: string): Promise<{ account: Account | null; u
   }
 }
 
-const th = "text-left text-[11px] tracking-[0.06em] uppercase text-[var(--color-text-muted)] px-3 py-2.5 border-b border-[var(--color-border-default)] bg-[var(--color-bg-subtle)]";
-const stat = "bg-[var(--color-bg-subtle)] border border-[var(--color-border-default)] rounded-xl p-4";
-const statLabel = "text-[11px] text-[var(--color-text-muted)] uppercase tracking-[0.05em]";
+const th =
+  "text-left text-[11px] tracking-[0.06em] uppercase text-[var(--color-text-muted)] px-3 py-2.5 border-b border-[var(--color-border-default)] bg-[var(--color-bg-subtle)]";
+const stat =
+  "bg-[var(--color-bg-subtle)] border border-[var(--color-border-default)] rounded-xl p-4";
+const statLabel =
+  "text-[11px] text-[var(--color-text-muted)] uppercase tracking-[0.05em]";
 const statValue = "mono text-sm mt-1";
 
 export default async function AccountPage({
@@ -82,10 +91,14 @@ export default async function AccountPage({
         <BackendUnavailable />
       ) : !account ? (
         <div className="p-8 rounded-xl border border-[var(--color-error-outline)] text-center">
-          <p className="text-[var(--color-error-text)] font-semibold mb-2">Account Not Found</p>
+          <p className="text-[var(--color-error-text)] font-semibold mb-2">
+            Account Not Found
+          </p>
           <p className="text-[var(--color-text-muted)] text-sm max-w-md mx-auto">
             The address{" "}
-            <span className="mono text-[var(--color-text-secondary)] break-all">{address}</span>{" "}
+            <span className="mono text-[var(--color-text-secondary)] break-all">
+              {address}
+            </span>{" "}
             does not exist on Stellar Mainnet, or has never been funded.
           </p>
         </div>
@@ -136,14 +149,28 @@ export default async function AccountPage({
           <h2 className="font-extrabold text-base mb-3 text-[var(--color-text-primary)]">
             Balances
           </h2>
-          <div className="rounded-xl border border-[var(--color-border-default)] overflow-x-auto mb-9">
+          <div
+            role="region"
+            aria-label="Account balances"
+            tabIndex={0}
+            className="rounded-xl border border-[var(--color-border-default)] overflow-x-auto mb-9"
+          >
             <table className="w-full text-sm border-collapse">
+              <caption className="sr-only">Account balances</caption>
               <thead>
                 <tr>
-                  <th className={th}>Asset</th>
-                  <th className={th}>Issuer</th>
-                  <th className={th}>Balance</th>
-                  <th className={th}>Limit</th>
+                  <th scope="col" className={th}>
+                    Asset
+                  </th>
+                  <th scope="col" className={th}>
+                    Issuer
+                  </th>
+                  <th scope="col" className={th}>
+                    Balance
+                  </th>
+                  <th scope="col" className={th}>
+                    Limit
+                  </th>
                 </tr>
               </thead>
               <tbody>

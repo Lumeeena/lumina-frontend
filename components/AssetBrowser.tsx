@@ -171,9 +171,7 @@ export default function AssetBrowser({
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
         <label className="flex-1 min-w-[220px]">
-          <span className="sr-only">
-            {t("assets.searchPlaceholder")}
-          </span>
+          <span className="sr-only">{t("assets.searchPlaceholder")}</span>
           <input
             type="search"
             value={query}
@@ -205,14 +203,28 @@ export default function AssetBrowser({
         </div>
       </div>
 
-      <div className="rounded-xl border border-[var(--color-border-default)] overflow-x-auto">
+      <div
+        role="region"
+        aria-label="Assets"
+        tabIndex={0}
+        className="rounded-xl border border-[var(--color-border-default)] overflow-x-auto"
+      >
         <table className="w-full text-sm border-collapse">
+          <caption className="sr-only">Assets</caption>
           <thead>
             <tr>
-              <th className={th}>{t("assets.thAsset")}</th>
-              <th className={th}>{t("assets.thIssuer")}</th>
-              <th className={`${th} text-right`}>{t("assets.thSupply")}</th>
-              <th className={`${th} text-right`}>{t("assets.thHolders")}</th>
+              <th scope="col" className={th}>
+                {t("assets.thAsset")}
+              </th>
+              <th scope="col" className={th}>
+                {t("assets.thIssuer")}
+              </th>
+              <th scope="col" className={`${th} text-right`}>
+                {t("assets.thSupply")}
+              </th>
+              <th scope="col" className={`${th} text-right`}>
+                {t("assets.thHolders")}
+              </th>
             </tr>
           </thead>
           <tbody>
