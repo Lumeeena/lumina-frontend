@@ -15,6 +15,7 @@ import { NETWORK_PASSPHRASE, REGISTRY_CONTRACT_ID, SOROBAN_RPC_URL } from '@/lib
 import { createStellarDriver, submitContractCall, type TxPhase } from '@/lib/sorobanTx';
 import { formatStroops } from '@/lib/formatters';
 import { Button } from '@/components/ui/Button';
+import { Fieldset, TextField, TextareaField } from '@/components/ui/FormField';
 import { t } from '@/lib/i18n';
 
 
@@ -186,52 +187,44 @@ export default function RegisterContractForm({
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
 
-      <div>
-        <label htmlFor="reg-contract-id" className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1.5">
-          {t("register.contractId")}
-        </label>
-        <input
-          id="reg-contract-id"
-          value={contractId}
-          onChange={e => setContractId(e.target.value)}
-          placeholder="CABC...EXAMPLE"
-          className="w-full min-h-[42px] px-3 py-2 text-[13px] mono bg-[var(--color-bg-base)] border border-[var(--color-border-default)] rounded-lg text-[var(--color-text-primary)]"
-          required
-        />
-      </div>
+      <TextField
+        id="reg-contract-id"
+        label={t('register.contractId')}
+        value={contractId}
+        onChange={e => setContractId(e.target.value)}
+        placeholder="CABC...EXAMPLE"
+        inputClassName="mono"
+        required
+      />
 
-      <div>
-        <label htmlFor="reg-name" className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1.5">
-          {t("register.projectName")}
-        </label>
-        <input
-          id="reg-name"
-          value={name}
-          onChange={e => setName(e.target.value)}
-          placeholder="My Protocol"
-          className="w-full min-h-[42px] px-3 py-2 text-sm bg-[var(--color-bg-base)] border border-[var(--color-border-default)] rounded-lg text-[var(--color-text-primary)]"
-          required
-        />
-      </div>
+      <TextField
+        id="reg-name"
+        label={t('register.projectName')}
+        value={name}
+        onChange={e => setName(e.target.value)}
+        placeholder="My Protocol"
+        required
+      />
 
-      <div>
-        <label htmlFor="reg-description" className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1.5">
-          {t("register.description")}
-        </label>
-        <textarea
-          id="reg-description"
-          value={description}
-          onChange={e => setDescription(e.target.value)}
-          rows={3}
-          placeholder="A DeFi protocol on Stellar"
-          className="w-full px-3 py-2 text-sm bg-[var(--color-bg-base)] border border-[var(--color-border-default)] rounded-lg resize-y text-[var(--color-text-primary)]"
-        />
-      </div>
+      <TextareaField
+        id="reg-description"
+        label={t('register.description')}
+        value={description}
+        onChange={e => setDescription(e.target.value)}
+        rows={3}
+        placeholder="A DeFi protocol on Stellar"
+        inputClassName="resize-y"
+      />
 
-      <fieldset>
-        <legend className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1.5">
-          {t("register.categoriesLabel")} <span className="text-[var(--color-text-muted)] font-normal">{t("register.categoriesHint")}</span>
-        </legend>
+      <Fieldset
+        legend={
+          <>
+            {t('register.categoriesLabel')}{' '}
+            <span className="text-[var(--color-text-muted)] font-normal">{t('register.categoriesHint')}</span>
+          </>
+        }
+        error={categoryError || undefined}
+      >
         <div className="flex flex-wrap gap-1.5">
           {REGISTRY_CATEGORIES.map(category => {
             const selected = categories.includes(category);
@@ -252,12 +245,7 @@ export default function RegisterContractForm({
             );
           })}
         </div>
-        {categoryError && (
-          <p role="alert" className="text-xs text-[var(--color-error-text)] mt-1.5">
-            {categoryError}
-          </p>
-        )}
-      </fieldset>
+      </Fieldset>
 
       <Button
         type="submit"
