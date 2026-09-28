@@ -5,9 +5,11 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import type { Transaction } from "@/lib/types";
 import TransactionRow from "./TransactionRow";
 import { Table, TableBody, TableHead, TableHeaderCell } from "./Table";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 const ROW_HEIGHT = 41;
 const OVERSCAN = 12;
+/** Number of columns in the desktop table: status dot + hash + ledger + source + ops + fee + time. */
 const COLUMNS = 7;
 
 export default function VirtualizedTransactionTable({
@@ -126,11 +128,6 @@ export default function VirtualizedTransactionTable({
         transactions.length === 0 && emptyMessage ? emptyMessage : undefined
       }
       afterTable={children}
-      onScroll={
-        onScrollTopChange
-          ? (event) => onScrollTopChange(event.currentTarget.scrollTop)
-          : undefined
-      }
     >
       <TableHead>
         {/* A plain row: `TableRow`'s border belongs to body rows, and the

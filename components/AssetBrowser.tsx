@@ -29,6 +29,7 @@ import {
 } from "@/lib/generated/graphql";
 import { gqlFetch, PUBLIC_GRAPHQL_URL } from "@/lib/graphql";
 import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
 import LoadMoreFooter from "./LoadMoreFooter";
 import BackendUnavailable from "./BackendUnavailable";
 import { t } from "@/lib/i18n";
@@ -161,9 +162,10 @@ export default function AssetBrowser({
 
   if (initial.length === 0 && rows.length === 0 && !error && !hasNextPage) {
     return (
-      <div className="rounded-xl border border-[var(--color-border-default)] p-8 text-center text-[var(--color-text-muted)] text-sm">
-        {t("assets.noAssetsYet")}
-      </div>
+      <EmptyState
+        title="No assets indexed yet"
+        description="Once the indexer sees a balance or a transfer for an asset, it appears here."
+      />
     );
   }
 
@@ -251,9 +253,11 @@ export default function AssetBrowser({
         </table>
 
         {visible.length === 0 && (
-          <p className="p-8 text-center text-[var(--color-text-muted)] text-sm">
-            {t("assets.noMatch", { query: query.trim() })}
-          </p>
+          <EmptyState
+            variant="inline"
+            title={`No loaded asset matches \u201c${query.trim()}\u201d`}
+            className="p-8 text-center"
+          />
         )}
       </div>
 

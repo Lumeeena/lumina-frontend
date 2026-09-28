@@ -11,6 +11,7 @@ import {
   type ActivityNotification,
 } from "@/lib/notifications";
 import { truncateAddress } from "@/lib/formatters";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 /** Above this the badge stops being countable at a glance; the panel is exact. */
 export const MAX_VISIBLE_BADGE_COUNT = 99;
@@ -117,9 +118,12 @@ export default function ActivityBell() {
           </div>
 
           {notifications.length === 0 ? (
-            <p className="px-4 py-6 text-center text-[13px] text-[var(--color-text-muted)]">
-              Nothing yet. Alerts appear here when a watched address is active.
-            </p>
+            <EmptyState
+              variant="inline"
+              title="Nothing yet"
+              description="Alerts appear here when a watched address is active."
+              className="px-4 py-6 text-center"
+            />
           ) : (
             <ul className="max-h-[min(24rem,60vh)] overflow-y-auto divide-y divide-[var(--color-bg-overlay)]">
               {notifications.map((item) => (

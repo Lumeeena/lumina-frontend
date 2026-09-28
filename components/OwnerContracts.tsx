@@ -51,6 +51,8 @@ import TimeAgo from './TimeAgo';
 import { LifetimeSlashedBadge, StakeBadge, VerifiedBadge } from './RegistryBadges';
 import BackendUnavailable from './BackendUnavailable';
 import { t } from '@/lib/i18n';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { InlineLoading } from '@/components/ui/InlineLoading';
 
 async function fetchEvents(
   contractId: string,
@@ -438,7 +440,7 @@ export default function OwnerContracts({
   }
 
   if (state === "loading") {
-    return <p className="text-sm text-[var(--color-text-muted)]">{t("owner.loadingContracts")}</p>;
+    return <InlineLoading label="Loading your contracts" />;
   }
 
   if (state === 'error') {
@@ -447,14 +449,10 @@ export default function OwnerContracts({
 
   if (entries.length === 0) {
     return (
-      <div className="border border-[var(--color-border-default)] rounded-xl p-6 text-center">
-        <p className="text-sm text-[var(--color-text-secondary)] mb-1">
-          {t("owner.noContracts")}
-        </p>
-        <p className="text-xs text-[var(--color-text-muted)]">
-          {t("owner.noContractsHint")}
-        </p>
-      </div>
+      <EmptyState
+        title="No contracts registered yet"
+        description="Register one with the form to opt it into Lumina indexing."
+      />
     );
   }
 

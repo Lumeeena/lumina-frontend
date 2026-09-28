@@ -16,6 +16,7 @@ import { formatOperationType, truncateAddress } from "@/lib/formatters";
 import TimeAgo from "./TimeAgo";
 import LoadMoreFooter from "./LoadMoreFooter";
 import { t } from "@/lib/i18n";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 const PAGE_SIZE = 25;
 /** Matches the seed the server component renders. */
@@ -79,9 +80,11 @@ export default function AccountOperationList({
 
   if (rows.length === 0) {
     return (
-      <p className="text-sm text-[var(--color-text-muted)]">
-        {t("accountOps.noOperations")}
-      </p>
+      <EmptyState
+        variant="inline"
+        title="No operations yet"
+        description="Operations will appear here once this account is active on the network."
+      />
     );
   }
 

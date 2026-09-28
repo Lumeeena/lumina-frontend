@@ -32,7 +32,8 @@ import { useAbortScope } from "@/lib/useAbortScope";
 import type { Balance } from "@/lib/types";
 import { AreaChart } from "@/components/charts/AreaChart";
 import type { AreaChartPoint } from "@/components/charts/AreaChart";
-import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { InlineError } from "@/components/ui/InlineError";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -158,21 +159,11 @@ export default function AccountPortfolio({ balances }: AccountPortfolioProps) {
     chartContent = <ChartSkeleton />;
   } else if (fetchState.status === "error") {
     chartContent = (
-      <div className="rounded-xl border border-[var(--color-error-outline)] bg-[var(--color-bg-subtle)] flex flex-col items-center justify-center gap-3 p-8 text-center" style={{ minHeight: 280 }}>
-        <p className="text-[var(--color-error-text)] text-sm font-semibold">
-          Could not load activity data
-        </p>
-        <p className="text-[var(--color-text-muted)] text-xs max-w-xs">
-          {fetchState.message}
-        </p>
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={() => void fetchVolume(selected)}
-        >
-          Retry
-        </Button>
-      </div>
+      <InlineError
+        message={fetchState.message}
+        onRetry={() => void fetchVolume(selected)}
+        minHeight={280}
+      />
     );
   } else {
     // status === "done"
@@ -181,19 +172,11 @@ export default function AccountPortfolio({ balances }: AccountPortfolioProps) {
 
     if (allZero) {
       chartContent = (
-        <div
-          className="rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-subtle)] flex flex-col items-center justify-center gap-2 p-8 text-center"
-          style={{ minHeight: 280 }}
-        >
-          <p className="text-[var(--color-text-secondary)] text-sm font-semibold">
-            No activity in the last 30 days
-          </p>
-          <p className="text-[var(--color-text-muted)] text-xs max-w-xs">
-            Transfer volume for{" "}
-            <span className="font-semibold">{assetLabel(selected)}</span> will
-            appear here once this account sends or receives a payment.
-          </p>
-        </div>
+        <EmptyState
+          title="No activity in the last 30 days"
+          description={`Transfer volume for ${assetLabel(selected)} will appear here once this account sends or receives a payment.`}
+          className="min-h-[280px] flex flex-col items-center justify-center"
+        />
       );
     } else {
       const points: AreaChartPoint[] = series.map((b) => ({

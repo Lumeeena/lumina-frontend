@@ -19,6 +19,7 @@ import { truncateAddress } from "@/lib/formatters";
 import TimeAgo from "./TimeAgo";
 import LoadMoreFooter from "./LoadMoreFooter";
 import { t } from "@/lib/i18n";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 /** The seed the server component renders; the first client fetch widens past it. */
 export const SEED_LIMIT = 10;
@@ -82,9 +83,11 @@ export default function AccountTransactionList({
 
   if (rows.length === 0) {
     return (
-      <p className="text-sm text-[var(--color-text-muted)]">
-        {t("accountTxs.noTransactions")}
-      </p>
+      <EmptyState
+        variant="inline"
+        title="No transactions yet"
+        description="Transactions will appear here once this account submits one to the network."
+      />
     );
   }
 

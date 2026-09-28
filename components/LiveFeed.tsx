@@ -14,6 +14,8 @@ import { truncateAddress } from "@/lib/formatters";
 import TimeAgo from "./TimeAgo";
 import ConnectionIndicator from "./ConnectionIndicator";
 import { t } from "@/lib/i18n";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { InlineLoading } from "@/components/ui/InlineLoading";
 
 /**
  * How many transactions the feed keeps.
@@ -274,18 +276,14 @@ export default function LiveFeed() {
       )}
 
       {loading ? (
-        <div
-          role="status"
-          aria-label="Loading live feed"
-          className="p-6 text-center text-[var(--color-text-muted)] text-sm animate-pulse"
-        >
-          <span className="sr-only">Loading live feed</span>
-          {t("liveFeed.fetching")}
-        </div>
+        <InlineLoading label="Fetching live data" className="p-6 text-center" />
       ) : txs.length === 0 ? (
-        <div className="p-6 text-center text-[var(--color-text-muted)] text-sm">
-          {t("liveFeed.noTransactions")}
-        </div>
+        <EmptyState
+          variant="inline"
+          title="No transactions yet"
+          description="New transactions will appear here as the network processes them."
+          className="p-6 text-center"
+        />
       ) : (
         <div
           ref={scrollRef}
