@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { routeMetadata } from "@/lib/metadata";
 import { TRANSACTIONS } from "@/lib/routes";
 import TransactionExplorer from "@/components/TransactionExplorer";
+import TransactionExplorerSkeleton from "@/components/TransactionExplorerSkeleton";
 
 export const dynamic = "force-dynamic";
 

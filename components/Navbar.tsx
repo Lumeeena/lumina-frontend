@@ -52,6 +52,7 @@ function NavContent({
           <Link
             key={route.path}
             href={withNetwork(route.path, network)}
+            prefetch={route.prefetch ?? false}
             className={`px-3.5 py-2 text-[13.5px] font-semibold rounded-lg whitespace-nowrap transition-colors ${
               active
                 ? "text-[var(--color-text-primary)] bg-[var(--color-bg-raised)]"
@@ -91,5 +92,27 @@ export default function Navbar() {
         <ThemeToggle />
       </div>
     </nav>
+  );
+}
+
+function NavbarContent() {
+  const pathname = usePathname() ?? "/";
+  const { network } = useNetwork();
+  return (
+    <NavContent
+      network={network}
+      pathname={pathname}
+      switcher={<NetworkSwitcher />}
+    />
+  );
+}
+
+export default function Navbar() {
+  return (
+    <Suspense
+      fallback={<nav aria-label="Primary navigation" className="h-[60px] border-b border-[var(--color-border-default)]" />}
+    >
+      <NavbarContent />
+    </Suspense>
   );
 }
