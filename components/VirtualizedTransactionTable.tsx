@@ -4,11 +4,12 @@ import { useRef, useEffect, useState, type ReactNode } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { Transaction } from "@/lib/types";
 import TransactionRow from "./TransactionRow";
+import { Table, TableBody, TableHead, TableHeaderCell } from "./Table";
 
 const ROW_HEIGHT = 41;
 const OVERSCAN = 12;
-const th =
-  "text-left text-[11px] tracking-[0.06em] uppercase text-[#a6a3b0] px-3 py-2.5 border-b border-[#e5e3ea] bg-[#fafafa]";
+/** Status dot, hash, ledger, source, ops, fee, time. */
+const COLUMNS = 7;
 
 export default function VirtualizedTransactionTable({
   transactions,
@@ -115,54 +116,54 @@ export default function VirtualizedTransactionTable({
   }
 
   return (
-    <div
+    <Table
       ref={scrollRef}
+      caption="Transactions"
+      columnCount={COLUMNS}
+      stickyHeader
+      containerClassName="rounded-xl border border-[#e5e3ea] overflow-auto max-h-[70vh]"
       data-testid="transaction-scroll"
       onScroll={
         onScrollTopChange
           ? (event) => onScrollTopChange(event.currentTarget.scrollTop)
           : undefined
       }
-      className="rounded-xl border border-[#e5e3ea] overflow-auto max-h-[70vh]"
+      emptyMessage={transactions.length === 0 ? emptyMessage : undefined}
+      afterTable={children}
     >
-      <table className="w-full text-sm border-collapse">
-        <thead className="sticky top-0 z-10">
-          <tr>
-            <th className={`${th} w-6`} />
-            <th className={th}>Hash</th>
-            <th className={th}>Ledger</th>
-            <th className={th}>Source</th>
-            <th className={th}>Ops</th>
-            <th className={th}>Fee</th>
-            <th className={th}>Time</th>
+      <TableHead>
+        {/* A plain row: `TableRow`'s border belongs to body rows, and the
+            header cells already draw their own. */}
+        <tr>
+          <TableHeaderCell className="w-6" />
+          <TableHeaderCell>Hash</TableHeaderCell>
+          <TableHeaderCell>Ledger</TableHeaderCell>
+          <TableHeaderCell>Source</TableHeaderCell>
+          <TableHeaderCell>Ops</TableHeaderCell>
+          <TableHeaderCell>Fee</TableHeaderCell>
+          <TableHeaderCell>Time</TableHeaderCell>
+        </tr>
+      </TableHead>
+      <TableBody>
+        {paddingTop > 0 && (
+          // Layout, not data: kept as a bare cell so the inline height the
+          // virtualizer measures is not padded out by the shared cell styles.
+          <tr aria-hidden="true">
+            <td colSpan={COLUMNS} style={{ height: paddingTop }} />
           </tr>
-        </thead>
-        <tbody>
-          {paddingTop > 0 && (
-            <tr aria-hidden="true">
-              <td colSpan={7} style={{ height: paddingTop }} />
-            </tr>
-          )}
-          {virtualRows.map((virtualRow) => (
-            <TransactionRow
-              key={transactions[virtualRow.index].hash}
-              tx={transactions[virtualRow.index]}
-            />
-          ))}
-          {paddingBottom > 0 && (
-            <tr aria-hidden="true">
-              <td colSpan={7} style={{ height: paddingBottom }} />
-            </tr>
-          )}
-        </tbody>
-      </table>
-
-      {transactions.length === 0 && emptyMessage && (
-        <div className="p-8 text-center text-[#a6a3b0] text-sm">
-          {emptyMessage}
-        </div>
-      )}
-      {children}
-    </div>
+        )}
+        {virtualRows.map((virtualRow) => (
+          <TransactionRow
+            key={transactions[virtualRow.index].hash}
+            tx={transactions[virtualRow.index]}
+          />
+        ))}
+        {paddingBottom > 0 && (
+          <tr aria-hidden="true">
+            <td colSpan={COLUMNS} style={{ height: paddingBottom }} />
+          </tr>
+        )}
+      </TableBody>
+    </Table>
   );
 }

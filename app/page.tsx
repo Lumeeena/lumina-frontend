@@ -1,6 +1,5 @@
-import { LatestLedgerDocument as LATEST_LEDGER_QUERY } from "@/lib/generated/graphql";
 import Link from "next/link";
-import type { Metadata } from "next";
+import { LatestLedgerDocument as LATEST_LEDGER_QUERY } from "@/lib/generated/graphql";
 import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
 import { shareCard } from "@/lib/metadata";
 import { DEFAULT_DESCRIPTION, SITE_TITLE } from "@/lib/site";
@@ -40,26 +39,31 @@ const QUICK_LINKS = [
     href: "/explorer",
     label: "Account Explorer",
     desc: "Search any Stellar account",
+    prefetch: true,
   },
   {
     href: "/transactions",
     label: "All Transactions",
     desc: "Browse recent transactions",
+    prefetch: true,
   },
   {
     href: "/events",
     label: "Contract Events",
     desc: "Soroban events by contract",
+    prefetch: false,
   },
   {
     href: "/graphql",
     label: "GraphQL Playground",
     desc: "Query the Lumina API",
+    prefetch: false,
   },
   {
     href: "/registry",
     label: "Registry",
     desc: "Register a contract for indexing",
+    prefetch: false,
   },
 ];
 
@@ -88,12 +92,14 @@ export default async function Home() {
             <div className="flex gap-3 flex-wrap">
               <Link
                 href="/explorer"
+                prefetch
                 className="bg-[#8b5cf6] hover:bg-[#7c3aed] text-white font-bold text-sm px-[22px] py-[13px] rounded-lg shadow-[0_1px_2px_rgba(139,92,246,0.3)] transition-colors"
               >
                 Open Explorer
               </Link>
               <Link
                 href="/graphql"
+                prefetch={false}
                 className="bg-white border border-[#e5e3ea] hover:border-[#c4b5fd] text-[#0e0e12] font-bold text-sm px-[22px] py-[13px] rounded-lg transition-colors"
               >
                 GraphQL Playground
@@ -161,6 +167,7 @@ export default async function Home() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  prefetch={item.prefetch}
                   className="text-left bg-white border border-[#e5e3ea] hover:border-[#c4b5fd] rounded-xl p-4 flex flex-col gap-1 transition-colors"
                 >
                   <span className="font-bold text-sm text-[#0e0e12]">

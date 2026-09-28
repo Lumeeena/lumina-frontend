@@ -117,14 +117,16 @@ export default function GraphQLPage() {
             </button>
           ))}
           <h2 className="text-xs font-bold tracking-wide uppercase text-[#a6a3b0] mt-4 mb-1">Recent Queries</h2>
-          {history.length === 0 ? (
-            <p className="text-xs text-[#a6a3b0]">Edited queries will appear here.</p>
-          ) : history.map((entry, index) => (
-            <button key={`${index}-${entry}`} onClick={() => { setQuery(entry); setSelected(null); setResult(null); setError(null); }}
-              className="text-left rounded-[10px] p-3 border border-[#e5e3ea] bg-white text-[#3f3d47] hover:border-[#c4b5fd]">
-              <span className="block text-[11px] mono leading-snug line-clamp-3">{entry}</span>
-            </button>
-          ))}
+          <div className="min-h-[180px] max-h-[260px] overflow-y-auto flex flex-col gap-2" aria-label="Recent queries">
+            {history.length === 0 ? (
+              <p className="text-xs text-[#a6a3b0]">Edited queries will appear here.</p>
+            ) : history.map((entry, index) => (
+              <button key={`${index}-${entry}`} onClick={() => { setQuery(entry); setSelected(null); setResult(null); setError(null); }}
+                className="text-left rounded-[10px] p-3 border border-[#e5e3ea] bg-white text-[#3f3d47] hover:border-[#c4b5fd]">
+                <span className="block text-[11px] mono leading-snug line-clamp-3">{entry}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="flex flex-col gap-4">

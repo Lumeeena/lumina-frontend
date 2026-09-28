@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
 import { StatsDocument } from "@/lib/generated/graphql";
 import { routeMetadata } from "@/lib/metadata";

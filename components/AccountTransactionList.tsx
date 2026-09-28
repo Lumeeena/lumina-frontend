@@ -1,7 +1,5 @@
 "use client";
 
-import { AccountTransactionsDocument as ACCOUNT_TRANSACTIONS_QUERY } from "@/lib/generated/graphql";
-
 /**
  * An account's transactions, paginated.
  *
@@ -13,6 +11,7 @@ import { AccountTransactionsDocument as ACCOUNT_TRANSACTIONS_QUERY } from "@/lib
  * end-of-results state — on the one read shape offered here.
  */
 import { useCallback, useState } from 'react';
+import { AccountTransactionsDocument as ACCOUNT_TRANSACTIONS_QUERY } from '@/lib/generated/graphql';
 import { gqlFetch, PUBLIC_GRAPHQL_URL } from '@/lib/graphql';
 import type { Transaction } from '@/lib/types';
 import { truncateAddress } from '@/lib/formatters';
@@ -24,8 +23,7 @@ export const SEED_LIMIT = 10;
 /** Each load more widens the window: 10 → 25 → 60 → 150 → 375. */
 const LIMIT_STEPS = [10, 25, 60, 150, 375];
 
-const th =
-  "text-left text-[11px] tracking-[0.06em] uppercase text-[#a6a3b0] px-3 py-2.5 border-b border-[#e5e3ea] bg-[#fafafa]";
+const COLUMNS = 4;
 
 export default function AccountTransactionList({
   address,
@@ -72,7 +70,7 @@ export default function AccountTransactionList({
   }, [address, step, loading]);
 
   if (rows.length === 0) {
-    return <p className="text-sm text-[#a6a3b0]">No transactions yet.</p>;
+    return <TableEmptyState>No transactions yet.</TableEmptyState>;
   }
 
   return (
@@ -85,42 +83,45 @@ export default function AccountTransactionList({
         </span>
       </div>
 
-      <div className="rounded-xl border border-[#e5e3ea] overflow-hidden">
-        <table className="w-full text-sm border-collapse">
-          <thead>
-            <tr>
-              <th className={th}>Hash</th>
-              <th className={th}>Ledger</th>
-              <th className={th}>Ops</th>
-              <th className={th}>Time</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((tx) => (
-              <tr
-                key={tx.hash}
-                className="border-b border-[#f0eff3] last:border-0"
-              >
-                <td className="py-2.5 px-3">
-                  <a
-                    href={`https://stellar.expert/explorer/public/tx/${tx.hash}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mono text-xs text-[#7c3aed] hover:text-[#6d28d9] hover:underline transition-colors"
-                  >
-                    {truncateAddress(tx.hash, 6)}
-                  </a>
-                </td>
-                <td className="py-2.5 px-3 mono text-xs">
-                  {tx.ledger.toLocaleString()}
-                </td>
-                <td className="py-2.5 px-3 text-xs">{tx.operationCount}</td>
-                <td className="py-2.5 px-3 text-xs text-[#c3c1cb]"><TimeAgo isoString={tx.createdAt} /></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <Table
+        caption="Account transactions"
+        columnCount={COLUMNS}
+        busy={loading}
+      >
+        <TableHead>
+          {/* A plain row: `TableRow`'s border belongs to body rows, and the
+              header cells already draw their own. */}
+          <tr>
+            <TableHeaderCell>Hash</TableHeaderCell>
+            <TableHeaderCell>Ledger</TableHeaderCell>
+            <TableHeaderCell>Ops</TableHeaderCell>
+            <TableHeaderCell>Time</TableHeaderCell>
+          </tr>
+        </TableHead>
+        <TableBody>
+          {rows.map((tx) => (
+            <TableRow key={tx.hash}>
+              <TableCell>
+                <a
+                  href={`https://stellar.expert/explorer/public/tx/${tx.hash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mono text-xs text-[#7c3aed] hover:text-[#6d28d9] hover:underline transition-colors"
+                >
+                  {truncateAddress(tx.hash, 6)}
+                </a>
+              </TableCell>
+              <TableCell className="mono text-xs">
+                {tx.ledger.toLocaleString()}
+              </TableCell>
+              <TableCell className="text-xs">{tx.operationCount}</TableCell>
+              <TableCell className="text-xs text-[#c3c1cb]">
+                <TimeAgo isoString={tx.createdAt} />
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
 
       <LoadMoreFooter
         loading={loading}

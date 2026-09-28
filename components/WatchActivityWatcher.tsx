@@ -25,7 +25,11 @@ export default function WatchActivityWatcher() {
     // already recorded the alert by this point, so this is a second channel
     // rather than the only one.
     void notifyWhileUnfocused(
-      activity,
+      {
+        id: activity.id,
+        address: activity.address,
+        transactionHash: activity.operation.transactionHash,
+      },
       `Activity on ${truncateAddress(activity.address, 5)}`,
       describe(activity),
     );

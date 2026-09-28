@@ -158,7 +158,7 @@ export async function enablePush(): Promise<PushState> {
     if (!key) return "granted";
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: key,
+      applicationServerKey: new Uint8Array(key).buffer as ArrayBuffer,
     });
     return subscription ? "subscribed" : "granted";
   } catch {
@@ -207,7 +207,6 @@ export function localNotificationOptions(
 ): NotificationOptions {
   return {
     tag: notification.id,
-    renotify: false,
     icon: "/icons/icon-192.svg",
     badge: "/icons/icon-192.svg",
     data: {

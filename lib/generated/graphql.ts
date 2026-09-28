@@ -633,10 +633,11 @@ export type AccountDetailQuery = { account: { address: string, sequence: string,
 export type ContractEventsQueryVariables = Exact<{
   contractId: Scalars['String']['input'];
   limit?: InputMaybe<Scalars['Int']['input']>;
+  cursor?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
-export type ContractEventsQuery = { events: { items: Array<{ id: string, type: string, contractId: string, ledger: number, createdAt: string, pagingToken: string, topics: Array<string>, value: string | null }> } };
+export type ContractEventsQuery = { events: { items: Array<{ id: string, type: string, contractId: string, ledger: number, createdAt: string, pagingToken: string, topics: Array<string>, value: string | null }>, pageInfo: { hasNextPage: boolean, cursor: string | null } } };
 
 export type StatsQueryVariables = Exact<{
   opLimit?: InputMaybe<Scalars['Int']['input']>;
@@ -652,6 +653,20 @@ export type TransactionPageQueryVariables = Exact<{
 
 
 export type TransactionPageQuery = { transactions: { items: Array<{ hash: string, ledger: number, createdAt: string, sourceAccount: string, feeCharged: string, operationCount: number, successful: boolean, memoType: string | null, memo: string | null }>, pageInfo: { hasNextPage: boolean, cursor: string | null } } };
+
+export type MemoSearchQueryVariables = Exact<{
+  query: Scalars['String']['input'];
+}>;
+
+
+export type MemoSearchQuery = { search: { items: Array<{ hash: string, ledger: number, createdAt: string, sourceAccount: string, feeCharged: string, operationCount: number, successful: boolean, memoType: string | null, memo: string | null }> } };
+
+export type TransactionDetailQueryVariables = Exact<{
+  hash: Scalars['String']['input'];
+}>;
+
+
+export type TransactionDetailQuery = { transaction: { hash: string, ledger: number, createdAt: string, sourceAccount: string, feeCharged: string, operationCount: number, successful: boolean, memoType: string | null, memo: string | null, operations: Array<{ id: string, type: OperationType, createdAt: string, sourceAccount: string, from: string | null, to: string | null, amount: string | null, asset: string | null }> | null } | null };
 
 export type OwnerContractEventsQueryVariables = Exact<{
   contractId: Scalars['String']['input'];
@@ -800,8 +815,8 @@ export const AccountDetailDocument = new TypedDocumentString(`
 }
     `) as unknown as TypedDocumentString<AccountDetailQuery, AccountDetailQueryVariables>;
 export const ContractEventsDocument = new TypedDocumentString(`
-    query ContractEvents($contractId: String!, $limit: Int) {
-  events(contractId: $contractId, limit: $limit) {
+    query ContractEvents($contractId: String!, $limit: Int, $cursor: String) {
+  events(contractId: $contractId, limit: $limit, cursor: $cursor) {
     items {
       id
       type
@@ -811,6 +826,10 @@ export const ContractEventsDocument = new TypedDocumentString(`
       pagingToken
       topics
       value
+    }
+    pageInfo {
+      hasNextPage
+      cursor
     }
   }
 }
@@ -849,6 +868,48 @@ export const TransactionPageDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<TransactionPageQuery, TransactionPageQueryVariables>;
+export const MemoSearchDocument = new TypedDocumentString(`
+    query MemoSearch($query: String!) {
+  search(query: $query, limit: 20) {
+    items {
+      hash
+      ledger
+      createdAt
+      sourceAccount
+      feeCharged
+      operationCount
+      successful
+      memoType
+      memo
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<MemoSearchQuery, MemoSearchQueryVariables>;
+export const TransactionDetailDocument = new TypedDocumentString(`
+    query TransactionDetail($hash: String!) {
+  transaction(hash: $hash) {
+    hash
+    ledger
+    createdAt
+    sourceAccount
+    feeCharged
+    operationCount
+    successful
+    memoType
+    memo
+    operations {
+      id
+      type
+      createdAt
+      sourceAccount
+      from
+      to
+      amount
+      asset
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<TransactionDetailQuery, TransactionDetailQueryVariables>;
 export const OwnerContractEventsDocument = new TypedDocumentString(`
     query OwnerContractEvents($contractId: String!, $limit: Int) {
   events(contractId: $contractId, limit: $limit) {

@@ -305,7 +305,12 @@ function RegistryContent() {
               </p>
             )
           ) : entriesLoading ? (
-            <p className="text-sm text-[#a6a3b0]">Loading registry entries…</p>
+            <div role="status" aria-label="Loading registry entries" className="flex flex-col gap-2 animate-pulse">
+              <span className="sr-only">Loading registry entries</span>
+              {Array.from({ length: 4 }, (_, index) => (
+                <div key={index} aria-hidden="true" className="h-[92px] rounded-xl border border-[#e5e3ea] bg-[#f6f5f8]" />
+              ))}
+            </div>
           ) : entriesError ? (
             <BackendUnavailable onRetry={loadEntries} />
           ) : entries.length === 0 ? (

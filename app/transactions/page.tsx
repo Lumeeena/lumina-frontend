@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { routeMetadata } from "@/lib/metadata";
 import { TRANSACTIONS } from "@/lib/routes";
 import TransactionExplorer from "@/components/TransactionExplorer";
+import TransactionExplorerSkeleton from "@/components/TransactionExplorerSkeleton";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,7 @@ export default function TransactionsPage() {
         it produced, which a server component re-rendering per request cannot
         hold.
       */}
-      <Suspense fallback={<div className="p-8 text-center text-[#a6a3b0] text-sm">Loading transactions…</div>}>
+      <Suspense fallback={<TransactionExplorerSkeleton />}>
         <TransactionExplorer />
       </Suspense>
     </div>
