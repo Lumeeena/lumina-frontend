@@ -3,12 +3,14 @@ import type {
   TransactionPageQuery,
   AccountOperationsQuery,
   AccountDetailQuery,
+  AccountTrustlineOpsQuery,
   OwnerContractEventsQuery,
   LatestLedgerQuery,
 } from "./generated/graphql";
 
 export type Transaction = TransactionPageQuery["transactions"]["items"][number];
 export type Operation = AccountOperationsQuery["operations"]["items"][number];
+export type TrustlineOp = AccountTrustlineOpsQuery["operations"]["items"][number];
 export type Account = NonNullable<AccountDetailQuery["account"]>;
 export type Balance = Account["balances"][number];
 export type AccountFlags = Account["flags"];

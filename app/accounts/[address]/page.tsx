@@ -1,14 +1,19 @@
 import type { Metadata } from "next";
-import { AccountDetailDocument as ACCOUNT_QUERY } from "@/lib/generated/graphql";
+import {
+  AccountDetailDocument as ACCOUNT_QUERY,
+  AccountTrustlineOpsDocument as TRUSTLINE_QUERY,
+} from "@/lib/generated/graphql";
 import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
 import { accountOgImage, routeMetadata } from "@/lib/metadata";
-import type { Account } from "@/lib/types";
+import type { Account, TrustlineOp } from "@/lib/types";
 import { formatXLM, truncateAddress } from "@/lib/formatters";
 import CopyAddressButton from "@/components/CopyAddressButton";
 import WatchIndicator from "@/components/WatchIndicator";
 import AccountActivityFeed from "@/components/AccountActivityFeed";
+import AccountPortfolio from "@/components/AccountPortfolio";
 import AccountTransactionList from "@/components/AccountTransactionList";
 import AccountOperationList from "@/components/AccountOperationList";
+import AccountTrustlineTimeline from "@/components/AccountTrustlineTimeline";
 import BackendUnavailable from "@/components/BackendUnavailable";
 import Breadcrumbs from "@/components/Breadcrumbs";
 
@@ -56,7 +61,10 @@ export default async function AccountPage({
   params: Promise<{ address: string }>;
 }) {
   const { address } = await params;
-  const result = await getAccount(address);
+  const [result, trustlineOps] = await Promise.all([
+    getAccount(address),
+    getTrustlineOps(address),
+  ]);
   const account = result.account;
 
   const flagTags = account
@@ -179,6 +187,10 @@ export default async function AccountPage({
             </table>
           </div>
 
+          {account.balances.length > 0 && (
+            <AccountPortfolio balances={account.balances} />
+          )}
+
           <AccountActivityFeed address={account.address} />
 
           <h2 className="font-extrabold text-base mb-3 text-[var(--color-text-primary)]">
@@ -195,6 +207,14 @@ export default async function AccountPage({
           <AccountOperationList
             address={account.address}
             initial={account.operations ?? []}
+          />
+
+          <h2 className="font-extrabold text-base mt-9 mb-3 text-[var(--color-text-primary)]">
+            Trustline History
+          </h2>
+          <AccountTrustlineTimeline
+            address={account.address}
+            initial={trustlineOps}
           />
         </div>
       )}
