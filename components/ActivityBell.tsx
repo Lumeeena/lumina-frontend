@@ -70,7 +70,7 @@ export default function ActivityBell() {
   }, []);
 
   return (
-    <div className="relative ml-auto shrink-0" ref={containerRef}>
+    <div className="relative ms-auto shrink-0" ref={containerRef}>
       <button
         type="button"
         onClick={handleOpen}
@@ -88,7 +88,7 @@ export default function ActivityBell() {
         {unread > 0 && (
           <span
             data-testid="activity-bell-count"
-            className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-[var(--color-error-text)] text-white text-[10px] font-bold leading-4 text-center tabular-nums"
+            className="absolute -top-0.5 -end-0.5 min-w-[16px] h-4 px-1 rounded-full bg-[var(--color-error-text)] text-white text-[10px] font-bold leading-4 text-center tabular-nums"
           >
             {unread > MAX_VISIBLE_BADGE_COUNT ? `${MAX_VISIBLE_BADGE_COUNT}+` : unread}
           </span>
@@ -99,7 +99,7 @@ export default function ActivityBell() {
         <div
           id={panelId}
           data-testid="activity-panel"
-          className="absolute right-0 top-full z-30 mt-2 w-[min(22rem,calc(100vw-2rem))] rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-base)] shadow-lg overflow-hidden"
+          className="absolute end-0 top-full z-30 mt-2 w-[min(22rem,calc(100vw-2rem))] rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-base)] shadow-lg overflow-hidden"
         >
           <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-bg-overlay)]">
             <h2 className="text-[13px] font-extrabold text-[var(--color-text-primary)]">

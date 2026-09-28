@@ -121,10 +121,10 @@ function MapValue({
       <summary className="cursor-pointer select-none text-[var(--color-accent-11)]">
         Map · {entries.length}
       </summary>
-      <div className="ml-3 border-l border-[var(--color-border-default)] pl-3">
+      <div className="ms-3 border-s border-[var(--color-border-default)] ps-3">
         {entries.map(([key, item], index) => (
           <div key={index} className="py-1">
-            <span className="mr-2 text-[var(--color-text-secondary)]">
+            <span className="me-2 text-[var(--color-text-secondary)]">
               {key === "" ? (
                 `Entry ${index + 1}`
               ) : (
@@ -178,10 +178,10 @@ function SorobanNode({
         <summary className="cursor-pointer select-none text-[var(--color-accent-11)]">
           Vector · {value.length}
         </summary>
-        <div className="ml-3 border-l border-[var(--color-border-default)] pl-3">
+        <div className="ms-3 border-s border-[var(--color-border-default)] ps-3">
           {value.map((item, index) => (
             <div key={index} className="py-1">
-              <span className="mr-2 text-[var(--color-text-muted)]">
+              <span className="me-2 text-[var(--color-text-muted)]">
                 [{index}]
               </span>
               <SorobanNode
@@ -202,10 +202,10 @@ function SorobanNode({
         <summary className="cursor-pointer select-none text-[var(--color-accent-11)]">
           Map · {value.size}
         </summary>
-        <div className="ml-3 border-l border-[var(--color-border-default)] pl-3">
+        <div className="ms-3 border-s border-[var(--color-border-default)] ps-3">
           {Array.from(value.entries(), ([key, item], index) => (
             <div key={index} className="py-1">
-              <span className="mr-2 text-[var(--color-text-secondary)]">
+              <span className="me-2 text-[var(--color-text-secondary)]">
                 {String(key)}:
               </span>
               <SorobanNode
@@ -272,10 +272,10 @@ function SorobanNode({
         <summary className="cursor-pointer select-none text-[var(--color-accent-11)]">
           Struct · {entries.length}
         </summary>
-        <div className="ml-3 border-l border-[var(--color-border-default)] pl-3">
+        <div className="ms-3 border-s border-[var(--color-border-default)] ps-3">
           {entries.map(([key, item]) => (
             <div key={key} className="py-1">
-              <span className="mr-2 text-[var(--color-text-secondary)]">
+              <span className="me-2 text-[var(--color-text-secondary)]">
                 {key}:
               </span>
               <SorobanNode

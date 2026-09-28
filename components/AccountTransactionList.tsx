@@ -26,7 +26,7 @@ export const SEED_LIMIT = 10;
 const LIMIT_STEPS = [10, 25, 60, 150, 375];
 
 const th =
-  "text-left text-[11px] tracking-[0.06em] uppercase text-[var(--color-text-muted)] px-3 py-2.5 border-b border-[var(--color-border-default)] bg-[var(--color-bg-subtle)]";
+  "text-start text-[11px] tracking-[0.06em] uppercase text-[var(--color-text-muted)] px-3 py-2.5 border-b border-[var(--color-border-default)] bg-[var(--color-bg-subtle)]";
 
 export default function AccountTransactionList({
   address,

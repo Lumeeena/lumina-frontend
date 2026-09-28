@@ -8,6 +8,9 @@ import { PUBLIC_GRAPHQL_URL } from "@/lib/graphql";
 import { useAbortScope } from "@/lib/useAbortScope";
 import { loadQueryHistory, saveQueryToHistory } from "@/lib/queryHistory";
 import BackendUnavailable from "@/components/BackendUnavailable";
+import CodeSnippet from "@/components/CodeSnippet";
+import LanguageSelector from "@/components/LanguageSelector";
+import { generateJavaScriptClient, generatePythonClient } from "@/lib/codegen";
 
 function JsonHighlight({ data }: { data: object }) {
   const str = JSON.stringify(data, null, 2);
@@ -46,6 +49,8 @@ export default function GraphQLPage() {
   const [error, setError] = useState<string | null>(null);
   const [unavailable, setUnavailable] = useState(false);
   const [running, setRunning] = useState(false);
+  const [showCodeGen, setShowCodeGen] = useState(false);
+  const [codegenLanguage, setCodegenLanguage] = useState('javascript');
 
   useEffect(() => {
     const timer = window.setTimeout(() => setHistory(loadQueryHistory()), 0);
@@ -121,7 +126,7 @@ export default function GraphQLPage() {
           <h2 className="text-xs font-bold tracking-wide uppercase text-[var(--color-text-muted)] mb-1">Query Examples</h2>
           {QUERY_EXAMPLES.map(ex => (
             <button key={ex.name} onClick={() => selectExample(ex)}
-              className={`text-left rounded-[10px] p-3 border transition-colors ${selected?.name === ex.name ? "border-[var(--color-border-strong)] bg-[var(--color-accent-surface)] text-[var(--color-accent-text)]" : "border-[var(--color-border-default)] bg-[var(--color-bg-base)] text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)]"}`}>
+              className={`text-start rounded-[10px] p-3 border transition-colors ${selected?.name === ex.name ? "border-[var(--color-border-strong)] bg-[var(--color-accent-surface)] text-[var(--color-accent-text)]" : "border-[var(--color-border-default)] bg-[var(--color-bg-base)] text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)]"}`}>
               <span className="block font-bold text-[13px] mb-0.5">{ex.name}</span>
               <span className="block text-[11px] opacity-70 leading-snug">{ex.description}</span>
             </button>
@@ -131,7 +136,7 @@ export default function GraphQLPage() {
             <p className="text-xs text-[var(--color-text-muted)]">Edited queries will appear here.</p>
           ) : history.map((entry, index) => (
             <button key={`${index}-${entry}`} onClick={() => { setQuery(entry); setSelected(null); setResult(null); setError(null); }}
-              className="text-left rounded-[10px] p-3 border border-[var(--color-border-default)] bg-[var(--color-bg-base)] text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)]">
+              className="text-start rounded-[10px] p-3 border border-[var(--color-border-default)] bg-[var(--color-bg-base)] text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)]">
               <span className="block text-[11px] mono leading-snug line-clamp-3">{entry}</span>
             </button>
           ))}
@@ -151,7 +156,15 @@ export default function GraphQLPage() {
           </div>
 
           <div className="rounded-xl border border-[var(--color-border-default)] overflow-hidden">
-            <div className="px-4 py-2.5 border-b border-[var(--color-border-default)] bg-[var(--color-bg-subtle)]"><span className="text-[11px] font-bold tracking-wide uppercase text-[var(--color-text-muted)]">Response</span></div>
+            <div className="px-4 py-2.5 border-b border-[var(--color-border-default)] bg-[var(--color-bg-subtle)] flex items-center justify-between">
+              <span className="text-[11px] font-bold tracking-wide uppercase text-[var(--color-text-muted)]">Response</span>
+              <button
+                onClick={() => setShowCodeGen(!showCodeGen)}
+                className="text-[11px] font-bold tracking-wide uppercase text-[var(--color-accent-fill)] hover:text-[var(--color-accent-text)] transition-colors"
+              >
+                {showCodeGen ? "Hide" : "Generate"} Code
+              </button>
+            </div>
             <div className="p-3.5 px-4 max-h-[260px] overflow-y-auto">
               {unavailable ? (
                 <BackendUnavailable onRetry={runQuery} />
@@ -164,6 +177,38 @@ export default function GraphQLPage() {
               )}
             </div>
           </div>
+
+          {showCodeGen && (
+            <div className="rounded-xl border border-[var(--color-accent-fill)]/20 overflow-hidden">
+              <div className="px-4 py-2.5 border-b border-[var(--color-border-default)] bg-[var(--color-bg-subtle)]">
+                <span className="text-[11px] font-bold tracking-wide uppercase text-[var(--color-text-muted)]">Generate Client Code</span>
+              </div>
+              <div className="p-4 space-y-4">
+                <LanguageSelector
+                  selected={codegenLanguage}
+                  onChange={setCodegenLanguage}
+                  languages={[
+                    { id: 'javascript', label: 'JavaScript' },
+                    { id: 'python', label: 'Python' },
+                  ]}
+                />
+                <CodeSnippet
+                  code={
+                    codegenLanguage === 'python'
+                      ? generatePythonClient(query)
+                      : generateJavaScriptClient(query)
+                  }
+                  language={codegenLanguage as any}
+                  title="Generated Client Code"
+                />
+                <p className="text-xs text-[var(--color-text-muted)]">
+                  Copy and paste this code into your application. Update the{" "}
+                  <code className="bg-[var(--color-bg-raised)] px-1 rounded">YOUR_API_KEY</code>
+                  {" "}if you have an API key for authenticated requests.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
