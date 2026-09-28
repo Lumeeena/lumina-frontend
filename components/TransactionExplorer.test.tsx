@@ -17,6 +17,7 @@ const mocks = vi.hoisted(() => ({
   replace: vi.fn(),
   parentRender: vi.fn(),
   searchParams: new URLSearchParams(),
+  applyFiltersSpy: vi.fn(),
 }));
 
 vi.mock("@/lib/graphql", () => ({
@@ -24,6 +25,18 @@ vi.mock("@/lib/graphql", () => ({
   GRAPHQL_URL: "http://test/graphql",
   PUBLIC_GRAPHQL_URL: "http://test/graphql",
 }));
+
+vi.mock("@/lib/transactionFilters", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@/lib/transactionFilters")>();
+  return {
+    ...actual,
+    applyFilters: (...args: Parameters<typeof actual.applyFilters>) => {
+      mocks.applyFiltersSpy();
+      return actual.applyFilters(...args);
+    },
+  };
+});
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: mocks.replace, push: vi.fn() }),
@@ -72,6 +85,7 @@ beforeEach(() => {
   mocks.gqlFetch.mockReset();
   mocks.replace.mockReset();
   mocks.parentRender.mockReset();
+  mocks.applyFiltersSpy.mockReset();
   mocks.searchParams = new URLSearchParams();
   localStorage.clear();
 
@@ -412,5 +426,31 @@ describe("TransactionExplorer virtualization", () => {
       parentRendersBeforeScroll,
     );
     expect(after.length).toBeGreaterThan(0);
+  });
+});
+
+describe("TransactionExplorer filter memoization", () => {
+  it("does not re-run applyFilters when only loading state changes", async () => {
+    const items = [tx(1), tx(2), tx(3)];
+    mocks.gqlFetch
+      .mockResolvedValueOnce(page(items, "cursor-1"))
+      .mockResolvedValueOnce(page([], null, false));
+
+    await renderExplorer();
+
+    // Record how many times applyFilters was called after mount settles.
+    const callsAfterMount = mocks.applyFiltersSpy.mock.calls.length;
+    expect(callsAfterMount).toBeGreaterThan(0);
+
+    // "Load more" toggles loading state (true then false) and may update
+    // hasNextPage — none of which should cause applyFilters to re-run
+    // because txs and filters references stay stable until new rows arrive.
+    // Once the fetch resolves with an empty page, txs does NOT get a new
+    // reference (no fresh rows), so zero additional calls are expected.
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /load more/i }));
+    });
+
+    expect(mocks.applyFiltersSpy.mock.calls.length).toBe(callsAfterMount);
   });
 });

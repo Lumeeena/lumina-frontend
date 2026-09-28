@@ -18,6 +18,7 @@ import type { Transaction } from '@/lib/types';
 import { truncateAddress } from '@/lib/formatters';
 import TimeAgo from './TimeAgo';
 import LoadMoreFooter from './LoadMoreFooter';
+import { t } from '@/lib/i18n';
 
 /** The seed the server component renders; the first client fetch widens past it. */
 export const SEED_LIMIT = 10;
@@ -73,14 +74,14 @@ export default function AccountTransactionList({
       setStep((s) => s + 1);
     } catch {
       if (!req.isCurrent()) return;
-      setError("Could not load more transactions.");
+      setError(t("accountTxs.couldNotLoad"));
     } finally {
       setLoading(false);
     }
   }, [scope, address, step, loading]);
 
   if (rows.length === 0) {
-    return <p className="text-sm text-[var(--color-text-muted)]">No transactions yet.</p>;
+    return <p className="text-sm text-[var(--color-text-muted)]">{t("accountTxs.noTransactions")}</p>;
   }
 
   return (
@@ -88,8 +89,8 @@ export default function AccountTransactionList({
       <div className="flex items-center justify-between mb-3 text-[13px] text-[var(--color-text-secondary)]">
         <span data-testid="transaction-count">
           {hasMore
-            ? `Showing the ${rows.length} most recent transactions`
-            : `All ${rows.length} transactions`}
+            ? t("accountTxs.showingRecent", { count: rows.length })
+            : t("accountTxs.allTransactions", { count: rows.length })}
         </span>
       </div>
 
@@ -134,7 +135,7 @@ export default function AccountTransactionList({
         loading={loading}
         error={error}
         hasMore={hasMore}
-        endLabel="End of results"
+        endLabel={t("accountTxs.endOfResults")}
         onLoadMore={loadMore}
       />
     </>

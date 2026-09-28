@@ -29,6 +29,7 @@ import {
 } from "@/lib/filterPresets";
 import TransactionFilters from "./TransactionFilters";
 import BackendUnavailable from "./BackendUnavailable";
+import { t } from "@/lib/i18n";
 
 export const PAGE_SIZE = 50;
 
@@ -184,7 +185,7 @@ export default function TransactionExplorer({
       })
       .catch(() => {
         if (!req.isCurrent()) return;
-        setError("Could not load more transactions.");
+        setError(t("explorer.couldNotLoad"));
         // Stop the sentinel from immediately retrying in a tight loop; the
         // explicit retry button puts the user back in control.
         setHasNextPage(false);
@@ -333,11 +334,11 @@ export default function TransactionExplorer({
       <div className="flex items-center justify-between mb-3 text-[13px] text-[var(--color-text-secondary)]">
         <span data-testid="result-count">
           {filtering
-            ? `${filtered.length} of ${txs.length} loaded`
-            : `${txs.length} loaded`}
+            ? t("explorer.filteredCount", { filtered: filtered.length, total: txs.length })
+            : t("explorer.loadedCount", { count: txs.length })}
         </span>
         {loading && (
-          <span className="text-[var(--color-text-muted)] animate-pulse">Loading&hellip;</span>
+          <span className="text-[var(--color-text-muted)] animate-pulse">{t("explorer.loading")}</span>
         )}
       </div>
 
@@ -346,8 +347,8 @@ export default function TransactionExplorer({
         emptyMessage={
           !loading && !error
             ? txs.length === 0
-              ? "No transactions indexed yet."
-              : "No transactions match these filters."
+              ? t("explorer.noTransactionsYet")
+              : t("explorer.noMatchingFilters")
             : null
         }
         initialScrollTop={restoredScrollTop}
@@ -370,7 +371,7 @@ export default function TransactionExplorer({
               }}
               className="bg-[var(--color-bg-raised)] border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] font-semibold text-[13px] px-4 py-2 rounded-[9px] transition-colors"
             >
-              Retry
+              {t("error.retry")}
             </button>
           </>
         ) : hasNextPage ? (
@@ -380,11 +381,11 @@ export default function TransactionExplorer({
             disabled={loading}
             className="bg-[var(--color-bg-raised)] border border-[var(--color-border-default)] enabled:hover:border-[var(--color-border-strong)] disabled:opacity-50 font-semibold text-[13px] px-5 py-2 rounded-[9px] transition-colors"
           >
-            {loading ? "Loading…" : "Load more"}
+            {loading ? t("explorer.loading") : t("explorer.loadMore")}
           </button>
         ) : (
           txs.length > 0 && (
-            <span className="text-[13px] text-[var(--color-text-faint)]">End of results</span>
+            <span className="text-[13px] text-[var(--color-text-faint)]">{t("explorer.endOfResults")}</span>
           )
         )}
       </div>

@@ -15,11 +15,11 @@
 import {
   Contract,
   nativeToScVal,
-  rpc,
   scValToNative,
   TransactionBuilder,
   xdr,
-} from "@stellar/stellar-sdk";
+} from "@stellar/stellar-sdk/base";
+import { Api, Server } from "@stellar/stellar-sdk/rpc";
 
 export const REGISTRY_CONTRACT_ID =
   process.env.NEXT_PUBLIC_REGISTRY_CONTRACT_ID ??
@@ -152,7 +152,7 @@ async function simulate(
   readAccount: string,
   networkPassphrase: string,
 ): Promise<xdr.ScVal> {
-  const server = new rpc.Server(rpcUrl);
+  const server = new Server(rpcUrl);
   const account = await server.getAccount(readAccount);
   const contract = new Contract(registryContractId);
   const tx = new TransactionBuilder(account, { fee: "100", networkPassphrase })
@@ -161,7 +161,7 @@ async function simulate(
     .build();
 
   const sim = await server.simulateTransaction(tx);
-  if (rpc.Api.isSimulationError(sim)) {
+  if (Api.isSimulationError(sim)) {
     throw new Error(`Registry simulation failed: ${sim.error}`);
   }
   return sim.result!.retval;
@@ -296,7 +296,7 @@ export async function withCategories<T extends RegistryEntry>(
 ): Promise<T[]> {
   if (entries.length === 0) return entries;
   try {
-    const server = new rpc.Server(rpcUrl);
+    const server = new Server(rpcUrl);
     const account = await server.getAccount(readAccount);
     const contract = new Contract(registryContractId);
 
@@ -315,7 +315,7 @@ export async function withCategories<T extends RegistryEntry>(
           .setTimeout(30)
           .build();
         const sim = await server.simulateTransaction(tx);
-        if (rpc.Api.isSimulationError(sim)) return entry;
+        if (Api.isSimulationError(sim)) return entry;
         const raw = scValToNative(sim.result!.retval) as (string | string[])[];
         const categories = raw
           .map((c) => (Array.isArray(c) ? c[0] : c))
@@ -373,7 +373,7 @@ export async function getStakeInfo(
   readAccount: string = DEFAULT_READ_ACCOUNT,
   networkPassphrase: string = NETWORK_PASSPHRASE,
 ): Promise<StakeInfo> {
-  const server = new rpc.Server(rpcUrl);
+  const server = new Server(rpcUrl);
   const account = await server.getAccount(readAccount);
   const tx = new TransactionBuilder(account, { fee: "100", networkPassphrase })
     .addOperation(
@@ -386,7 +386,7 @@ export async function getStakeInfo(
     .build();
 
   const sim = await server.simulateTransaction(tx);
-  if (rpc.Api.isSimulationError(sim)) {
+  if (Api.isSimulationError(sim)) {
     throw new Error(`Registry simulation failed: ${sim.error}`);
   }
   const rep = scValToNative(sim.result!.retval) as {

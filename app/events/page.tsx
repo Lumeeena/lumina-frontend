@@ -1,15 +1,9 @@
 import type { Metadata } from "next";
 import { ContractEventsDocument as EVENTS_QUERY } from "@/lib/generated/graphql";
 import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
-import { ContractEventsDocument as EVENTS_QUERY } from "@/lib/generated/graphql";
 import { routeMetadata } from "@/lib/metadata";
 import { EVENTS } from "@/lib/routes";
 import type { ContractEvent } from "@/lib/types";
-import {
-  ContractEventsDocument,
-  type ContractEventsQuery,
-  type ContractEventsQueryVariables,
-} from "@/lib/generated/graphql";
 import { truncateAddress } from "@/lib/formatters";
 import TimeAgo from "@/components/TimeAgo";
 import BackendUnavailable from "@/components/BackendUnavailable";
@@ -27,16 +21,15 @@ export const metadata: Metadata = routeMetadata(EVENTS);
 const DEFAULT_CONTRACT_ID =
   "CAYUDQPV3RKPM3EXDFGI3457FV677JLUCJ4OLKWGCUBPRIHYKXK3WFAZ";
 
-async function getEvents(contractId: string, cursor?: string): Promise<{
+async function getEvents(contractId: string): Promise<{
   events: ContractEvent[];
-  pageInfo: { hasNextPage: boolean; cursor: string | null } | null;
   unavailable: boolean;
 }> {
   try {
     const data = await gqlFetch(GRAPHQL_URL, EVENTS_QUERY, { contractId, limit: 20 });
     return { events: data.events.items, unavailable: false };
   } catch {
-    return { events: [], pageInfo: null, unavailable: true };
+    return { events: [], unavailable: true };
   }
 }
 
@@ -46,14 +39,11 @@ const th =
 export default async function EventsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ contractId?: string; cursor?: string }>;
+  searchParams: Promise<{ contractId?: string }>;
 }) {
-  const { contractId: rawContractId, cursor } = await searchParams;
+  const { contractId: rawContractId } = await searchParams;
   const contractId = rawContractId?.trim() || DEFAULT_CONTRACT_ID;
-  const result = await getEvents(contractId, cursor);
-  const nextHref = result.pageInfo?.hasNextPage && result.pageInfo.cursor
-    ? `/events?${new URLSearchParams({ contractId, cursor: result.pageInfo.cursor })}`
-    : null;
+  const result = await getEvents(contractId);
 
   return (
     <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">

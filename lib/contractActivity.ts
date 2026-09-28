@@ -51,8 +51,15 @@ export async function probeContractActivity(
   return result;
 }
 
-export const ACTIVITY_LABELS: Record<ActivityState, string> = {
-  active: 'Indexed activity',
-  quiet: 'No events yet',
-  unknown: 'Activity unknown',
+import { t } from '@/lib/i18n';
+
+const ACTIVITY_LABEL_KEYS: Record<ActivityState, Parameters<typeof t>[0]> = {
+  active: 'activity.indexed',
+  quiet: 'activity.noEvents',
+  unknown: 'activity.unknown',
 };
+
+export const ACTIVITY_LABELS: Record<ActivityState, string> = new Proxy(
+  {} as Record<ActivityState, string>,
+  { get: (_target, prop: ActivityState) => t(ACTIVITY_LABEL_KEYS[prop]) },
+);

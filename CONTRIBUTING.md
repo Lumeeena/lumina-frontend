@@ -179,6 +179,12 @@ beyond it.
 This, with the analyzer above, closes [bundle budget issue
 #34](https://github.com/Lumeeena/lumina-frontend/issues/34).
 
+## Translation
+
+User-facing strings are in `lib/i18n/en.ts`. See
+[docs/TRANSLATION.md](docs/TRANSLATION.md) for how to add a language, the
+catalogue format (interpolation, pluralisation), and what to test.
+
 ## Virtualizer and React Compiler
 
 See [docs/virtualizer-compiler.md](docs/virtualizer-compiler.md) for the isolated

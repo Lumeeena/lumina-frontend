@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from "react";
+import { t } from "@/lib/i18n";
 
 type CopyState = "idle" | "copied" | "failed";
 
@@ -46,7 +47,7 @@ export default function CopyAddressButton({ address }: { address: string }) {
       onClick={copyAddress}
       className="bg-[var(--color-bg-raised)] border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] font-semibold text-[11px] px-2.5 py-[5px] rounded-[7px] shrink-0 transition-colors"
     >
-      {state === "copied" ? "Copied!" : state === "failed" ? "Failed" : "Copy"}
+      {state === "copied" ? t("copy.copied") : state === "failed" ? t("copy.failed") : t("copy.copy")}
     </button>
   );
 }

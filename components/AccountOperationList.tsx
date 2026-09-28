@@ -15,6 +15,7 @@ import type { Operation } from '@/lib/types';
 import { formatOperationType, truncateAddress } from '@/lib/formatters';
 import TimeAgo from './TimeAgo';
 import LoadMoreFooter from './LoadMoreFooter';
+import { t } from '@/lib/i18n';
 
 const PAGE_SIZE = 25;
 /** Matches the seed the server component renders. */
@@ -67,7 +68,7 @@ export default function AccountOperationList({
       );
     } catch {
       if (!req.isCurrent()) return;
-      setError("Could not load more operations.");
+      setError(t("accountOps.couldNotLoad"));
       // Stop the button from immediately retrying in a tight loop; the
       // footer's Retry puts the user back in control.
       setHasNextPage(false);
@@ -77,7 +78,7 @@ export default function AccountOperationList({
   }, [scope, address, cursor, loading]);
 
   if (rows.length === 0) {
-    return <p className="text-sm text-[var(--color-text-muted)]">No operations yet.</p>;
+    return <p className="text-sm text-[var(--color-text-muted)]">{t("accountOps.noOperations")}</p>;
   }
 
   return (
@@ -85,8 +86,8 @@ export default function AccountOperationList({
       <div className="flex items-center justify-between mb-3 text-[13px] text-[var(--color-text-secondary)]">
         <span data-testid="operation-count">
           {hasNextPage
-            ? `Showing ${rows.length} of your recent operations`
-            : `All ${rows.length} operations`}
+            ? t("accountOps.showingRecent", { count: rows.length })
+            : t("accountOps.allOperations", { count: rows.length })}
         </span>
       </div>
 
@@ -150,7 +151,7 @@ export default function AccountOperationList({
         loading={loading}
         error={error}
         hasMore={hasNextPage}
-        endLabel="End of results"
+        endLabel={t("accountOps.endOfResults")}
         onLoadMore={loadMore}
       />
     </>

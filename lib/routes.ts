@@ -81,6 +81,13 @@ export const GRAPHQL: RouteInfo = {
     "Run queries against the Lumina GraphQL API from the browser, with worked examples.",
 };
 
+export const DEVELOPERS: RouteInfo = {
+  path: "/developers",
+  label: "Developers",
+  description:
+    "API documentation, getting-started guide, and usage dashboard for developers building with Lumina.",
+};
+
 export const REGISTRY: RouteInfo = {
   path: "/registry",
   label: "Registry",
@@ -122,6 +129,7 @@ export const STABLE_ROUTES: readonly RouteInfo[] = [
   EVENTS,
   ASSETS,
   GRAPHQL,
+  DEVELOPERS,
   REGISTRY,
   STATS,
   WATCHES,

@@ -31,6 +31,7 @@ import { gqlFetch, PUBLIC_GRAPHQL_URL } from "@/lib/graphql";
 import { Button } from "@/components/ui/Button";
 import LoadMoreFooter from "./LoadMoreFooter";
 import BackendUnavailable from "./BackendUnavailable";
+import { t } from "@/lib/i18n";
 
 export const PAGE_SIZE = 20;
 
@@ -122,7 +123,7 @@ export default function AssetBrowser({
         );
       })
       .catch(() => {
-        setError("Could not load more assets.");
+        setError(t("assets.couldNotLoad"));
         // Stop the footer from re-firing on its own; the explicit retry button
         // puts the reader back in control.
         setHasNextPage(false);
@@ -161,8 +162,7 @@ export default function AssetBrowser({
   if (initial.length === 0 && rows.length === 0 && !error && !hasNextPage) {
     return (
       <div className="rounded-xl border border-[var(--color-border-default)] p-8 text-center text-[var(--color-text-muted)] text-sm">
-        No assets indexed yet. Once the indexer sees a balance or a transfer for
-        an asset, it appears here.
+        {t("assets.noAssetsYet")}
       </div>
     );
   }
@@ -172,13 +172,13 @@ export default function AssetBrowser({
       <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
         <label className="flex-1 min-w-[220px]">
           <span className="sr-only">
-            Search loaded assets by code or issuer
+            {t("assets.searchPlaceholder")}
           </span>
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search loaded assets by code or issuer"
+            placeholder={t("assets.searchPlaceholder")}
             className="w-full min-h-[46px] px-3.5 py-2.5 text-[13px] mono bg-[var(--color-bg-raised)] border border-[var(--color-border-default)] rounded-[9px] text-[var(--color-text-primary)]"
           />
         </label>
@@ -189,7 +189,7 @@ export default function AssetBrowser({
           className="flex items-center gap-2"
         >
           <span className="text-[13px] text-[var(--color-text-secondary)]">
-            Order by
+            {t("assets.orderBy")}
           </span>
           {SORTS.map((option) => (
             <Button
@@ -209,10 +209,10 @@ export default function AssetBrowser({
         <table className="w-full text-sm border-collapse">
           <thead>
             <tr>
-              <th className={th}>Asset</th>
-              <th className={th}>Issuer</th>
-              <th className={`${th} text-right`}>Supply</th>
-              <th className={`${th} text-right`}>Holders</th>
+              <th className={th}>{t("assets.thAsset")}</th>
+              <th className={th}>{t("assets.thIssuer")}</th>
+              <th className={`${th} text-right`}>{t("assets.thSupply")}</th>
+              <th className={`${th} text-right`}>{t("assets.thHolders")}</th>
             </tr>
           </thead>
           <tbody>
@@ -240,16 +240,17 @@ export default function AssetBrowser({
 
         {visible.length === 0 && (
           <p className="p-8 text-center text-[var(--color-text-muted)] text-sm">
-            No loaded asset matches &ldquo;{query.trim()}&rdquo;.
+            {t("assets.noMatch", { query: query.trim() })}
           </p>
         )}
       </div>
 
       {searchingNarrowerThanLoaded && (
         <p className="mt-3 text-[13px] text-[var(--color-text-muted)]">
-          That search covers the {rows.length}{" "}
-          {rows.length === 1 ? "asset" : "assets"} loaded so far. Load more to
-          widen it.
+          {t("assets.searchCoversLoaded", {
+            count: rows.length,
+            noun: rows.length === 1 ? "asset" : "assets",
+          })}
         </p>
       )}
 
@@ -262,7 +263,7 @@ export default function AssetBrowser({
           loading={loading}
           error={null}
           hasMore={hasNextPage}
-          endLabel="End of assets"
+          endLabel={t("assets.endOfAssets")}
           onLoadMore={loadMore}
         />
       )}
