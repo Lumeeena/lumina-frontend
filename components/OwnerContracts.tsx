@@ -552,7 +552,7 @@ export default function OwnerContracts({
                 </button>
               </div>
               {blockers.length > 0 && (
-                <ul className="mt-2 list-disc pl-4 text-[11px] text-[var(--color-warning-text)]">
+                <ul className="mt-2 list-disc ps-4 text-[11px] text-[var(--color-warning-text)]">
                   {blockers.map((b) => (
                     <li key={b}>{b}</li>
                   ))}

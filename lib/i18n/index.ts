@@ -17,23 +17,65 @@
  */
 import type { MessageCatalogue, MessageKey } from "./types";
 import en from "./en";
+import { getDirection, isRtl, RTL_LANGUAGES, type Direction } from "./direction";
 
 const CATALOGUES: Record<string, MessageCatalogue> = { en };
 
 let activeCatalogue: MessageCatalogue = en;
 let activeLocale = "en";
 
-/** Switch the active locale. Falls back to English for unknown codes. */
+type LocaleListener = (locale: string) => void;
+const localeListeners = new Set<LocaleListener>();
+
+function baseLanguage(locale: string): string {
+  return locale.toLowerCase().split(/[-_]/)[0];
+}
+
+/**
+ * A locale is supported when it has a message catalogue or it is a known RTL
+ * language (which needs the document to mirror even before its strings are
+ * translated). Anything else is ignored so an unknown code never silently
+ * switches the app away from English.
+ */
+export function isSupportedLocale(locale: string): boolean {
+  return locale in CATALOGUES || RTL_LANGUAGES.has(baseLanguage(locale));
+}
+
+/**
+ * Switch the active locale. Falls back to English strings for locales without
+ * a catalogue, but still records the locale so the document direction (and
+ * language) reflect it. Unknown locales are ignored.
+ */
 export function setLocale(locale: string): void {
+  if (!isSupportedLocale(locale)) return;
   const catalogue = CATALOGUES[locale];
   if (catalogue) {
     activeCatalogue = catalogue;
-    activeLocale = locale;
   }
+  activeLocale = locale;
+  for (const listener of localeListeners) listener(activeLocale);
 }
 
 export function getLocale(): string {
   return activeLocale;
+}
+
+/** Direction ("ltr" | "rtl") for the active locale. */
+export function getLocaleDirection(): Direction {
+  return getDirection(activeLocale);
+}
+
+/** True when the active locale is written right-to-left. */
+export function isActiveLocaleRtl(): boolean {
+  return isRtl(activeLocale);
+}
+
+/** Subscribe to locale changes (e.g. to mirror the document `<html>`). */
+export function subscribeLocale(listener: LocaleListener): () => void {
+  localeListeners.add(listener);
+  return () => {
+    localeListeners.delete(listener);
+  };
 }
 
 /**
@@ -140,3 +182,4 @@ function expandPlurals(
 }
 
 export type { MessageCatalogue, MessageKey };
+export { getDirection, isRtl, type Direction } from "./direction";

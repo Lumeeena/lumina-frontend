@@ -116,7 +116,7 @@ export default function KeyboardShortcuts() {
         type="button"
         onClick={openHelp}
         aria-haspopup="dialog"
-        className="fixed bottom-4 right-4 z-20 border border-[var(--color-border-default)] bg-[var(--color-bg-base)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] text-xs font-bold px-3 py-2 rounded-lg shadow-sm"
+        className="fixed bottom-4 end-4 z-20 border border-[var(--color-border-default)] bg-[var(--color-bg-base)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] text-xs font-bold px-3 py-2 rounded-lg shadow-sm"
       >
         Keyboard shortcuts
       </button>

@@ -165,7 +165,7 @@ export default async function Home() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="text-left bg-[var(--color-bg-base)] border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] rounded-xl p-4 flex flex-col gap-1 transition-colors"
+                  className="text-start bg-[var(--color-bg-base)] border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] rounded-xl p-4 flex flex-col gap-1 transition-colors"
                 >
                   <span className="font-bold text-sm text-[var(--color-text-primary)]">
                     {item.label}

@@ -199,7 +199,7 @@ export default function LiveFeed() {
                 {truncateAddress(tx.hash, 5)}
               </a>
               <span className="text-xs text-[var(--color-text-muted)] mono">{truncateAddress(tx.sourceAccount)}</span>
-              <span className="ml-auto text-[11px] text-[var(--color-text-faint)]"><TimeAgo isoString={tx.createdAt} /></span>
+              <span className="ms-auto text-[11px] text-[var(--color-text-faint)]"><TimeAgo isoString={tx.createdAt} /></span>
               <span className="text-[11px] bg-[var(--color-bg-raised)] text-[var(--color-text-secondary)] px-1.5 py-0.5 rounded">{tx.operationCount} ops</span>
             </div>
           ))}

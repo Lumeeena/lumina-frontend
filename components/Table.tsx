@@ -35,7 +35,7 @@ import {
  */
 
 const HEADER_CELL =
-  "text-left text-[11px] tracking-[0.06em] uppercase text-[#a6a3b0] px-3 py-2.5 border-b border-[#e5e3ea] bg-[#fafafa]";
+  "text-start text-[11px] tracking-[0.06em] uppercase text-[#a6a3b0] px-3 py-2.5 border-b border-[#e5e3ea] bg-[#fafafa]";
 
 const BODY_ROW = "border-b border-[#f0eff3] last:border-0";
 

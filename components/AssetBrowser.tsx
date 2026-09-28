@@ -52,7 +52,7 @@ const SORTS: readonly { value: AssetSort; label: string }[] = [
 ];
 
 const th =
-  "text-left text-[11px] tracking-[0.06em] uppercase text-[var(--color-text-muted)] px-3 py-2.5 border-b border-[var(--color-border-default)] bg-[var(--color-bg-subtle)]";
+  "text-start text-[11px] tracking-[0.06em] uppercase text-[var(--color-text-muted)] px-3 py-2.5 border-b border-[var(--color-border-default)] bg-[var(--color-bg-subtle)]";
 
 /**
  * Group a decimal string's integer part without going through a float.
@@ -211,8 +211,8 @@ export default function AssetBrowser({
             <tr>
               <th className={th}>{t("assets.thAsset")}</th>
               <th className={th}>{t("assets.thIssuer")}</th>
-              <th className={`${th} text-right`}>{t("assets.thSupply")}</th>
-              <th className={`${th} text-right`}>{t("assets.thHolders")}</th>
+              <th className={`${th} text-end`}>{t("assets.thSupply")}</th>
+              <th className={`${th} text-end`}>{t("assets.thHolders")}</th>
             </tr>
           </thead>
           <tbody>
@@ -227,10 +227,10 @@ export default function AssetBrowser({
                 <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-secondary)] max-w-[280px] truncate">
                   {asset.issuer ?? "—"}
                 </td>
-                <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-secondary)] text-right">
+                <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-secondary)] text-end">
                   {formatSupply(asset.supply)}
                 </td>
-                <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-secondary)] text-right">
+                <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-secondary)] text-end">
                   {asset.holders.toLocaleString()}
                 </td>
               </tr>

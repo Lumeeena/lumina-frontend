@@ -160,7 +160,7 @@ export default function WatchedAddressList() {
                   type="button"
                   onClick={() => handleRemove(entry.address)}
                   aria-label={`Unwatch ${entry.address}`}
-                  className="ml-auto text-[12px] font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-error-text)] hover:underline"
+                  className="ms-auto text-[12px] font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-error-text)] hover:underline"
                 >
                   Remove
                 </button>

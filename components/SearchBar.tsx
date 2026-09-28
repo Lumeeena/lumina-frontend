@@ -55,7 +55,7 @@ export default function SearchBar({
         {classified && (
           <span
             aria-hidden="true"
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-[var(--color-accent-text)] bg-[var(--color-accent-surface)] rounded-md px-2 py-[3px]"
+            className="absolute end-3 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-[var(--color-accent-text)] bg-[var(--color-accent-surface)] rounded-md px-2 py-[3px]"
           >
             {SEARCH_KIND_LABEL[classified.kind]}
           </span>

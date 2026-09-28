@@ -121,7 +121,7 @@ export default function GraphQLPage() {
           <h2 className="text-xs font-bold tracking-wide uppercase text-[var(--color-text-muted)] mb-1">Query Examples</h2>
           {QUERY_EXAMPLES.map(ex => (
             <button key={ex.name} onClick={() => selectExample(ex)}
-              className={`text-left rounded-[10px] p-3 border transition-colors ${selected?.name === ex.name ? "border-[var(--color-border-strong)] bg-[var(--color-accent-surface)] text-[var(--color-accent-text)]" : "border-[var(--color-border-default)] bg-[var(--color-bg-base)] text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)]"}`}>
+              className={`text-start rounded-[10px] p-3 border transition-colors ${selected?.name === ex.name ? "border-[var(--color-border-strong)] bg-[var(--color-accent-surface)] text-[var(--color-accent-text)]" : "border-[var(--color-border-default)] bg-[var(--color-bg-base)] text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)]"}`}>
               <span className="block font-bold text-[13px] mb-0.5">{ex.name}</span>
               <span className="block text-[11px] opacity-70 leading-snug">{ex.description}</span>
             </button>
@@ -131,7 +131,7 @@ export default function GraphQLPage() {
             <p className="text-xs text-[var(--color-text-muted)]">Edited queries will appear here.</p>
           ) : history.map((entry, index) => (
             <button key={`${index}-${entry}`} onClick={() => { setQuery(entry); setSelected(null); setResult(null); setError(null); }}
-              className="text-left rounded-[10px] p-3 border border-[var(--color-border-default)] bg-[var(--color-bg-base)] text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)]">
+              className="text-start rounded-[10px] p-3 border border-[var(--color-border-default)] bg-[var(--color-bg-base)] text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)]">
               <span className="block text-[11px] mono leading-snug line-clamp-3">{entry}</span>
             </button>
           ))}

@@ -123,7 +123,7 @@ function WatchActivityRow({
           {t("watch.alert")}
         </span>
       )}
-      <span className="ml-auto text-[11px] text-[var(--color-text-faint)] shrink-0">
+      <span className="ms-auto text-[11px] text-[var(--color-text-faint)] shrink-0">
         <TimeAgo isoString={item.operation.createdAt} />
       </span>
     </div>

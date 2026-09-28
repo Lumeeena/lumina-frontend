@@ -186,7 +186,7 @@ export default function TransactionFilters({
           {presets.map(preset => (
             <span
               key={preset.name}
-              className="inline-flex items-center gap-1 text-[12px] font-semibold rounded-full bg-[var(--color-accent-surface)] text-[var(--color-accent-text)] pl-3 pr-1.5 py-1"
+              className="inline-flex items-center gap-1 text-[12px] font-semibold rounded-full bg-[var(--color-accent-surface)] text-[var(--color-accent-text)] ps-3 pe-1.5 py-1"
             >
               <button type="button" onClick={() => onApplyPreset(preset)} className="hover:underline">
                 {preset.name}

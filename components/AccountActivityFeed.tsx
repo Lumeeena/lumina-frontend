@@ -101,7 +101,7 @@ export default function AccountActivityFeed({ address }: { address: string }) {
                   {operation.amount} {operation.asset ?? "XLM"}
                 </span>
               )}
-              <span className="ml-auto text-[11px] text-[var(--color-text-faint)]"><TimeAgo isoString={operation.createdAt} /></span>
+              <span className="ms-auto text-[11px] text-[var(--color-text-faint)]"><TimeAgo isoString={operation.createdAt} /></span>
             </div>
           ))
         )}

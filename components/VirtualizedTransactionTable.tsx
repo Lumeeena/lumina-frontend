@@ -85,7 +85,7 @@ export default function VirtualizedTransactionTable({
           >
             <div className="flex justify-between items-start mb-2">
               <span className="text-xs font-semibold text-[var(--color-text-muted)]">Hash</span>
-              <span className="mono text-xs text-[var(--color-text-primary)] font-semibold truncate ml-2">{tx.hash.slice(0, 12)}…</span>
+              <span className="mono text-xs text-[var(--color-text-primary)] font-semibold truncate ms-2">{tx.hash.slice(0, 12)}…</span>
             </div>
             <div className="flex justify-between items-start mb-2">
               <span className="text-xs font-semibold text-[var(--color-text-muted)]">Ledger</span>
@@ -93,7 +93,7 @@ export default function VirtualizedTransactionTable({
             </div>
             <div className="flex justify-between items-start mb-2">
               <span className="text-xs font-semibold text-[var(--color-text-muted)]">Source</span>
-              <span className="mono text-xs text-[var(--color-text-primary)] truncate ml-2">{tx.sourceAccount.slice(0, 12)}…</span>
+              <span className="mono text-xs text-[var(--color-text-primary)] truncate ms-2">{tx.sourceAccount.slice(0, 12)}…</span>
             </div>
             <div className="flex justify-between items-start mb-2">
               <span className="text-xs font-semibold text-[var(--color-text-muted)]">Operations</span>

@@ -4,6 +4,7 @@ import "./globals.css";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import SkipLink from "@/components/SkipLink";
+import DirectionSync from "@/components/DirectionSync";
 import KeyboardShortcuts from "@/components/KeyboardShortcuts";
 import ThemeScript from "@/components/ThemeScript";
 import WatchActivityWatcher from "@/components/WatchActivityWatcher";
@@ -57,6 +58,7 @@ export default function RootLayout({
         <ThemeScript />
       </head>
       <body className="min-h-full flex flex-col bg-[var(--color-bg-base)] text-[var(--color-text-primary)]">
+        <DirectionSync />
         <SkipLink />
         {/* Alerts for watched addresses have to keep arriving on every route,
             which is the whole point of a watch. It subscribes and records; it

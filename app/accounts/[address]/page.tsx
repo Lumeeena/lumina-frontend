@@ -45,7 +45,7 @@ async function getAccount(address: string): Promise<{ account: Account | null; u
   }
 }
 
-const th = "text-left text-[11px] tracking-[0.06em] uppercase text-[var(--color-text-muted)] px-3 py-2.5 border-b border-[var(--color-border-default)] bg-[var(--color-bg-subtle)]";
+const th = "text-start text-[11px] tracking-[0.06em] uppercase text-[var(--color-text-muted)] px-3 py-2.5 border-b border-[var(--color-border-default)] bg-[var(--color-bg-subtle)]";
 const stat = "bg-[var(--color-bg-subtle)] border border-[var(--color-border-default)] rounded-xl p-4";
 const statLabel = "text-[11px] text-[var(--color-text-muted)] uppercase tracking-[0.05em]";
 const statValue = "mono text-sm mt-1";
