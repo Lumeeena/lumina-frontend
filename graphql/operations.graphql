@@ -273,3 +273,19 @@ query Assets($sortBy: AssetSort, $limit: Int, $cursor: String) {
     }
   }
 }
+
+# Per-asset transfer volume series used by the portfolio section of the account
+# page. `bucketSeconds` defaults to 86400 (daily) server-side; omitting it
+# here keeps the operation flexible for future range selectors.
+query AssetVolume($asset: String!, $from: String, $to: String, $bucketSeconds: Int) {
+  asset(asset: $asset, from: $from, to: $to, bucketSeconds: $bucketSeconds) {
+    asset
+    code
+    native
+    series {
+      bucketStart
+      volume
+      operationCount
+    }
+  }
+}

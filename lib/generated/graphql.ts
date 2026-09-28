@@ -1155,3 +1155,38 @@ export const ExampleContractEventsDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<ExampleContractEventsQuery, ExampleContractEventsQueryVariables>;
+
+export type AssetVolumeQueryVariables = Exact<{
+  asset: Scalars['String']['input'];
+  from?: InputMaybe<Scalars['String']['input']>;
+  to?: InputMaybe<Scalars['String']['input']>;
+  bucketSeconds?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+export type AssetVolumeQuery = {
+  asset: {
+    asset: string;
+    code: string | null;
+    native: boolean;
+    series: Array<{
+      bucketStart: string;
+      volume: string;
+      operationCount: number;
+    }>;
+  };
+};
+
+export const AssetVolumeDocument = new TypedDocumentString(`
+    query AssetVolume($asset: String!, $from: String, $to: String, $bucketSeconds: Int) {
+  asset(asset: $asset, from: $from, to: $to, bucketSeconds: $bucketSeconds) {
+    asset
+    code
+    native
+    series {
+      bucketStart
+      volume
+      operationCount
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<AssetVolumeQuery, AssetVolumeQueryVariables>;

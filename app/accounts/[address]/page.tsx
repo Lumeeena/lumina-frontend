@@ -7,6 +7,7 @@ import { formatXLM, truncateAddress } from "@/lib/formatters";
 import CopyAddressButton from "@/components/CopyAddressButton";
 import WatchIndicator from "@/components/WatchIndicator";
 import AccountActivityFeed from "@/components/AccountActivityFeed";
+import AccountPortfolio from "@/components/AccountPortfolio";
 import AccountTransactionList from "@/components/AccountTransactionList";
 import AccountOperationList from "@/components/AccountOperationList";
 import BackendUnavailable from "@/components/BackendUnavailable";
@@ -178,6 +179,10 @@ export default async function AccountPage({
               </tbody>
             </table>
           </div>
+
+          {account.balances.length > 0 && (
+            <AccountPortfolio balances={account.balances} />
+          )}
 
           <AccountActivityFeed address={account.address} />
 
