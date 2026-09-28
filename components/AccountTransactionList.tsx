@@ -1,7 +1,5 @@
 "use client";
 
-import { AccountTransactionsDocument as ACCOUNT_TRANSACTIONS_QUERY } from "@/lib/generated/graphql";
-
 /**
  * An account's transactions, paginated.
  *
@@ -13,6 +11,7 @@ import { AccountTransactionsDocument as ACCOUNT_TRANSACTIONS_QUERY } from "@/lib
  * end-of-results state — on the one read shape offered here.
  */
 import { useCallback, useState } from 'react';
+import { AccountTransactionsDocument as ACCOUNT_TRANSACTIONS_QUERY } from '@/lib/generated/graphql';
 import { gqlFetch, PUBLIC_GRAPHQL_URL } from '@/lib/graphql';
 import { useAbortScope } from '@/lib/useAbortScope';
 import type { Transaction } from '@/lib/types';

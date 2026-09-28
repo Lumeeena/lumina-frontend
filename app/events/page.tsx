@@ -1,12 +1,18 @@
-import type { Metadata } from "next";
 import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
 import { ContractEventsDocument as EVENTS_QUERY } from "@/lib/generated/graphql";
 import { routeMetadata } from "@/lib/metadata";
 import { EVENTS } from "@/lib/routes";
 import type { ContractEvent } from "@/lib/types";
+import {
+  ContractEventsDocument,
+  type ContractEventsQuery,
+  type ContractEventsQueryVariables,
+} from "@/lib/generated/graphql";
 import { truncateAddress } from "@/lib/formatters";
 import TimeAgo from "@/components/TimeAgo";
 import BackendUnavailable from "@/components/BackendUnavailable";
+import SorobanValue from "@/components/SorobanValue";
+import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
@@ -21,14 +27,9 @@ export const metadata: Metadata = routeMetadata(EVENTS);
 const DEFAULT_CONTRACT_ID =
   "CAYUDQPV3RKPM3EXDFGI3457FV677JLUCJ4OLKWGCUBPRIHYKXK3WFAZ";
 
-interface EventsPageData {
-  events: {
-    items: ContractEvent[];
-    pageInfo?: { hasNextPage: boolean; cursor: string | null };
-  };
-}
-
-async function getEvents(contractId: string): Promise<{ events: ContractEvent[]; unavailable: boolean }> {
+async function getEvents(
+  contractId: string,
+): Promise<{ events: ContractEvent[]; unavailable: boolean }> {
   try {
     const data = await gqlFetch(GRAPHQL_URL, EVENTS_QUERY, { contractId, limit: 20 });
     return { events: data.events.items, unavailable: false };

@@ -3,6 +3,7 @@ import type { Transaction } from "@/lib/types";
 import { truncateAddress, formatXLM } from "@/lib/formatters";
 import TimeAgo from "./TimeAgo";
 import WatchIndicator from "./WatchIndicator";
+import { TableCell, TableRow } from "./Table";
 
 export default function TransactionRow({ tx }: { tx: Transaction }) {
   const fee = (parseInt(tx.feeCharged) / 1e7).toFixed(7);
