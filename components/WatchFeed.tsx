@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useWatchedActivity, type WatchActivity } from "@/lib/useWatchedActivity";
@@ -6,11 +6,12 @@ import { matchesOperationFilters } from "@/lib/operationFilters";
 import { truncateAddress } from "@/lib/formatters";
 import ConnectionIndicator from "./ConnectionIndicator";
 import TimeAgo from "./TimeAgo";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 /**
  * The combined feed for every watched address. Part of #9 / #80.
  *
- * One socket, one list, one stream — see `lib/useWatchedActivity.ts` for why
+ * One socket, one list, one stream ΓÇö see `lib/useWatchedActivity.ts` for why
  * this is not one `AccountActivityFeed` per address.
  *
  * Shows every operation, and marks the ones that would have raised an alert.
@@ -42,13 +43,16 @@ export default function WatchFeed() {
       </div>
 
       {watching === 0 ? (
-        <EmptyState />
+        <EmptyState
+          title="You are not watching any addresses yet"
+          description="Use the bookmark next to any address to follow its activity here, and get an alert when something happens on it."
+        />
       ) : (
         <>
           <p className="text-[13px] text-[var(--color-text-secondary)] mb-3" data-testid="watch-summary">
             {`${watching} watched ${watching === 1 ? "address" : "addresses"}`}
             {alertCount > 0
-              ? ` · ${alertCount} matching ${alertCount === 1 ? "alert" : "alerts"} this session`
+              ? ` ┬╖ ${alertCount} matching ${alertCount === 1 ? "alert" : "alerts"} this session`
               : ""}
           </p>
           <div
@@ -56,9 +60,11 @@ export default function WatchFeed() {
             data-testid="watch-feed"
           >
             {activity.length === 0 ? (
-              <p className="p-6 text-center text-[var(--color-text-muted)] text-sm">
-                Waiting for activity on your watched addresses&hellip;
-              </p>
+              <EmptyState
+                variant="inline"
+                title="Waiting for activity on your watched addresses\u2026"
+                className="p-6 text-center"
+              />
             ) : (
               activity.map((item) => {
                 const filters = filtersByAddress.get(item.address);
@@ -75,20 +81,6 @@ export default function WatchFeed() {
         </>
       )}
     </section>
-  );
-}
-
-function EmptyState() {
-  return (
-    <div className="rounded-xl border border-dashed border-[var(--color-border-default)] p-8 text-center">
-      <p className="text-sm font-semibold text-[var(--color-text-primary)]">
-        You are not watching any addresses yet
-      </p>
-      <p className="mt-1 text-[13px] text-[var(--color-text-secondary)]">
-        Use the bookmark next to any address to follow its activity here, and get
-        an alert when something happens on it.
-      </p>
-    </div>
   );
 }
 

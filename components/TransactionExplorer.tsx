@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { TransactionPageDocument as PAGE_QUERY } from "@/lib/generated/graphql";
 
@@ -35,7 +35,7 @@ export const PAGE_SIZE = 50;
 /**
  * How many filtered matches to chase before stopping.
  *
- * The API paginates but cannot filter — filtering happens over what has been
+ * The API paginates but cannot filter ΓÇö filtering happens over what has been
  * loaded. Without this, switching to "failed" on a page of successes shows an
  * empty table even though page two is full of them, which reads as "no
  * results" rather than "not loaded yet". So an active filter keeps pulling
@@ -190,14 +190,14 @@ export default function TransactionExplorer({
         setHasNextPage(false);
       })
       .finally(() => {
-        // The spinner resolves however the request ended — a cancelled one
-        // settles immediately — but only this request's data is ever applied.
+        // The spinner resolves however the request ended ΓÇö a cancelled one
+        // settles immediately ΓÇö but only this request's data is ever applied.
         loadingRef.current = false;
         setLoading(false);
       });
   }, [scope, cursor]);
 
-  // ── Return to where the reader was ──────────────────────────────────────
+  // ΓöÇΓöÇ Return to where the reader was ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   //
   // A cursor is only meaningful against the rows it produced, so the loaded
   // pages and the offset have to come back together. Restoring only the offset
@@ -282,7 +282,7 @@ export default function TransactionExplorer({
     autoPages.current = 0;
   }, [filterKey]);
 
-  // ── Infinite scroll ─────────────────────────────────────────────────────
+  // ΓöÇΓöÇ Infinite scroll ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -302,7 +302,7 @@ export default function TransactionExplorer({
     return () => observer.disconnect();
   }, [hasNextPage, loadMore]);
 
-  // ── Presets ─────────────────────────────────────────────────────────────
+  // ΓöÇΓöÇ Presets ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 
   const handleSavePreset = useCallback(
     (name: string) => setPresets(savePreset(name, filters)),
@@ -346,8 +346,8 @@ export default function TransactionExplorer({
         emptyMessage={
           !loading && !error
             ? txs.length === 0
-              ? "No transactions indexed yet."
-              : "No transactions match these filters."
+              ? "No transactions indexed yet. The indexer may still be catching up ΓÇö try again in a moment."
+              : "No transactions match these filters. Try adjusting or clearing the filters."
             : null
         }
         initialScrollTop={restoredScrollTop}
@@ -380,7 +380,7 @@ export default function TransactionExplorer({
             disabled={loading}
             className="bg-[var(--color-bg-raised)] border border-[var(--color-border-default)] enabled:hover:border-[var(--color-border-strong)] disabled:opacity-50 font-semibold text-[13px] px-5 py-2 rounded-[9px] transition-colors"
           >
-            {loading ? "Loading…" : "Load more"}
+            {loading ? "LoadingΓÇª" : "Load more"}
           </button>
         ) : (
           txs.length > 0 && (

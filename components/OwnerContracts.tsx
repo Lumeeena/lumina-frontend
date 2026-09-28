@@ -1,9 +1,9 @@
-"use client";
+﻿"use client";
 
 import { OwnerContractEventsDocument as EVENTS_QUERY } from "@/lib/generated/graphql";
 
 /**
- * "My Contracts" — everything the connected wallet has registered, with a real
+ * "My Contracts" ΓÇö everything the connected wallet has registered, with a real
  * deactivate flow, stake and withdraw controls, and the per-contract history
  * derived from registry events.
  *
@@ -50,6 +50,8 @@ import { formatStroops, truncateAddress } from '@/lib/formatters';
 import TimeAgo from './TimeAgo';
 import { LifetimeSlashedBadge, StakeBadge, VerifiedBadge } from './RegistryBadges';
 import BackendUnavailable from './BackendUnavailable';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { InlineLoading } from '@/components/ui/InlineLoading';
 
 async function fetchEvents(
   contractId: string,
@@ -99,7 +101,7 @@ async function callRegistry(
 ): Promise<{ hash: string }> {
   // Imported lazily rather than at module scope: the wallet kit pulls in
   // browser-only CommonJS (Freighter et al) that cannot be loaded outside a
-  // browser, which would otherwise make this component untestable — the exact
+  // browser, which would otherwise make this component untestable ΓÇö the exact
   // problem the issue asks to solve. It also keeps the kit out of the page's
   // static bundle until someone actually signs something.
   const { signWithWallet } = await import("@/lib/wallet");
@@ -218,7 +220,7 @@ export default function OwnerContracts({
       // History, activity and reputation are decoration: a registry read that
       // succeeded should render even if the indexer is unreachable, so these
       // are deliberately not chained onto the read above. They share the
-      // registry read's signal — what cancels it cancels them too.
+      // registry read's signal ΓÇö what cancels it cancels them too.
       loadHistory(req.signal)
         .then((h) => req.isCurrent() && setHistory(h))
         .catch(() => req.isCurrent() && setHistory([]));
@@ -250,7 +252,7 @@ export default function OwnerContracts({
   useEffect(() => {
     // The effect body only starts the reads; every setState happens in a
     // settled-promise handler, and only while its request is still the current
-    // one — a wallet switch or an unmount has already cancelled the rest.
+    // one ΓÇö a wallet switch or an unmount has already cancelled the rest.
     const req = scope.next();
 
     loadContracts(walletAddress).then(
@@ -406,7 +408,7 @@ export default function OwnerContracts({
         setPendingTxHash(result.hash);
         sessionStorage.setItem(`tx-${Date.now()}`, result.hash);
       }
-      // Reflect the new state without a page reload, as the issue requires —
+      // Reflect the new state without a page reload, as the issue requires ΓÇö
       // the registry read is eventually consistent behind the ledger, so
       // trusting the confirmed transaction is more accurate than re-reading
       // immediately.
@@ -437,7 +439,7 @@ export default function OwnerContracts({
   }
 
   if (state === "loading") {
-    return <p className="text-sm text-[var(--color-text-muted)]">Loading your contracts…</p>;
+    return <InlineLoading label="Loading your contracts" />;
   }
 
   if (state === 'error') {
@@ -446,14 +448,10 @@ export default function OwnerContracts({
 
   if (entries.length === 0) {
     return (
-      <div className="border border-[var(--color-border-default)] rounded-xl p-6 text-center">
-        <p className="text-sm text-[var(--color-text-secondary)] mb-1">
-          You haven&apos;t registered any contracts yet.
-        </p>
-        <p className="text-xs text-[var(--color-text-muted)]">
-          Register one with the form to opt it into Lumina indexing.
-        </p>
-      </div>
+      <EmptyState
+        title="No contracts registered yet"
+        description="Register one with the form to opt it into Lumina indexing."
+      />
     );
   }
 
@@ -514,7 +512,7 @@ export default function OwnerContracts({
               <p className="text-xs text-[var(--color-text-secondary)] mb-2">
                 Staked:{" "}
                 <span className="mono">
-                  {info ? info.stake.toString() : "—"}
+                  {info ? info.stake.toString() : "ΓÇö"}
                 </span>
               </p>
               <div className="flex items-center gap-2 flex-wrap">
@@ -537,7 +535,7 @@ export default function OwnerContracts({
                   className="border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-accent-text)] disabled:opacity-50 text-[var(--color-text-secondary)] font-bold text-xs px-3 py-2 rounded-lg transition-colors"
                 >
                   {isPending && pendingAction === "stake"
-                    ? "Staking…"
+                    ? "StakingΓÇª"
                     : "Stake"}
                 </button>
                 <button
@@ -546,7 +544,7 @@ export default function OwnerContracts({
                   className="border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-accent-text)] disabled:opacity-50 text-[var(--color-text-secondary)] font-bold text-xs px-3 py-2 rounded-lg transition-colors"
                 >
                   {isPending && pendingAction === "withdraw"
-                    ? "Withdrawing…"
+                    ? "WithdrawingΓÇª"
                     : "Withdraw stake"}
                 </button>
               </div>
@@ -599,7 +597,7 @@ export default function OwnerContracts({
                           {REGISTRY_EVENT_LABELS[item.type]}
                         </span>
                         <span className="mono text-[11px] text-[var(--color-text-muted)] shrink-0">
-                          ledger {item.ledger} · <TimeAgo isoString={item.createdAt} />
+                          ledger {item.ledger} ┬╖ <TimeAgo isoString={item.createdAt} />
                         </span>
                       </li>
                     ))
@@ -620,7 +618,7 @@ export default function OwnerContracts({
                   )}
                   {slashesLoading[entry.contractId] ? (
                     <p className="text-xs text-[var(--color-text-muted)]">
-                      Loading slash history…
+                      Loading slash historyΓÇª
                     </p>
                   ) : slashErrors[entry.contractId] ? (
                     <p role="alert" className="text-xs text-[var(--color-error-text)]">
@@ -642,11 +640,11 @@ export default function OwnerContracts({
                           >
                             <span className="text-xs text-[var(--color-text-primary)] min-w-0">
                               <span className="mono">
-                                −{formatStroops(slash.amount)} XLM
+                                ΓêÆ{formatStroops(slash.amount)} XLM
                               </span>
                               <span className="text-[var(--color-text-secondary)]">
                                 {" "}
-                                · {slash.reason}
+                                ┬╖ {slash.reason}
                               </span>
                             </span>
                             <span className="mono text-[11px] text-[var(--color-text-muted)] shrink-0">
@@ -669,10 +667,10 @@ export default function OwnerContracts({
 
 const DEACTIVATE_LABELS: Record<TxPhase, string> = {
   idle: "Deactivate",
-  building: "Preparing…",
-  "awaiting-signature": "Approve in wallet…",
-  submitting: "Submitting…",
-  confirming: "Confirming…",
+  building: "PreparingΓÇª",
+  "awaiting-signature": "Approve in walletΓÇª",
+  submitting: "SubmittingΓÇª",
+  confirming: "ConfirmingΓÇª",
   success: "Deactivate",
   error: "Deactivate",
 };

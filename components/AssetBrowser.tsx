@@ -12,8 +12,8 @@
  *   passes `key={sort}` here, so a sort change starts from a clean list rather
  *   than leaving rows from the previous ordering underneath the new one.
  * - **Search** deliberately does *not* live in the URL. It filters the rows
- *   loaded so far — the backend's `assets` query takes no search argument yet
- *   (lumina-backend#74) — so it is a local way to find something in a list you
+ *   loaded so far ΓÇö the backend's `assets` query takes no search argument yet
+ *   (lumina-backend#74) ΓÇö so it is a local way to find something in a list you
  *   are already looking at, not a distinct view worth a URL. When the backend
  *   grows a search argument this moves server-side and the URL with it.
  *
@@ -29,6 +29,7 @@ import {
 } from "@/lib/generated/graphql";
 import { gqlFetch, PUBLIC_GRAPHQL_URL } from "@/lib/graphql";
 import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
 import LoadMoreFooter from "./LoadMoreFooter";
 import BackendUnavailable from "./BackendUnavailable";
 
@@ -38,7 +39,7 @@ export const PAGE_SIZE = 20;
  * The fields one row needs, read off the generated query rather than restated.
  *
  * `AssetDetail` also carries `series`, the per-asset volume breakdown. This
- * Pick is over the *query result* instead, so `series` is not merely unused — it
+ * Pick is over the *query result* instead, so `series` is not merely unused ΓÇö it
  * is not fetched at all. Asking for fifty of them in a list would be fifty
  * aggregations for a column the table does not have; `asset(...)` returns the
  * series for one asset at a time.
@@ -56,7 +57,7 @@ const th =
 /**
  * Group a decimal string's integer part without going through a float.
  *
- * `supply` arrives as a string precisely because it does not survive one — a
+ * `supply` arrives as a string precisely because it does not survive one ΓÇö a
  * token with a large supply and 7 decimals loses digits to `parseFloat`, and
  * the last digits of someone's balance is not a rounding difference. So the
  * digits are grouped as characters and only the fractional tail is trimmed.
@@ -153,17 +154,17 @@ export default function AssetBrowser({
   );
 
   // An empty result under an active search usually means "not loaded yet", not
-  // "no such asset" — the next page may well hold it. Saying so beats a bare
+  // "no such asset" ΓÇö the next page may well hold it. Saying so beats a bare
   // "no results" that reads as a verdict on the whole collection.
   const searchingNarrowerThanLoaded =
     needle !== "" && visible.length === 0 && rows.length > 0 && hasNextPage;
 
   if (initial.length === 0 && rows.length === 0 && !error && !hasNextPage) {
     return (
-      <div className="rounded-xl border border-[var(--color-border-default)] p-8 text-center text-[var(--color-text-muted)] text-sm">
-        No assets indexed yet. Once the indexer sees a balance or a transfer for
-        an asset, it appears here.
-      </div>
+      <EmptyState
+        title="No assets indexed yet"
+        description="Once the indexer sees a balance or a transfer for an asset, it appears here."
+      />
     );
   }
 
@@ -225,7 +226,7 @@ export default function AssetBrowser({
                   {assetLabel(asset)}
                 </td>
                 <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-secondary)] max-w-[280px] truncate">
-                  {asset.issuer ?? "—"}
+                  {asset.issuer ?? "ΓÇö"}
                 </td>
                 <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-secondary)] text-right">
                   {formatSupply(asset.supply)}
@@ -239,9 +240,11 @@ export default function AssetBrowser({
         </table>
 
         {visible.length === 0 && (
-          <p className="p-8 text-center text-[var(--color-text-muted)] text-sm">
-            No loaded asset matches &ldquo;{query.trim()}&rdquo;.
-          </p>
+          <EmptyState
+            variant="inline"
+            title={`No loaded asset matches \u201c${query.trim()}\u201d`}
+            className="p-8 text-center"
+          />
         )}
       </div>
 

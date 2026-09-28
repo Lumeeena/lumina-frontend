@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   createContext,
@@ -20,7 +20,7 @@ import {
  * here instead:
  *
  * - The wrapper scrolls horizontally instead of clipping (`overflow-x-auto`),
- *   and is a focusable, named region so the overflow is reachable by keyboard —
+ *   and is a focusable, named region so the overflow is reachable by keyboard ΓÇö
  *   a scroll container that cannot be focused cannot be scrolled without a
  *   pointer (WCAG 2.1.1).
  * - Every `<th>` gets `scope="col"`, so header cells are associated with the
@@ -35,16 +35,16 @@ import {
  */
 
 const HEADER_CELL =
-  "text-left text-[11px] tracking-[0.06em] uppercase text-[#a6a3b0] px-3 py-2.5 border-b border-[#e5e3ea] bg-[#fafafa]";
+  "text-left text-[11px] tracking-[0.06em] uppercase text-[var(--color-text-muted)] px-3 py-2.5 border-b border-[var(--color-border-default)] bg-[var(--color-bg-subtle)]";
 
-const BODY_ROW = "border-b border-[#f0eff3] last:border-0";
+const BODY_ROW = "border-b border-[var(--color-bg-overlay)] last:border-0";
 
 const BODY_CELL = "py-2.5 px-3";
 
 const DEFAULT_CONTAINER =
-  "rounded-xl border border-[#e5e3ea] overflow-x-auto";
+  "rounded-xl border border-[var(--color-border-default)] overflow-x-auto";
 
-const STATUS_CELL = "p-8 text-center text-sm text-[#a6a3b0]";
+const STATUS_CELL = "p-8 text-center text-sm text-[var(--color-text-muted)]";
 
 /** Lets `TableHead` pick up the `stickyHeader` flag without a second prop. */
 const StickyHeader = createContext(false);
@@ -60,7 +60,7 @@ export interface TableProps {
   /** `TableHead` and `TableBody`. */
   children: ReactNode;
   /**
-   * Extra content placed inside the scroll container after the table — e.g. the
+   * Extra content placed inside the scroll container after the table ΓÇö e.g. the
    * infinite-scroll sentinel, which has to observe the scrolling element.
    */
   afterTable?: ReactNode;
@@ -71,7 +71,7 @@ export interface TableProps {
   emptyMessage?: ReactNode;
   /**
    * Marks the region busy while its rows are being replaced. This is a state,
-   * not an announcement — a footer's live region still owns the "Loading…"
+   * not an announcement ΓÇö a footer's live region still owns the "LoadingΓÇª"
    * message, so the two do not talk over each other.
    */
   busy?: boolean;
@@ -202,7 +202,7 @@ export function TableCell({
  * so a reader is given the reason rather than an empty grid.
  */
 export function TableEmptyState({ children }: { children: ReactNode }) {
-  return <p className="text-sm text-[#a6a3b0]">{children}</p>;
+  return <p className="text-sm text-[var(--color-text-muted)]">{children}</p>;
 }
 
 export default Table;

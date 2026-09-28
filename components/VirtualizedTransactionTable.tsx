@@ -1,13 +1,16 @@
-"use client";
+﻿"use client";
 
 import { useRef, useEffect, useState, type ReactNode } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { Transaction } from "@/lib/types";
 import TransactionRow from "./TransactionRow";
 import { Table, TableBody, TableHead, TableHeaderCell } from "./Table";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 const ROW_HEIGHT = 41;
 const OVERSCAN = 12;
+/** Number of columns in the desktop table: status dot + hash + ledger + source + ops + fee + time. */
+const COLUMNS = 7;
 const th =
   "text-left text-[11px] tracking-[0.06em] uppercase text-[var(--color-text-muted)] px-3 py-2.5 border-b border-[var(--color-border-default)] bg-[var(--color-bg-subtle)]";
 
@@ -43,7 +46,7 @@ export default function VirtualizedTransactionTable({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // ── Virtualization ──────────────────────────────────────────────────────
+  // ΓöÇΓöÇ Virtualization ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
   // eslint-disable-next-line react-hooks/incompatible-library -- mutable API is confined to this uncompiled component
@@ -86,7 +89,7 @@ export default function VirtualizedTransactionTable({
           >
             <div className="flex justify-between items-start mb-2">
               <span className="text-xs font-semibold text-[var(--color-text-muted)]">Hash</span>
-              <span className="mono text-xs text-[var(--color-text-primary)] font-semibold truncate ml-2">{tx.hash.slice(0, 12)}…</span>
+              <span className="mono text-xs text-[var(--color-text-primary)] font-semibold truncate ml-2">{tx.hash.slice(0, 12)}ΓÇª</span>
             </div>
             <div className="flex justify-between items-start mb-2">
               <span className="text-xs font-semibold text-[var(--color-text-muted)]">Ledger</span>
@@ -94,7 +97,7 @@ export default function VirtualizedTransactionTable({
             </div>
             <div className="flex justify-between items-start mb-2">
               <span className="text-xs font-semibold text-[var(--color-text-muted)]">Source</span>
-              <span className="mono text-xs text-[var(--color-text-primary)] truncate ml-2">{tx.sourceAccount.slice(0, 12)}…</span>
+              <span className="mono text-xs text-[var(--color-text-primary)] truncate ml-2">{tx.sourceAccount.slice(0, 12)}ΓÇª</span>
             </div>
             <div className="flex justify-between items-start mb-2">
               <span className="text-xs font-semibold text-[var(--color-text-muted)]">Operations</span>
@@ -121,14 +124,21 @@ export default function VirtualizedTransactionTable({
       caption="Transactions"
       columnCount={COLUMNS}
       stickyHeader
-      containerClassName="rounded-xl border border-[#e5e3ea] overflow-auto max-h-[70vh]"
+      containerClassName="rounded-xl border border-[var(--color-border-default)] overflow-auto max-h-[70vh]"
       data-testid="transaction-scroll"
       onScroll={
         onScrollTopChange
           ? (event) => onScrollTopChange(event.currentTarget.scrollTop)
           : undefined
       }
-      className="rounded-xl border border-[var(--color-border-default)] overflow-auto max-h-[70vh]"
+      afterTable={
+        <>
+          {transactions.length === 0 && emptyMessage && (
+            <EmptyState variant="inline" title={emptyMessage} className="p-8 text-center" />
+          )}
+          {children}
+        </>
+      }
     >
       <TableHead>
         {/* A plain row: `TableRow`'s border belongs to body rows, and the
@@ -150,33 +160,19 @@ export default function VirtualizedTransactionTable({
           <tr aria-hidden="true">
             <td colSpan={COLUMNS} style={{ height: paddingTop }} />
           </tr>
-        </thead>
-        <tbody>
-          {paddingTop > 0 && (
-            <tr aria-hidden="true">
-              <td colSpan={7} style={{ height: paddingTop }} />
-            </tr>
-          )}
-          {virtualRows.map((virtualRow) => (
-            <TransactionRow
-              key={transactions[virtualRow.index].hash}
-              tx={transactions[virtualRow.index]}
-            />
-          ))}
-          {paddingBottom > 0 && (
-            <tr aria-hidden="true">
-              <td colSpan={7} style={{ height: paddingBottom }} />
-            </tr>
-          )}
-        </tbody>
-      </table>
-
-      {transactions.length === 0 && emptyMessage && (
-        <div className="p-8 text-center text-[var(--color-text-muted)] text-sm">
-          {emptyMessage}
-        </div>
-      )}
-      {children}
-    </div>
+        )}
+        {virtualRows.map((virtualRow) => (
+          <TransactionRow
+            key={transactions[virtualRow.index].hash}
+            tx={transactions[virtualRow.index]}
+          />
+        ))}
+        {paddingBottom > 0 && (
+          <tr aria-hidden="true">
+            <td colSpan={COLUMNS} style={{ height: paddingBottom }} />
+          </tr>
+        )}
+      </TableBody>
+    </Table>
   );
 }

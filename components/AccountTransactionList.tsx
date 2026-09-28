@@ -3,12 +3,12 @@
 /**
  * An account's transactions, paginated.
  *
- * The account's nested `transactions` field is limit-only — the API has no
- * cursor for account-scoped transactions — so "load more" widens the limit
+ * The account's nested `transactions` field is limit-only ΓÇö the API has no
+ * cursor for account-scoped transactions ΓÇö so "load more" widens the limit
  * rather than following a cursor: each fetch re-reads the newest N and keeps
  * the tail beyond what is already shown. It reuses the explorer's pagination
- * *approach* — an explicit Load more, an honest truncation label, and an
- * end-of-results state — on the one read shape offered here.
+ * *approach* ΓÇö an explicit Load more, an honest truncation label, and an
+ * end-of-results state ΓÇö on the one read shape offered here.
  */
 import { useCallback, useState } from 'react';
 import { AccountTransactionsDocument as ACCOUNT_TRANSACTIONS_QUERY } from '@/lib/generated/graphql';
@@ -18,10 +18,11 @@ import type { Transaction } from '@/lib/types';
 import { truncateAddress } from '@/lib/formatters';
 import TimeAgo from './TimeAgo';
 import LoadMoreFooter from './LoadMoreFooter';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 /** The seed the server component renders; the first client fetch widens past it. */
 export const SEED_LIMIT = 10;
-/** Each load more widens the window: 10 → 25 → 60 → 150 → 375. */
+/** Each load more widens the window: 10 ΓåÆ 25 ΓåÆ 60 ΓåÆ 150 ΓåÆ 375. */
 const LIMIT_STEPS = [10, 25, 60, 150, 375];
 
 const th =
@@ -41,7 +42,7 @@ export default function AccountTransactionList({
 
   const limit = LIMIT_STEPS[step];
   // A full page means there may be more behind it; a short page means the
-  // account has nothing older — the same `items.length === limit` signal the
+  // account has nothing older ΓÇö the same `items.length === limit` signal the
   // explorer reads pageInfo for.
   const hasMore = rows.length >= limit && step < LIMIT_STEPS.length - 1;
 
@@ -80,7 +81,13 @@ export default function AccountTransactionList({
   }, [scope, address, step, loading]);
 
   if (rows.length === 0) {
-    return <p className="text-sm text-[var(--color-text-muted)]">No transactions yet.</p>;
+    return (
+      <EmptyState
+        variant="inline"
+        title="No transactions yet"
+        description="Transactions will appear here once this account submits one to the network."
+      />
+    );
   }
 
   return (

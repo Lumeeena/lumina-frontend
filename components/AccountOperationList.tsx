@@ -15,6 +15,7 @@ import type { Operation } from '@/lib/types';
 import { formatOperationType, truncateAddress } from '@/lib/formatters';
 import TimeAgo from './TimeAgo';
 import LoadMoreFooter from './LoadMoreFooter';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 const PAGE_SIZE = 25;
 /** Matches the seed the server component renders. */
@@ -77,7 +78,13 @@ export default function AccountOperationList({
   }, [scope, address, cursor, loading]);
 
   if (rows.length === 0) {
-    return <p className="text-sm text-[var(--color-text-muted)]">No operations yet.</p>;
+    return (
+      <EmptyState
+        variant="inline"
+        title="No operations yet"
+        description="Operations will appear here once this account is active on the network."
+      />
+    );
   }
 
   return (
@@ -128,7 +135,7 @@ export default function AccountOperationList({
                     </span>
                   ) : op.from && op.to ? (
                     <span className="mono text-[var(--color-text-secondary)]">
-                      {truncateAddress(op.from, 4)} →{" "}
+                      {truncateAddress(op.from, 4)} ΓåÆ{" "}
                       {truncateAddress(op.to, 4)}
                     </span>
                   ) : op.from || op.to ? (
@@ -136,7 +143,7 @@ export default function AccountOperationList({
                       {truncateAddress(op.from ?? op.to ?? "", 4)}
                     </span>
                   ) : (
-                    <span className="text-[var(--color-text-muted)]">—</span>
+                    <span className="text-[var(--color-text-muted)]">ΓÇö</span>
                   )}
                 </td>
                 <td className="py-2.5 px-3 text-xs text-[var(--color-text-faint)]"><TimeAgo isoString={op.createdAt} /></td>

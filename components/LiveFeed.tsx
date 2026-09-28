@@ -13,12 +13,14 @@ import type { Transaction } from "@/lib/types";
 import { truncateAddress } from "@/lib/formatters";
 import TimeAgo from "./TimeAgo";
 import ConnectionIndicator from "./ConnectionIndicator";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { InlineLoading } from "@/components/ui/InlineLoading";
 
 /**
  * How many transactions the feed keeps.
  *
  * A subscription-backed list grows forever on a tab left open overnight, so it
- * is capped — this is a "what's happening now" panel, not a scrollback buffer.
+ * is capped ΓÇö this is a "what's happening now" panel, not a scrollback buffer.
  */
 export const MAX_FEED_LENGTH = 25;
 
@@ -141,7 +143,7 @@ export default function LiveFeed() {
   }, [fetchRecent, retry]);
 
   // Fall back to the old polling behaviour only once the client has actually
-  // given up — a restrictive proxy or a browser without WebSocket should
+  // given up ΓÇö a restrictive proxy or a browser without WebSocket should
   // degrade to a slower feed, not to a dead one.
   useEffect(() => {
     if (live) return;
@@ -172,13 +174,14 @@ export default function LiveFeed() {
       </div>
 
       {loading ? (
-        <div className="p-6 text-center text-[var(--color-text-muted)] text-sm animate-pulse">
-          Fetching live data...
-        </div>
+        <InlineLoading label="Fetching live data" className="p-6 text-center" />
       ) : txs.length === 0 ? (
-        <div className="p-6 text-center text-[var(--color-text-muted)] text-sm">
-          No transactions found.
-        </div>
+        <EmptyState
+          variant="inline"
+          title="No transactions yet"
+          description="New transactions will appear here as the network processes them."
+          className="p-6 text-center"
+        />
       ) : (
         <div>
           {txs.map((tx) => (
