@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { t } from "@/lib/i18n";
 
 export default function NetworkStatus() {
   const router = useRouter();
@@ -24,5 +25,5 @@ export default function NetworkStatus() {
   }, [router]);
 
   if (!offline) return null;
-  return <div role="status" className="fixed inset-x-0 bottom-0 z-50 bg-[var(--color-inverse-bg)] text-white text-center text-sm px-4 py-3">You’re offline. Showing already-loaded data; Lumina will refresh when you reconnect.</div>;
+  return <div role="status" className="fixed inset-x-0 bottom-0 z-50 bg-[var(--color-inverse-bg)] text-white text-center text-sm px-4 py-3">{t("status.offline")}</div>;
 }

@@ -13,12 +13,9 @@
  * exercise every branch, including the ones that only happen when a network
  * misbehaves.
  */
-import {
-  Contract,
-  rpc,
-  TransactionBuilder,
-  type xdr,
-} from '@stellar/stellar-sdk';
+import { Contract, TransactionBuilder, type xdr } from '@stellar/stellar-sdk/base';
+import { Api, Server } from '@stellar/stellar-sdk/rpc';
+import { t } from '@/lib/i18n';
 
 /** Where a submission has got to. Rendered directly as button labels. */
 export type TxPhase =
@@ -119,7 +116,7 @@ export async function submitContractCall({
   try {
     prepared = await driver.prepare(call);
   } catch (err) {
-    throw new ContractCallError(messageOf(err, 'Could not prepare the transaction.'), 'building');
+    throw new ContractCallError(messageOf(err, t('soroban.couldNotPrepare')), 'building');
   }
 
   // Report the estimated fee before the signing prompt so the user can see
@@ -133,7 +130,7 @@ export async function submitContractCall({
   } catch (err) {
     // The overwhelmingly common case here is the user closing the wallet
     // prompt, which is not an error worth a red banner full of stack trace.
-    throw new ContractCallError(messageOf(err, 'Signature was declined in your wallet.'), 'awaiting-signature');
+    throw new ContractCallError(messageOf(err, t('soroban.signatureDeclined')), 'awaiting-signature');
   }
 
   phase('submitting');
@@ -141,7 +138,7 @@ export async function submitContractCall({
   try {
     hash = await driver.send(signedTxXdr);
   } catch (err) {
-    throw new ContractCallError(messageOf(err, 'The network rejected the transaction.'), 'submitting');
+    throw new ContractCallError(messageOf(err, t('soroban.networkRejected')), 'submitting');
   }
 
   phase('confirming');
@@ -161,8 +158,8 @@ export async function submitContractCall({
   if (status !== 'SUCCESS') {
     throw new ContractCallError(
       status === 'PENDING' || status === 'NOT_FOUND'
-        ? 'The transaction was submitted but has not confirmed yet. Check again in a moment.'
-        : `The transaction did not succeed (status: ${status}).`,
+        ? t('soroban.pendingConfirmation')
+        : t('soroban.transactionFailed', { status }),
       'confirming'
     );
   }
@@ -196,7 +193,7 @@ export function createStellarDriver({
   walletAddress,
   maxFee = '1000000',
 }: StellarDriverConfig): ContractCallDriver {
-  const server = new rpc.Server(rpcUrl);
+  const server = new Server(rpcUrl);
 
   return {
     async prepare({ contractId, method, args }) {
@@ -209,7 +206,7 @@ export function createStellarDriver({
         .build();
 
       const sim = await server.simulateTransaction(tx);
-      if (rpc.Api.isSimulationError(sim)) {
+      if (Api.isSimulationError(sim)) {
         throw new Error(sim.error);
       }
 

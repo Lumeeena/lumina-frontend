@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import { t } from "@/lib/i18n";
 
 export default function BackendUnavailable({ onRetry }: { onRetry?: () => void }) {
   const router = useRouter();
@@ -21,20 +22,19 @@ export default function BackendUnavailable({ onRetry }: { onRetry?: () => void }
       className="p-8 rounded-xl border border-[var(--color-error-border)] bg-[var(--color-error-surface)] text-center"
     >
       <p className="text-[var(--color-error-surface-text)] font-semibold mb-2">
-        Lumina data is temporarily unavailable
+        {t("error.backendUnavailableTitle")}
       </p>
       <p className="text-[var(--color-text-secondary)] text-sm max-w-lg mx-auto mb-4">
-        We couldn&apos;t reach the indexer. Check your connection or try again in a
-        moment; your request has not been lost.
+        {t("error.backendUnavailableBody")}
       </p>
       <Button
         variant="secondary"
         size="sm"
         loading={retrying}
-        loadingText="Retrying…"
+        loadingText={t("error.retrying")}
         onClick={retry}
       >
-        Retry
+        {t("error.retry")}
       </Button>
     </div>
   );

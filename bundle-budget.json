@@ -1,19 +1,20 @@
 {
   "headroomBytes": 5120,
   "routes": {
-    "/": 173672,
-    "/_global-error": 146671,
-    "/_not-found": 161496,
-    "/accounts": 162099,
-    "/accounts/[address]": 167429,
-    "/events": 163100,
-    "/explorer": 177704,
-    "/graphql": 293862,
-    "/registry": 254324,
-    "/search": 162901,
-    "/stats": 163100,
-    "/transactions": 177413,
-    "/transactions/[hash]": 163427,
-    "/watch": 166921
+    "/": 180296,
+    "/_global-error": 146674,
+    "/_not-found": 164727,
+    "/accounts": 168337,
+    "/accounts/[address]": 176664,
+    "/assets": 173819,
+    "/events": 172303,
+    "/explorer": 188298,
+    "/graphql": 303322,
+    "/registry": 264843,
+    "/search": 169087,
+    "/stats": 172305,
+    "/transactions": 187728,
+    "/transactions/[hash]": 172608,
+    "/watch": 172839
   }
 }

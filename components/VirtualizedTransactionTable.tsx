@@ -8,8 +8,7 @@ import { Table, TableBody, TableHead, TableHeaderCell } from "./Table";
 
 const ROW_HEIGHT = 41;
 const OVERSCAN = 12;
-const th =
-  "text-left text-[11px] tracking-[0.06em] uppercase text-[var(--color-text-muted)] px-3 py-2.5 border-b border-[var(--color-border-default)] bg-[var(--color-bg-subtle)]";
+const COLUMNS = 7;
 
 export default function VirtualizedTransactionTable({
   transactions,
@@ -121,14 +120,17 @@ export default function VirtualizedTransactionTable({
       caption="Transactions"
       columnCount={COLUMNS}
       stickyHeader
-      containerClassName="rounded-xl border border-[#e5e3ea] overflow-auto max-h-[70vh]"
+      containerClassName="rounded-xl border border-[var(--color-border-default)] overflow-auto max-h-[70vh]"
       data-testid="transaction-scroll"
+      emptyMessage={
+        transactions.length === 0 && emptyMessage ? emptyMessage : undefined
+      }
+      afterTable={children}
       onScroll={
         onScrollTopChange
           ? (event) => onScrollTopChange(event.currentTarget.scrollTop)
           : undefined
       }
-      className="rounded-xl border border-[var(--color-border-default)] overflow-auto max-h-[70vh]"
     >
       <TableHead>
         {/* A plain row: `TableRow`'s border belongs to body rows, and the
@@ -150,33 +152,19 @@ export default function VirtualizedTransactionTable({
           <tr aria-hidden="true">
             <td colSpan={COLUMNS} style={{ height: paddingTop }} />
           </tr>
-        </thead>
-        <tbody>
-          {paddingTop > 0 && (
-            <tr aria-hidden="true">
-              <td colSpan={7} style={{ height: paddingTop }} />
-            </tr>
-          )}
-          {virtualRows.map((virtualRow) => (
-            <TransactionRow
-              key={transactions[virtualRow.index].hash}
-              tx={transactions[virtualRow.index]}
-            />
-          ))}
-          {paddingBottom > 0 && (
-            <tr aria-hidden="true">
-              <td colSpan={7} style={{ height: paddingBottom }} />
-            </tr>
-          )}
-        </tbody>
-      </table>
-
-      {transactions.length === 0 && emptyMessage && (
-        <div className="p-8 text-center text-[var(--color-text-muted)] text-sm">
-          {emptyMessage}
-        </div>
-      )}
-      {children}
-    </div>
+        )}
+        {virtualRows.map((virtualRow) => (
+          <TransactionRow
+            key={transactions[virtualRow.index].hash}
+            tx={transactions[virtualRow.index]}
+          />
+        ))}
+        {paddingBottom > 0 && (
+          <tr aria-hidden="true">
+            <td colSpan={COLUMNS} style={{ height: paddingBottom }} />
+          </tr>
+        )}
+      </TableBody>
+    </Table>
   );
 }

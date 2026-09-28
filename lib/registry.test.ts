@@ -13,23 +13,20 @@ import {
   nativeToScVal,
   scValToNative,
   xdr,
-} from "@stellar/stellar-sdk";
+} from "@stellar/stellar-sdk/base";
 
 const getAccount = vi.hoisted(() => vi.fn());
 const simulateTransaction = vi.hoisted(() => vi.fn());
 
-vi.mock("@stellar/stellar-sdk", async () => {
-  const actual = await vi.importActual<typeof import("@stellar/stellar-sdk")>(
-    "@stellar/stellar-sdk",
+vi.mock("@stellar/stellar-sdk/rpc", async () => {
+  const actual = await vi.importActual<typeof import("@stellar/stellar-sdk/rpc")>(
+    "@stellar/stellar-sdk/rpc",
   );
   return {
     ...actual,
-    rpc: {
-      ...actual.rpc,
-      Server: vi
-        .fn()
-        .mockImplementation(() => ({ getAccount, simulateTransaction })),
-    },
+    Server: vi
+      .fn()
+      .mockImplementation(() => ({ getAccount, simulateTransaction })),
   };
 });
 

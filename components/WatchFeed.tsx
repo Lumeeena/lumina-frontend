@@ -6,6 +6,7 @@ import { matchesOperationFilters } from "@/lib/operationFilters";
 import { truncateAddress } from "@/lib/formatters";
 import ConnectionIndicator from "./ConnectionIndicator";
 import TimeAgo from "./TimeAgo";
+import { t } from "@/lib/i18n";
 
 /**
  * The combined feed for every watched address. Part of #9 / #80.
@@ -32,7 +33,7 @@ export default function WatchFeed() {
           id="watch-feed-heading"
           className="font-extrabold text-base text-[var(--color-text-primary)]"
         >
-          Live activity
+          {t("watch.liveActivity")}
         </h2>
         <ConnectionIndicator
           state={state}
@@ -46,9 +47,9 @@ export default function WatchFeed() {
       ) : (
         <>
           <p className="text-[13px] text-[var(--color-text-secondary)] mb-3" data-testid="watch-summary">
-            {`${watching} watched ${watching === 1 ? "address" : "addresses"}`}
+            {t("watch.watchedAddresses", { count: watching })}
             {alertCount > 0
-              ? ` · ${alertCount} matching ${alertCount === 1 ? "alert" : "alerts"} this session`
+              ? ` · ${t("watch.matchingAlerts", { count: alertCount })}`
               : ""}
           </p>
           <div
@@ -57,7 +58,7 @@ export default function WatchFeed() {
           >
             {activity.length === 0 ? (
               <p className="p-6 text-center text-[var(--color-text-muted)] text-sm">
-                Waiting for activity on your watched addresses&hellip;
+                {t("watch.waiting")}
               </p>
             ) : (
               activity.map((item) => {
@@ -82,11 +83,10 @@ function EmptyState() {
   return (
     <div className="rounded-xl border border-dashed border-[var(--color-border-default)] p-8 text-center">
       <p className="text-sm font-semibold text-[var(--color-text-primary)]">
-        You are not watching any addresses yet
+        {t("watch.emptyTitle")}
       </p>
       <p className="mt-1 text-[13px] text-[var(--color-text-secondary)]">
-        Use the bookmark next to any address to follow its activity here, and get
-        an alert when something happens on it.
+        {t("watch.emptyBody")}
       </p>
     </div>
   );
@@ -120,7 +120,7 @@ function WatchActivityRow({
           className="text-[10px] font-bold uppercase tracking-wide text-[var(--color-success-text)]"
           data-testid="watch-feed-alert"
         >
-          alert
+          {t("watch.alert")}
         </span>
       )}
       <span className="ml-auto text-[11px] text-[var(--color-text-faint)] shrink-0">

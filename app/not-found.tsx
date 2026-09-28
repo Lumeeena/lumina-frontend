@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { t } from "@/lib/i18n";
 
 const NAV_LINKS = [
   { href: "/explorer", label: "Explorer" },
@@ -12,21 +13,21 @@ const NAV_LINKS = [
 export default function NotFound() {
   return (
     <div className="max-w-lg mx-auto px-6 py-24 text-center">
-      <p className="text-5xl font-extrabold text-[var(--color-accent-text)] mb-4">404</p>
-      <p className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">Page not found</p>
+      <p className="text-5xl font-extrabold text-[var(--color-accent-text)] mb-4">{t("notFound.code")}</p>
+      <p className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">{t("notFound.title")}</p>
       <p className="text-sm text-[var(--color-text-secondary)] mb-8">
-        That address, hash, or route doesn&apos;t exist. Double-check the URL or use the Explorer to look up an account or transaction.
+        {t("notFound.body")}
       </p>
 
       <Link
         href="/explorer"
         className="inline-block px-5 py-2.5 bg-[var(--color-accent-fill)] hover:bg-[var(--color-accent-fill-hover)] text-white rounded-lg text-sm font-semibold transition-colors mb-10"
       >
-        Open Explorer
+        {t("notFound.openExplorer")}
       </Link>
 
       <div className="border-t border-[var(--color-border-default)] pt-8">
-        <p className="text-xs text-[var(--color-text-faint)] uppercase tracking-widest mb-4">Or go to</p>
+        <p className="text-xs text-[var(--color-text-faint)] uppercase tracking-widest mb-4">{t("notFound.orGoTo")}</p>
         <div className="flex flex-wrap justify-center gap-2">
           {NAV_LINKS.map(link => (
             <Link

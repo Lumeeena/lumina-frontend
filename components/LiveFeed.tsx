@@ -13,6 +13,7 @@ import type { Transaction } from "@/lib/types";
 import { truncateAddress } from "@/lib/formatters";
 import TimeAgo from "./TimeAgo";
 import ConnectionIndicator from "./ConnectionIndicator";
+import { t } from "@/lib/i18n";
 
 /**
  * How many transactions the feed keeps.
@@ -173,11 +174,11 @@ export default function LiveFeed() {
 
       {loading ? (
         <div className="p-6 text-center text-[var(--color-text-muted)] text-sm animate-pulse">
-          Fetching live data...
+          {t("liveFeed.fetching")}
         </div>
       ) : txs.length === 0 ? (
         <div className="p-6 text-center text-[var(--color-text-muted)] text-sm">
-          No transactions found.
+          {t("liveFeed.noTransactions")}
         </div>
       ) : (
         <div>

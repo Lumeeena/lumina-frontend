@@ -9,12 +9,13 @@
  * can have one.
  */
 import { useEffect, useState } from 'react';
-import { nativeToScVal } from '@stellar/stellar-sdk';
+import { nativeToScVal } from '@stellar/stellar-sdk/base';
 import { REGISTRY_CATEGORIES, type RegistryCategory } from '@/lib/categories';
 import { NETWORK_PASSPHRASE, REGISTRY_CONTRACT_ID, SOROBAN_RPC_URL } from '@/lib/registry';
 import { createStellarDriver, submitContractCall, type TxPhase } from '@/lib/sorobanTx';
 import { formatStroops } from '@/lib/formatters';
 import { Button } from '@/components/ui/Button';
+import { t } from '@/lib/i18n';
 
 
 export interface RegistrationInput {
@@ -85,15 +86,20 @@ const defaultRegister = async (
   return { hash: result.hash };
 };
 
-const SUBMIT_LABELS: Record<TxPhase, string> = {
-  idle: 'Register Contract',
-  building: 'Preparing transaction…',
-  'awaiting-signature': 'Approve in your wallet…',
-  submitting: 'Submitting…',
-  confirming: 'Confirming…',
-  success: 'Register Contract',
-  error: 'Register Contract',
+const SUBMIT_LABEL_KEYS: Record<TxPhase, Parameters<typeof t>[0]> = {
+  idle: 'register.registerContract',
+  building: 'register.preparingTransaction',
+  'awaiting-signature': 'register.approveInWallet',
+  submitting: 'register.submitting',
+  confirming: 'register.confirming',
+  success: 'register.registerContract',
+  error: 'register.registerContract',
 };
+const SUBMIT_LABELS = new Proxy({} as Record<TxPhase, string>, {
+  get(_target, prop: TxPhase) {
+    return t(SUBMIT_LABEL_KEYS[prop]);
+  },
+});
 
 export default function RegisterContractForm({
   walletAddress,
@@ -146,7 +152,7 @@ export default function RegisterContractForm({
     // The contract rejects an empty category list (`NoCategories`), and a
     // silent no-op submit would leave the user wondering why nothing happened.
     if (input.categories.length === 0) {
-      setCategoryError('Select at least one category.');
+      setCategoryError(t('register.selectCategory'));
       return;
     }
 
@@ -160,7 +166,7 @@ export default function RegisterContractForm({
         sessionStorage.setItem(`tx-${Date.now()}`, result.hash);
       }
       setPhase('success');
-      setMessage(`${input.name} registered — Lumina will begin indexing shortly.`);
+      setMessage(t('register.successMessage', { name: input.name }));
       setContractId('');
       setName('');
       setDescription('');
@@ -170,7 +176,7 @@ export default function RegisterContractForm({
       onRegistered?.();
     } catch (err) {
       setPhase('error');
-      setMessage(err instanceof Error ? err.message : 'Registration failed.');
+      setMessage(err instanceof Error ? err.message : t('register.registrationFailed'));
       if (transactionHash) {
         sessionStorage.setItem(`tx-${Date.now()}`, transactionHash);
       }
@@ -182,7 +188,7 @@ export default function RegisterContractForm({
 
       <div>
         <label htmlFor="reg-contract-id" className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1.5">
-          Contract ID
+          {t("register.contractId")}
         </label>
         <input
           id="reg-contract-id"
@@ -196,7 +202,7 @@ export default function RegisterContractForm({
 
       <div>
         <label htmlFor="reg-name" className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1.5">
-          Project Name
+          {t("register.projectName")}
         </label>
         <input
           id="reg-name"
@@ -210,7 +216,7 @@ export default function RegisterContractForm({
 
       <div>
         <label htmlFor="reg-description" className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1.5">
-          Description
+          {t("register.description")}
         </label>
         <textarea
           id="reg-description"
@@ -224,7 +230,7 @@ export default function RegisterContractForm({
 
       <fieldset>
         <legend className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1.5">
-          Categories <span className="text-[var(--color-text-muted)] font-normal">(pick at least one)</span>
+          {t("register.categoriesLabel")} <span className="text-[var(--color-text-muted)] font-normal">{t("register.categoriesHint")}</span>
         </legend>
         <div className="flex flex-wrap gap-1.5">
           {REGISTRY_CATEGORIES.map(category => {
@@ -266,7 +272,7 @@ export default function RegisterContractForm({
 
       {estimatedFee && phase !== 'idle' && phase !== 'success' && (
         <p className="text-xs text-[var(--color-text-muted)] text-center">
-          Estimated fee: {formatStroops(estimatedFee)} XLM
+          {t("register.estimatedFee", { fee: formatStroops(estimatedFee) })}
         </p>
       )}
 

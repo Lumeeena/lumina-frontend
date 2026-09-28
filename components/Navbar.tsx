@@ -95,24 +95,3 @@ export default function Navbar() {
   );
 }
 
-function NavbarContent() {
-  const pathname = usePathname() ?? "/";
-  const { network } = useNetwork();
-  return (
-    <NavContent
-      network={network}
-      pathname={pathname}
-      switcher={<NetworkSwitcher />}
-    />
-  );
-}
-
-export default function Navbar() {
-  return (
-    <Suspense
-      fallback={<nav aria-label="Primary navigation" className="h-[60px] border-b border-[var(--color-border-default)]" />}
-    >
-      <NavbarContent />
-    </Suspense>
-  );
-}
