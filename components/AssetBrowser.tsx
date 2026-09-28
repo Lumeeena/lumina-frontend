@@ -21,6 +21,7 @@
  * make the list skip or repeat a row the way an offset would.
  */
 import { useCallback, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   AssetsDocument as ASSETS_QUERY,
@@ -228,25 +229,38 @@ export default function AssetBrowser({
             </tr>
           </thead>
           <tbody>
-            {visible.map((asset) => (
-              <tr
-                key={asset.asset}
-                className="border-b border-[var(--color-border-default)] last:border-0"
-              >
-                <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-primary)]">
-                  {assetLabel(asset)}
-                </td>
-                <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-secondary)] max-w-[280px] truncate">
-                  {asset.issuer ?? "—"}
-                </td>
-                <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-secondary)] text-end">
-                  {formatSupply(asset.supply)}
-                </td>
-                <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-secondary)] text-end">
-                  {asset.holders.toLocaleString()}
-                </td>
-              </tr>
-            ))}
+            {visible.map((asset) => {
+              const canOpen = !asset.native && !!asset.issuer && !!asset.code;
+              const assetText = assetLabel(asset);
+              return (
+                <tr
+                  key={asset.asset}
+                  className="border-b border-[var(--color-border-default)] last:border-0"
+                >
+                  <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-primary)]">
+                    {canOpen ? (
+                      <Link
+                        href={`/assets/${encodeURIComponent(asset.code ?? asset.asset)}/${encodeURIComponent(asset.issuer ?? "")}`}
+                        className="text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline transition-colors"
+                      >
+                        {assetText}
+                      </Link>
+                    ) : (
+                      assetText
+                    )}
+                  </td>
+                  <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-secondary)] max-w-[280px] truncate">
+                    {asset.issuer ?? "—"}
+                  </td>
+                  <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-secondary)] text-end">
+                    {formatSupply(asset.supply)}
+                  </td>
+                  <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-secondary)] text-end">
+                    {asset.holders.toLocaleString()}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
 
