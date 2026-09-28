@@ -1,7 +1,5 @@
 "use client";
 
-import { AccountOperationsDocument as ACCOUNT_OPERATIONS_QUERY } from "@/lib/generated/graphql";
-
 /**
  * An account's operations, cursor-paginated.
  *
@@ -10,6 +8,7 @@ import { AccountOperationsDocument as ACCOUNT_OPERATIONS_QUERY } from "@/lib/gen
  * pages, dedupe by id, and say so when the list is truncated.
  */
 import { useCallback, useState } from 'react';
+import { AccountOperationsDocument as ACCOUNT_OPERATIONS_QUERY } from '@/lib/generated/graphql';
 import { gqlFetch, PUBLIC_GRAPHQL_URL } from '@/lib/graphql';
 import type { Operation } from '@/lib/types';
 import { formatOperationType, truncateAddress } from '@/lib/formatters';

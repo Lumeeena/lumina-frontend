@@ -4,6 +4,7 @@ import { useRef, useEffect, useState, type ReactNode } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { Transaction } from "@/lib/types";
 import TransactionRow from "./TransactionRow";
+import { Table, TableBody, TableHead, TableHeaderCell } from "./Table";
 
 const ROW_HEIGHT = 41;
 const OVERSCAN = 12;
@@ -115,8 +116,12 @@ export default function VirtualizedTransactionTable({
   }
 
   return (
-    <div
+    <Table
       ref={scrollRef}
+      caption="Transactions"
+      columnCount={COLUMNS}
+      stickyHeader
+      containerClassName="rounded-xl border border-[#e5e3ea] overflow-auto max-h-[70vh]"
       data-testid="transaction-scroll"
       onScroll={
         onScrollTopChange
@@ -125,16 +130,25 @@ export default function VirtualizedTransactionTable({
       }
       className="rounded-xl border border-[var(--color-border-default)] overflow-auto max-h-[70vh]"
     >
-      <table className="w-full text-sm border-collapse">
-        <thead className="sticky top-0 z-10">
-          <tr>
-            <th className={`${th} w-6`} />
-            <th className={th}>Hash</th>
-            <th className={th}>Ledger</th>
-            <th className={th}>Source</th>
-            <th className={th}>Ops</th>
-            <th className={th}>Fee</th>
-            <th className={th}>Time</th>
+      <TableHead>
+        {/* A plain row: `TableRow`'s border belongs to body rows, and the
+            header cells already draw their own. */}
+        <tr>
+          <TableHeaderCell className="w-6" />
+          <TableHeaderCell>Hash</TableHeaderCell>
+          <TableHeaderCell>Ledger</TableHeaderCell>
+          <TableHeaderCell>Source</TableHeaderCell>
+          <TableHeaderCell>Ops</TableHeaderCell>
+          <TableHeaderCell>Fee</TableHeaderCell>
+          <TableHeaderCell>Time</TableHeaderCell>
+        </tr>
+      </TableHead>
+      <TableBody>
+        {paddingTop > 0 && (
+          // Layout, not data: kept as a bare cell so the inline height the
+          // virtualizer measures is not padded out by the shared cell styles.
+          <tr aria-hidden="true">
+            <td colSpan={COLUMNS} style={{ height: paddingTop }} />
           </tr>
         </thead>
         <tbody>
