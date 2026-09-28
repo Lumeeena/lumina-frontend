@@ -78,7 +78,7 @@ export default function WatchedAddressList() {
     <section aria-labelledby="watch-list-heading" className="mb-10">
       <h2
         id="watch-list-heading"
-        className="font-extrabold text-base text-[#0e0e12] mb-3"
+        className="font-extrabold text-base text-[var(--color-text-primary)] mb-3"
       >
         Watched addresses
       </h2>
@@ -98,13 +98,13 @@ export default function WatchedAddressList() {
             placeholder="G…"
             aria-invalid={error !== null}
             aria-describedby={error ? "watch-address-error" : undefined}
-            className="w-full rounded-lg border border-[#e5e3ea] px-3 py-2 text-[13px] mono"
+            className="w-full rounded-lg border border-[var(--color-border-default)] px-3 py-2 text-[13px] mono"
           />
         </div>
         <button
           type="submit"
           disabled={full}
-          className="rounded-lg bg-[#7c3aed] hover:bg-[#6d28d9] disabled:opacity-50 disabled:hover:bg-[#7c3aed] text-white font-bold text-[13px] px-4 py-2 transition-colors"
+          className="rounded-lg bg-[var(--color-accent-fill)] hover:bg-[var(--color-accent-fill-hover)] disabled:opacity-50 disabled:hover:bg-[var(--color-accent-fill)] text-white font-bold text-[13px] px-4 py-2 transition-colors"
         >
           Add watch
         </button>
@@ -115,20 +115,20 @@ export default function WatchedAddressList() {
           id="watch-address-error"
           role="alert"
           data-testid="watch-add-error"
-          className="mb-4 text-[13px] text-[#dc2626]"
+          className="mb-4 text-[13px] text-[var(--color-error-text)]"
         >
           {error}
         </p>
       )}
 
       {full && (
-        <p className="mb-4 text-[13px] text-[#6b6975]" data-testid="watch-list-full">
+        <p className="mb-4 text-[13px] text-[var(--color-text-secondary)]" data-testid="watch-list-full">
           {`The list is capped at ${MAX_WATCHES} addresses. Remove one to add another.`}
         </p>
       )}
 
       {entries.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-[#e5e3ea] p-6 text-center text-[13px] text-[#6b6975]">
+        <p className="rounded-xl border border-dashed border-[var(--color-border-default)] p-6 text-center text-[13px] text-[var(--color-text-secondary)]">
           Nothing watched yet. Add an address above, or use the bookmark icon next
           to any account on the site.
         </p>
@@ -137,18 +137,18 @@ export default function WatchedAddressList() {
           {entries.map((entry) => (
             <li
               key={entry.address}
-              className="rounded-xl border border-[#e5e3ea] p-4"
+              className="rounded-xl border border-[var(--color-border-default)] p-4"
             >
               <div className="flex items-center gap-3 mb-3 flex-wrap">
                 <Link
                   href={`/accounts/${entry.address}`}
-                  className="mono text-[13px] font-semibold text-[#7c3aed] hover:text-[#6d28d9] hover:underline"
+                  className="mono text-[13px] font-semibold text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline"
                 >
                   {truncateAddress(entry.address, 6)}
                 </Link>
                 <a
                   href={filterHref(entry)}
-                  className="text-[12px] text-[#6b6975] hover:text-[#0e0e12] hover:underline"
+                  className="text-[12px] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:underline"
                 >
                   {`${countActiveOperationFilters(entry.filters)} ${
                     countActiveOperationFilters(entry.filters) === 1
@@ -160,7 +160,7 @@ export default function WatchedAddressList() {
                   type="button"
                   onClick={() => handleRemove(entry.address)}
                   aria-label={`Unwatch ${entry.address}`}
-                  className="ml-auto text-[12px] font-semibold text-[#6b6975] hover:text-[#dc2626] hover:underline"
+                  className="ml-auto text-[12px] font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-error-text)] hover:underline"
                 >
                   Remove
                 </button>

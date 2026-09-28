@@ -305,14 +305,14 @@ export default function TransactionExplorer({
         onDeletePreset={handleDeletePreset}
       />
 
-      <div className="flex items-center justify-between mb-3 text-[13px] text-[#6b6975]">
+      <div className="flex items-center justify-between mb-3 text-[13px] text-[var(--color-text-secondary)]">
         <span data-testid="result-count">
           {filtering
             ? `${filtered.length} of ${txs.length} loaded`
             : `${txs.length} loaded`}
         </span>
         {loading && (
-          <span className="text-[#a6a3b0] animate-pulse">Loading&hellip;</span>
+          <span className="text-[var(--color-text-muted)] animate-pulse">Loading&hellip;</span>
         )}
       </div>
 
@@ -336,14 +336,14 @@ export default function TransactionExplorer({
           <BackendUnavailable onRetry={() => { setHasNextPage(true); void loadMore(); }} />
         ) : error ? (
           <>
-            <span className="text-[13px] text-[#dc2626]">{error}</span>
+            <span className="text-[13px] text-[var(--color-error-text)]">{error}</span>
             <button
               type="button"
               onClick={() => {
                 setHasNextPage(true);
                 void loadMore();
               }}
-              className="bg-[#f6f5f8] border border-[#e5e3ea] hover:border-[#c4b5fd] font-semibold text-[13px] px-4 py-2 rounded-[9px] transition-colors"
+              className="bg-[var(--color-bg-raised)] border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] font-semibold text-[13px] px-4 py-2 rounded-[9px] transition-colors"
             >
               Retry
             </button>
@@ -353,13 +353,13 @@ export default function TransactionExplorer({
             type="button"
             onClick={() => void loadMore()}
             disabled={loading}
-            className="bg-[#f6f5f8] border border-[#e5e3ea] enabled:hover:border-[#c4b5fd] disabled:opacity-50 font-semibold text-[13px] px-5 py-2 rounded-[9px] transition-colors"
+            className="bg-[var(--color-bg-raised)] border border-[var(--color-border-default)] enabled:hover:border-[var(--color-border-strong)] disabled:opacity-50 font-semibold text-[13px] px-5 py-2 rounded-[9px] transition-colors"
           >
             {loading ? "Loading…" : "Load more"}
           </button>
         ) : (
           txs.length > 0 && (
-            <span className="text-[13px] text-[#c3c1cb]">End of results</span>
+            <span className="text-[13px] text-[var(--color-text-faint)]">End of results</span>
           )
         )}
       </div>

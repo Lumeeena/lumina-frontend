@@ -11,7 +11,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "codegen": "graphql-codegen --config codegen.ts",
+    "codegen": "node scripts/gen-palette.mjs && graphql-codegen --config codegen.ts",
     "prebuild": "npm run codegen",
     "analyze": "node scripts/analyze.mjs",
     "build:bundle": "next build --experimental-build-mode compile",

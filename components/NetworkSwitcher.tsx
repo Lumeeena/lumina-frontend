@@ -26,7 +26,7 @@ export default function NetworkSwitcher() {
       <span
         aria-hidden="true"
         className={`h-1.5 w-1.5 rounded-full transition-colors ${
-          offDefault ? "bg-[#f59e0b]" : "bg-[#8b5cf6]"
+          offDefault ? "bg-[var(--color-warning-text)]" : "bg-[var(--color-accent-fill)]"
         }`}
       />
       <select
@@ -39,10 +39,10 @@ export default function NetworkSwitcher() {
           const next = parseNetwork(event.target.value);
           if (next && next !== network) setNetwork(next);
         }}
-        className={`text-[12.5px] font-semibold rounded-lg border px-1.5 py-1.5 cursor-pointer outline-none focus:border-[#c4b5fd] ${
+        className={`text-[12.5px] font-semibold rounded-lg border px-1.5 py-1.5 cursor-pointer outline-none focus:border-[var(--color-border-strong)] ${
           offDefault
-            ? "border-[#fcd34d] bg-[#fffbeb] text-[#b45309]"
-            : "border-[#e5e3ea] bg-[#fafafa] text-[#6b6975]"
+            ? "border-[var(--color-warning-border)] bg-[var(--color-warning-bg)] text-[var(--color-warning-text)]"
+            : "border-[var(--color-border-default)] bg-[var(--color-bg-subtle)] text-[var(--color-text-secondary)]"
         }`}
       >
         {NETWORKS.map((option) => (

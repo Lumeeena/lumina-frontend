@@ -12,12 +12,12 @@ import type { ConnectionState, FailureReason } from "@/lib/subscriptions";
  * still showing a green dot is worse than one that never claimed to be live.
  */
 const PRESENTATION: Record<ConnectionState, { label: string; dot: string; ring: string; pulse: boolean }> = {
-  idle: { label: "IDLE", dot: "bg-[#c3c1cb]", ring: "rgba(195,193,203,0.15)", pulse: false },
-  connecting: { label: "CONNECTING", dot: "bg-[#d97706]", ring: "rgba(217,119,6,0.15)", pulse: true },
-  connected: { label: "LIVE", dot: "bg-[#16a34a]", ring: "rgba(22,163,74,0.15)", pulse: false },
-  reconnecting: { label: "RECONNECTING", dot: "bg-[#d97706]", ring: "rgba(217,119,6,0.15)", pulse: true },
-  disconnected: { label: "POLLING", dot: "bg-[#a6a3b0]", ring: "rgba(166,163,176,0.15)", pulse: false },
-  unsupported: { label: "POLLING", dot: "bg-[#a6a3b0]", ring: "rgba(166,163,176,0.15)", pulse: false },
+  idle: { label: "IDLE", dot: "bg-[var(--color-text-faint)]", ring: "rgba(195,193,203,0.15)", pulse: false },
+  connecting: { label: "CONNECTING", dot: "bg-[var(--color-warning-text)]", ring: "rgba(217,119,6,0.15)", pulse: true },
+  connected: { label: "LIVE", dot: "bg-[var(--color-success-text)]", ring: "rgba(22,163,74,0.15)", pulse: false },
+  reconnecting: { label: "RECONNECTING", dot: "bg-[var(--color-warning-text)]", ring: "rgba(217,119,6,0.15)", pulse: true },
+  disconnected: { label: "POLLING", dot: "bg-[var(--color-text-muted)]", ring: "rgba(166,163,176,0.15)", pulse: false },
+  unsupported: { label: "POLLING", dot: "bg-[var(--color-text-muted)]", ring: "rgba(166,163,176,0.15)", pulse: false },
 };
 
 const EXPLANATION: Record<ConnectionState, string> = {
@@ -56,7 +56,7 @@ export default function ConnectionIndicator({ state, failureReason = null, onRet
     <div
       // `relative` so the expanded explanation is positioned against this
       // status line rather than against whatever ancestor happens to be laid out.
-      className="relative flex items-center gap-2 text-xs font-bold tracking-wide text-[#0e0e12]"
+      className="relative flex items-center gap-2 text-xs font-bold tracking-wide text-[var(--color-text-primary)]"
       // Announced politely so a reconnect is heard without interrupting, and
       // exposed as status text rather than only as a coloured dot.
       role="status"
@@ -75,7 +75,7 @@ export default function ConnectionIndicator({ state, failureReason = null, onRet
         {label}
         {reason && (
           <span
-            className="font-normal text-[11px] text-[#a6a3b0]"
+            className="font-normal text-[11px] text-[var(--color-text-muted)]"
             data-testid="connection-reason"
           >
             {reason}
@@ -91,7 +91,7 @@ export default function ConnectionIndicator({ state, failureReason = null, onRet
         aria-controls={explanationId}
         aria-label={`What does ${label} mean?`}
         onClick={() => setExpanded((open) => !open)}
-        className="relative inline-flex size-7 shrink-0 select-none items-center justify-center rounded-md text-[#6b6975] hover:bg-[#f0eff3] hover:text-[#0e0e12]"
+        className="relative inline-flex size-7 shrink-0 select-none items-center justify-center rounded-md text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-primary)]"
       >
         <Info aria-hidden="true" className="size-4 shrink-0" strokeWidth={2} />
         <span
@@ -106,7 +106,7 @@ export default function ConnectionIndicator({ state, failureReason = null, onRet
         <button
           type="button"
           onClick={onRetry}
-          className="relative select-none font-medium text-[0.6875rem] text-[#7c3aed] hover:text-[#6d28d9] hover:underline"
+          className="relative select-none font-medium text-[0.6875rem] text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline"
         >
           Retry
           <span
@@ -119,7 +119,7 @@ export default function ConnectionIndicator({ state, failureReason = null, onRet
       {expanded && (
         <p
           id={explanationId}
-          className="absolute left-0 top-full z-20 mt-2 w-[min(19rem,calc(100vw-2rem))] rounded-lg border border-[#e5e3ea] bg-white p-3 text-sm/5 font-normal tracking-normal text-[#6b6975] shadow-lg"
+          className="absolute left-0 top-full z-20 mt-2 w-[min(19rem,calc(100vw-2rem))] rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-base)] p-3 text-sm/5 font-normal tracking-normal text-[var(--color-text-secondary)] shadow-lg"
         >
           {EXPLANATION[state]}
         </p>

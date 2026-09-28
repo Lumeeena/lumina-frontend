@@ -1,16 +1,24 @@
 @import "tailwindcss";
 
 /* ─── Design tokens ──────────────────────────────────────────────────────────
-   All colours, radii and shadows are authored here as CSS custom properties
-   ("tokens"). Components reference var(--token) rather than hard-coded hex so
-   that a single media-query or [data-theme] switch flips the whole palette.
+   All colours are authored here as CSS custom properties ("tokens") — this is
+   the one place a hex value may live. Components reference var(--token) rather
+   than hard-coded hex so that a single edit (or a single [data-theme] switch)
+   updates every use, and so a contrast audit has one definition per colour.
 
-   Naming convention:
-     --color-bg-*        page / surface backgrounds
-     --color-text-*      text colours, from primary to muted
-     --color-border-*    borders and dividers
-     --color-accent-*    the brand violet family
-     --color-status-*    semantic: success / error / warning / info
+   Naming convention — tokens are named for the role they play, never for the
+   colour they happen to be:
+      --color-bg-*          page / surface backgrounds
+      --color-text-*        text colours, from primary to faint and inverse
+      --color-border-*      borders and dividers
+      --color-accent-*      the brand violet family (fill / surface / text)
+      --color-success-*, --color-error-*, --color-warning-*   semantic status
+      --color-neutral-*, --color-active-*                     pill styles
+
+   Non-browser consumers (the generated web-app manifest, Satori share cards)
+   cannot read CSS custom properties at runtime; scripts/gen-palette.mjs turns
+   the light palette below into lib/generated/palette.ts, and lib/palette.test.ts
+   fails if the two ever drift.
 ────────────────────────────────────────────────────────────────────────────── */
 
 :root {
@@ -19,21 +27,27 @@
   --color-bg-subtle:    #fafafa;   /* card / panel fill */
   --color-bg-raised:    #f6f5f8;   /* button / chip / input fill */
   --color-bg-overlay:   #f0eff3;   /* dividers, inner wells */
+  --color-skeleton-bg:  #eeeef2;   /* loading placeholder bars */
+  --color-inverse-bg:   #0e0e12;   /* offline banner — always pairs with white text */
 
   /* Text */
   --color-text-primary:   #0e0e12;
   --color-text-secondary: #6b6975;
   --color-text-muted:     #a6a3b0;
+  --color-text-faint:     #c3c1cb;  /* timestamps, idle hints */
+  --color-text-inverse:   #ffffff;  /* text on a brand or inverse surface */
 
   /* Borders */
   --color-border-default: #e5e3ea;
   --color-border-strong:  #c4b5fd;  /* accent hover border */
 
   /* Brand / Accent (violet) */
-  --color-accent-9:  #8b5cf6;   /* primary fill */
-  --color-accent-10: #7c3aed;   /* primary hover fill */
-  --color-accent-3:  #f5f3ff;   /* light tint background */
-  --color-accent-11: #7c3aed;   /* accent text */
+  --color-accent-fill:       #8b5cf6;  /* primary fill, focus ring */
+  --color-accent-fill-hover: #7c3aed;  /* primary hover fill */
+  --color-accent-surface:    #f5f3ff;  /* tinted chip / selected tab */
+  --color-accent-text:       #7c3aed;  /* accent text (links, labels) */
+  --color-accent-text-hover: #6d28d9;  /* accent text hover */
+  --color-accent-gradient: linear-gradient(135deg, #4c1d95 0%, #7c3aed 45%, #8b5cf6 75%, #a78bfa 100%);
 
   /* Semantic status */
   --color-success-bg:   #f0fdf4;
@@ -41,8 +55,10 @@
   --color-error-bg:     #fef2f2;
   --color-error-text:   #dc2626;
   --color-error-dark:   #991b1b;
+  --color-error-outline:#fecaca;   /* border on a red error card */
   --color-warning-bg:   #fffbeb;
   --color-warning-text: #b45309;
+  --color-warning-border:#fcd34d;
   --color-error-border: #fed7aa;
   --color-error-surface:#fffaf5;
   --color-error-surface-text: #9a3412;
@@ -64,26 +80,32 @@
     --color-bg-subtle:    #18181f;
     --color-bg-raised:    #1e1d27;
     --color-bg-overlay:   #262534;
+    --color-skeleton-bg:  #1e1d27;
+    --color-inverse-bg:   #262534;
 
     --color-text-primary:   #f2f0fa;
     --color-text-secondary: #9b98a8;
     --color-text-muted:     #6b6975;
+    --color-text-faint:     #57545f;
 
     --color-border-default: #2e2c3d;
     --color-border-strong:  #7c3aed;
 
-    --color-accent-9:  #8b5cf6;
-    --color-accent-10: #a78bfa;
-    --color-accent-3:  #1e1a2e;
-    --color-accent-11: #c4b5fd;
+    --color-accent-fill:       #8b5cf6;
+    --color-accent-fill-hover: #a78bfa;
+    --color-accent-surface:    #1e1a2e;
+    --color-accent-text:       #c4b5fd;
+    --color-accent-text-hover: #a78bfa;
 
     --color-success-bg:   #052e16;
     --color-success-text: #4ade80;
     --color-error-bg:     #2c0a0a;
     --color-error-text:   #f87171;
     --color-error-dark:   #fca5a5;
+    --color-error-outline:#991b1b;
     --color-warning-bg:   #1c1407;
     --color-warning-text: #fbbf24;
+    --color-warning-border:#92400e;
     --color-error-border: #7c2d12;
     --color-error-surface:#1a1009;
     --color-error-surface-text: #fdba74;
@@ -103,26 +125,32 @@
   --color-bg-subtle:    #18181f;
   --color-bg-raised:    #1e1d27;
   --color-bg-overlay:   #262534;
+  --color-skeleton-bg:  #1e1d27;
+  --color-inverse-bg:   #262534;
 
   --color-text-primary:   #f2f0fa;
   --color-text-secondary: #9b98a8;
   --color-text-muted:     #6b6975;
+  --color-text-faint:     #57545f;
 
   --color-border-default: #2e2c3d;
   --color-border-strong:  #7c3aed;
 
-  --color-accent-9:  #8b5cf6;
-  --color-accent-10: #a78bfa;
-  --color-accent-3:  #1e1a2e;
-  --color-accent-11: #c4b5fd;
+  --color-accent-fill:       #8b5cf6;
+  --color-accent-fill-hover: #a78bfa;
+  --color-accent-surface:    #1e1a2e;
+  --color-accent-text:       #c4b5fd;
+  --color-accent-text-hover: #a78bfa;
 
   --color-success-bg:   #052e16;
   --color-success-text: #4ade80;
   --color-error-bg:     #2c0a0a;
   --color-error-text:   #f87171;
   --color-error-dark:   #fca5a5;
+  --color-error-outline:#991b1b;
   --color-warning-bg:   #1c1407;
   --color-warning-text: #fbbf24;
+  --color-warning-border:#92400e;
   --color-error-border: #7c2d12;
   --color-error-surface:#1a1009;
   --color-error-surface-text: #fdba74;
@@ -154,7 +182,7 @@ body {
 }
 
 ::selection {
-  background: rgba(139, 92, 246, 0.22);
+  background: color-mix(in srgb, var(--color-accent-fill) 22%, transparent);
 }
 
 a {
@@ -164,7 +192,7 @@ a {
 input:focus-visible,
 textarea:focus-visible,
 button:focus-visible {
-  outline: 2px solid var(--color-accent-9);
+  outline: 2px solid var(--color-accent-fill);
   outline-offset: 2px;
 }
 
@@ -190,7 +218,7 @@ button:focus-visible {
 
 .graphql-editor .cm-activeLine,
 .graphql-editor .cm-activeLineGutter {
-  background: var(--color-accent-3);
+  background: var(--color-accent-surface);
 }
 
 input::placeholder,

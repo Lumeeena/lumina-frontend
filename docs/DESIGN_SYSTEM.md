@@ -8,17 +8,30 @@ nearest file.
 
 ## Tokens
 
-All colours are CSS custom properties defined in `app/globals.css`. Components
-reference `var(--token-name)` — never hard-coded hex.
+All colours are CSS custom properties defined in `app/globals.css`. That file
+is the only place a hex value may be written: components reference
+`var(--token-name)` — never a hard-coded hex — so changing a token updates
+every use, and the `custom/no-raw-hex-colors` ESLint rule fails `npm run lint`
+on a hex in `app/` or `components/`.
+
+Tokens are named for the role they play, never for the colour they happen to
+be: `--color-accent-fill`, not `--color-violet-500`.
+
+Two consumers cannot read CSS custom properties — the generated web-app
+manifest and the Satori share cards. `npm run codegen` mirrors the light
+palette into `lib/generated/palette.ts`; `lib/palette.test.ts` fails if that
+mirror and `app/globals.css` ever disagree.
 
 ### Backgrounds
 
 | Token | Light | Dark | Use |
 |---|---|---|---|
-| `--color-bg-base` | `#ffffff` | `#0e0e12` | Page background, form inputs |
+| `--color-bg-base` | `#ffffff` | `#0e0e12` | Page background, form inputs, cards |
 | `--color-bg-subtle` | `#fafafa` | `#18181f` | Card / panel fill |
-| `--color-bg-raised` | `#f6f5f8` | `#1e1d27` | Button fill, chips, hover states |
-| `--color-bg-overlay` | `#f0eff3` | `#262534` | Inner dividers, wells |
+| `--color-bg-raised` | `#f6f5f8` | `#1e1d27` | Button fill, chips, hover states, nav highlight |
+| `--color-bg-overlay` | `#f0eff3` | `#262534` | Inner dividers, wells, row separators |
+| `--color-skeleton-bg` | `#eeeef2` | `#1e1d27` | Loading placeholder bars |
+| `--color-inverse-bg` | `#0e0e12` | `#262534` | Offline banner — always pairs with white text |
 
 ### Text
 
@@ -27,6 +40,8 @@ reference `var(--token-name)` — never hard-coded hex.
 | `--color-text-primary` | `#0e0e12` | `#f2f0fa` | Body copy, headings |
 | `--color-text-secondary` | `#6b6975` | `#9b98a8` | Labels, captions, secondary info |
 | `--color-text-muted` | `#a6a3b0` | `#6b6975` | Placeholders, timestamps, "end of results" |
+| `--color-text-faint` | `#c3c1cb` | `#57545f` | Lowest-emphasis hints: row timestamps, idle dots |
+| `--color-text-inverse` | `#ffffff` | `#ffffff` | White content on a brand or inverse surface |
 
 ### Borders
 
@@ -39,19 +54,25 @@ reference `var(--token-name)` — never hard-coded hex.
 
 | Token | Light | Dark | Use |
 |---|---|---|---|
-| `--color-accent-9` | `#8b5cf6` | `#8b5cf6` | Primary button fill, focus ring |
-| `--color-accent-10` | `#7c3aed` | `#a78bfa` | Primary button hover |
-| `--color-accent-3` | `#f5f3ff` | `#1e1a2e` | Selected chip / tab background |
-| `--color-accent-11` | `#7c3aed` | `#c4b5fd` | Accent text (links, selected labels) |
+| `--color-accent-fill` | `#8b5cf6` | `#8b5cf6` | Primary button fill, focus ring, brand mark |
+| `--color-accent-fill-hover` | `#7c3aed` | `#a78bfa` | Primary button hover |
+| `--color-accent-surface` | `#f5f3ff` | `#1e1a2e` | Selected chip / tab / badge background |
+| `--color-accent-text` | `#7c3aed` | `#c4b5fd` | Accent text (links, selected labels) |
+| `--color-accent-text-hover` | `#6d28d9` | `#a78bfa` | Hover state for accent text |
+| `--color-accent-gradient` | *same* | *same* | Share-card background (via the generated palette) |
 
 ### Semantic Status
 
 | Token | Use |
 |---|---|
-| `--color-success-bg` / `--color-success-text` | Success banners, active status pills |
-| `--color-error-bg` / `--color-error-text` | Error banners, validation messages |
-| `--color-warning-bg` / `--color-warning-text` | Warning banners, stake lock notices |
+| `--color-success-bg` / `--color-success-text` | Success banners, status dots, "active" pills |
+| `--color-error-bg` / `--color-error-text` | Error banners, validation messages, failed status dots |
+| `--color-warning-bg` / `--color-warning-text` | Warning banners, off-network and connecting states |
+| `--color-warning-border` | Outline of a warning control (the network switcher) |
+| `--color-error-outline` | Border of a red error card |
 | `--color-error-border` / `--color-error-surface` | BackendUnavailable alert card |
+| `--color-neutral-bg` / `--color-neutral-text` | Neutral (deactivated) pills |
+| `--color-active-bg` / `--color-active-text` | Active status pills |
 
 ---
 
@@ -219,9 +240,10 @@ theme context or checks a JS flag.
 - **FOUC prevention** — `ThemeScript` (injected in `<head>` before CSS) reads
   `localStorage` and sets `data-theme` before the first paint.
 
-To add a new colour: add it to both the `:root` (light) block and the two dark
-blocks (`@media` + `[data-theme="dark"]`) in `globals.css`. Never hard-code hex
-in a component.
+To add a new colour: add it to all three blocks in `globals.css` — the `:root`
+(light) block and the two dark blocks (`@media` + `[data-theme="dark"]`) — then
+run `npm run codegen` to refresh `lib/generated/palette.ts`. Never hard-code a
+hex in a component: `custom/no-raw-hex-colors` fails the lint on one.
 
 ---
 

@@ -25,7 +25,7 @@ export const SEED_LIMIT = 10;
 const LIMIT_STEPS = [10, 25, 60, 150, 375];
 
 const th =
-  "text-left text-[11px] tracking-[0.06em] uppercase text-[#a6a3b0] px-3 py-2.5 border-b border-[#e5e3ea] bg-[#fafafa]";
+  "text-left text-[11px] tracking-[0.06em] uppercase text-[var(--color-text-muted)] px-3 py-2.5 border-b border-[var(--color-border-default)] bg-[var(--color-bg-subtle)]";
 
 export default function AccountTransactionList({
   address,
@@ -72,12 +72,12 @@ export default function AccountTransactionList({
   }, [address, step, loading]);
 
   if (rows.length === 0) {
-    return <p className="text-sm text-[#a6a3b0]">No transactions yet.</p>;
+    return <p className="text-sm text-[var(--color-text-muted)]">No transactions yet.</p>;
   }
 
   return (
     <>
-      <div className="flex items-center justify-between mb-3 text-[13px] text-[#6b6975]">
+      <div className="flex items-center justify-between mb-3 text-[13px] text-[var(--color-text-secondary)]">
         <span data-testid="transaction-count">
           {hasMore
             ? `Showing the ${rows.length} most recent transactions`
@@ -85,7 +85,7 @@ export default function AccountTransactionList({
         </span>
       </div>
 
-      <div className="rounded-xl border border-[#e5e3ea] overflow-hidden">
+      <div className="rounded-xl border border-[var(--color-border-default)] overflow-hidden">
         <table className="w-full text-sm border-collapse">
           <thead>
             <tr>
@@ -99,14 +99,14 @@ export default function AccountTransactionList({
             {rows.map((tx) => (
               <tr
                 key={tx.hash}
-                className="border-b border-[#f0eff3] last:border-0"
+                className="border-b border-[var(--color-bg-overlay)] last:border-0"
               >
                 <td className="py-2.5 px-3">
                   <a
                     href={`https://stellar.expert/explorer/public/tx/${tx.hash}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mono text-xs text-[#7c3aed] hover:text-[#6d28d9] hover:underline transition-colors"
+                    className="mono text-xs text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline transition-colors"
                   >
                     {truncateAddress(tx.hash, 6)}
                   </a>
@@ -115,7 +115,7 @@ export default function AccountTransactionList({
                   {tx.ledger.toLocaleString()}
                 </td>
                 <td className="py-2.5 px-3 text-xs">{tx.operationCount}</td>
-                <td className="py-2.5 px-3 text-xs text-[#c3c1cb]"><TimeAgo isoString={tx.createdAt} /></td>
+                <td className="py-2.5 px-3 text-xs text-[var(--color-text-faint)]"><TimeAgo isoString={tx.createdAt} /></td>
               </tr>
             ))}
           </tbody>

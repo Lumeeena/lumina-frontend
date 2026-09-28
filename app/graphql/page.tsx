@@ -11,7 +11,7 @@ import BackendUnavailable from "@/components/BackendUnavailable";
 function JsonHighlight({ data }: { data: object }) {
   const str = JSON.stringify(data, null, 2);
   return (
-    <pre className="text-xs leading-relaxed mono text-[#3f3d47] whitespace-pre-wrap break-all">{str}</pre>
+    <pre className="text-xs leading-relaxed mono text-[var(--color-text-primary)] whitespace-pre-wrap break-all">{str}</pre>
   );
 }
 
@@ -100,38 +100,38 @@ export default function GraphQLPage() {
 
   return (
     <div className="max-w-[1280px] mx-auto px-4 sm:px-7 py-12">
-      <h1 className="font-extrabold text-3xl mb-2 text-[#0e0e12]">GraphQL Playground</h1>
+      <h1 className="font-extrabold text-3xl mb-2 text-[var(--color-text-primary)]">GraphQL Playground</h1>
       <div className="flex items-center gap-2.5 mb-7 flex-wrap">
-        <p className="text-[#6b6975] text-[13px] m-0">Lumina GraphQL endpoint:</p>
-        <span className="mono text-xs px-2.5 py-1 rounded-full bg-[#f3effe] text-[#6d28d9]">{PUBLIC_GRAPHQL_URL}</span>
+        <p className="text-[var(--color-text-secondary)] text-[13px] m-0">Lumina GraphQL endpoint:</p>
+        <span className="mono text-xs px-2.5 py-1 rounded-full bg-[var(--color-accent-surface)] text-[var(--color-accent-text)]">{PUBLIC_GRAPHQL_URL}</span>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-6" style={{ minHeight: "560px" }}>
         <div className="flex flex-col gap-2">
-          <h2 className="text-xs font-bold tracking-wide uppercase text-[#a6a3b0] mb-1">Query Examples</h2>
+          <h2 className="text-xs font-bold tracking-wide uppercase text-[var(--color-text-muted)] mb-1">Query Examples</h2>
           {QUERY_EXAMPLES.map(ex => (
             <button key={ex.name} onClick={() => selectExample(ex)}
-              className={`text-left rounded-[10px] p-3 border transition-colors ${selected?.name === ex.name ? "border-[#c4b5fd] bg-[#f3effe] text-[#6d28d9]" : "border-[#e5e3ea] bg-white text-[#3f3d47] hover:border-[#c4b5fd]"}`}>
+              className={`text-left rounded-[10px] p-3 border transition-colors ${selected?.name === ex.name ? "border-[var(--color-border-strong)] bg-[var(--color-accent-surface)] text-[var(--color-accent-text)]" : "border-[var(--color-border-default)] bg-[var(--color-bg-base)] text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)]"}`}>
               <span className="block font-bold text-[13px] mb-0.5">{ex.name}</span>
               <span className="block text-[11px] opacity-70 leading-snug">{ex.description}</span>
             </button>
           ))}
-          <h2 className="text-xs font-bold tracking-wide uppercase text-[#a6a3b0] mt-4 mb-1">Recent Queries</h2>
+          <h2 className="text-xs font-bold tracking-wide uppercase text-[var(--color-text-muted)] mt-4 mb-1">Recent Queries</h2>
           {history.length === 0 ? (
-            <p className="text-xs text-[#a6a3b0]">Edited queries will appear here.</p>
+            <p className="text-xs text-[var(--color-text-muted)]">Edited queries will appear here.</p>
           ) : history.map((entry, index) => (
             <button key={`${index}-${entry}`} onClick={() => { setQuery(entry); setSelected(null); setResult(null); setError(null); }}
-              className="text-left rounded-[10px] p-3 border border-[#e5e3ea] bg-white text-[#3f3d47] hover:border-[#c4b5fd]">
+              className="text-left rounded-[10px] p-3 border border-[var(--color-border-default)] bg-[var(--color-bg-base)] text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)]">
               <span className="block text-[11px] mono leading-snug line-clamp-3">{entry}</span>
             </button>
           ))}
         </div>
 
         <div className="flex flex-col gap-4">
-          <div className="flex-1 flex flex-col rounded-xl border border-[#e5e3ea] overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#e5e3ea] bg-[#fafafa]">
-              <span className="text-[11px] font-bold tracking-wide uppercase text-[#a6a3b0]">Query Editor</span>
-              <button onClick={runQuery} disabled={running} className="bg-[#8b5cf6] hover:bg-[#7c3aed] disabled:opacity-50 text-white font-bold text-[13px] px-4 py-[7px] rounded-[7px] transition-colors">
+          <div className="flex-1 flex flex-col rounded-xl border border-[var(--color-border-default)] overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-2.5 border-b border-[var(--color-border-default)] bg-[var(--color-bg-subtle)]">
+              <span className="text-[11px] font-bold tracking-wide uppercase text-[var(--color-text-muted)]">Query Editor</span>
+              <button onClick={runQuery} disabled={running} className="bg-[var(--color-accent-fill)] hover:bg-[var(--color-accent-fill-hover)] disabled:opacity-50 text-white font-bold text-[13px] px-4 py-[7px] rounded-[7px] transition-colors">
                 {running ? "Running…" : "Run Query"}
               </button>
             </div>
@@ -140,15 +140,15 @@ export default function GraphQLPage() {
               className="graphql-editor min-h-[280px] text-[13px]" />
           </div>
 
-          <div className="rounded-xl border border-[#e5e3ea] overflow-hidden">
-            <div className="px-4 py-2.5 border-b border-[#e5e3ea] bg-[#fafafa]"><span className="text-[11px] font-bold tracking-wide uppercase text-[#a6a3b0]">Response</span></div>
+          <div className="rounded-xl border border-[var(--color-border-default)] overflow-hidden">
+            <div className="px-4 py-2.5 border-b border-[var(--color-border-default)] bg-[var(--color-bg-subtle)]"><span className="text-[11px] font-bold tracking-wide uppercase text-[var(--color-text-muted)]">Response</span></div>
             <div className="p-3.5 px-4 max-h-[260px] overflow-y-auto">
               {unavailable ? (
                 <BackendUnavailable onRetry={runQuery} />
               ) : error ? (
-                <span className="text-[#dc2626] text-sm">{error}</span>
+                <span className="text-[var(--color-error-text)] text-sm">{error}</span>
               ) : result === null ? (
-                <span className="text-[#a6a3b0] text-sm">Click &ldquo;Run Query&rdquo; to see the response.</span>
+                <span className="text-[var(--color-text-muted)] text-sm">Click &ldquo;Run Query&rdquo; to see the response.</span>
               ) : (
                 <JsonHighlight data={{ data: result }} />
               )}

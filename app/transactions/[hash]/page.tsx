@@ -80,9 +80,9 @@ async function getTransaction(hash: string): Promise<{
 }
 
 const th =
-  "text-left text-[11px] tracking-[0.06em] uppercase text-[#a6a3b0] px-3 py-2.5 border-b border-[#e5e3ea] bg-[#fafafa]";
-const stat = "bg-[#fafafa] border border-[#e5e3ea] rounded-xl p-4";
-const statLabel = "text-[11px] text-[#a6a3b0] uppercase tracking-[0.05em]";
+  "text-left text-[11px] tracking-[0.06em] uppercase text-[var(--color-text-muted)] px-3 py-2.5 border-b border-[var(--color-border-default)] bg-[var(--color-bg-subtle)]";
+const stat = "bg-[var(--color-bg-subtle)] border border-[var(--color-border-default)] rounded-xl p-4";
+const statLabel = "text-[11px] text-[var(--color-text-muted)] uppercase tracking-[0.05em]";
 const statValue = "mono text-sm mt-1";
 
 export default async function TransactionPage({
@@ -97,20 +97,20 @@ export default async function TransactionPage({
     <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
       <Link
         href="/transactions"
-        className="inline-block text-[13px] font-semibold text-[#7c3aed] hover:text-[#6d28d9] mb-[18px]"
+        className="inline-block text-[13px] font-semibold text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] mb-[18px]"
       >
         &larr; Back to Transactions
       </Link>
       {unavailable ? (
         <BackendUnavailable />
       ) : !transaction ? (
-        <div className="p-8 rounded-xl border border-[#fecaca] text-center">
-          <p className="text-[#dc2626] font-semibold mb-2">
+        <div className="p-8 rounded-xl border border-[var(--color-error-outline)] text-center">
+          <p className="text-[var(--color-error-text)] font-semibold mb-2">
             Transaction Not Found
           </p>
-          <p className="text-[#a6a3b0] text-sm max-w-md mx-auto">
+          <p className="text-[var(--color-text-muted)] text-sm max-w-md mx-auto">
             The transaction{" "}
-            <span className="mono text-[#6b6975] break-all">{hash}</span> is not
+            <span className="mono text-[var(--color-text-secondary)] break-all">{hash}</span> is not
             in the index — it may be too new, or it may never have been included
             in a ledger.
           </p>
@@ -118,12 +118,12 @@ export default async function TransactionPage({
       ) : (
         <div>
           <div className="flex items-center gap-3 mb-1.5 flex-wrap">
-            <h1 className="mono font-bold text-[22px] break-all text-[#0e0e12]">
+            <h1 className="mono font-bold text-[22px] break-all text-[var(--color-text-primary)]">
               {transaction.hash}
             </h1>
             <CopyAddressButton address={transaction.hash} />
           </div>
-          <p className="text-[#a6a3b0] text-[13px] mb-6">
+          <p className="text-[var(--color-text-muted)] text-[13px] mb-6">
             Included in ledger {transaction.ledger.toLocaleString()}
           </p>
 
@@ -131,7 +131,7 @@ export default async function TransactionPage({
             <div className={stat}>
               <div className={statLabel}>Status</div>
               <div
-                className={`font-bold text-sm mt-1 ${transaction.successful ? "text-[#16a34a]" : "text-[#dc2626]"}`}
+                className={`font-bold text-sm mt-1 ${transaction.successful ? "text-[var(--color-success-text)]" : "text-[var(--color-error-text)]"}`}
               >
                 {transaction.successful ? "Successful" : "Failed"}
               </div>
@@ -149,42 +149,42 @@ export default async function TransactionPage({
             </div>
             <div className={stat}>
               <div className={statLabel}>Time</div>
-              <div className="text-sm mt-1 text-[#0e0e12]">
+              <div className="text-sm mt-1 text-[var(--color-text-primary)]">
                 <TimeAgo isoString={transaction.createdAt} />
               </div>
             </div>
           </div>
 
-          <h2 className="font-extrabold text-base mb-3 text-[#0e0e12]">
+          <h2 className="font-extrabold text-base mb-3 text-[var(--color-text-primary)]">
             Details
           </h2>
-          <div className="rounded-xl border border-[#e5e3ea] overflow-hidden mb-9">
+          <div className="rounded-xl border border-[var(--color-border-default)] overflow-hidden mb-9">
             <table className="w-full text-sm border-collapse">
               <tbody>
-                <tr className="border-b border-[#f0eff3]">
-                  <td className="py-2.5 px-3 text-[#a6a3b0] text-xs w-[140px]">
+                <tr className="border-b border-[var(--color-bg-overlay)]">
+                  <td className="py-2.5 px-3 text-[var(--color-text-muted)] text-xs w-[140px]">
                     Source account
                   </td>
                   <td className="py-2.5 px-3">
                     <Link
                       href={`/accounts/${transaction.sourceAccount}`}
-                      className="mono text-xs text-[#7c3aed] hover:text-[#6d28d9] hover:underline transition-colors"
+                      className="mono text-xs text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline transition-colors"
                     >
                       {transaction.sourceAccount}
                     </Link>
                   </td>
                 </tr>
-                <tr className="border-b border-[#f0eff3]">
-                  <td className="py-2.5 px-3 text-[#a6a3b0] text-xs">
+                <tr className="border-b border-[var(--color-bg-overlay)]">
+                  <td className="py-2.5 px-3 text-[var(--color-text-muted)] text-xs">
                     Memo type
                   </td>
-                  <td className="py-2.5 px-3 mono text-xs text-[#0e0e12]">
+                  <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-primary)]">
                     {transaction.memoType ?? "none"}
                   </td>
                 </tr>
                 <tr>
-                  <td className="py-2.5 px-3 text-[#a6a3b0] text-xs">Memo</td>
-                  <td className="py-2.5 px-3 mono text-xs text-[#0e0e12] break-all">
+                  <td className="py-2.5 px-3 text-[var(--color-text-muted)] text-xs">Memo</td>
+                  <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-primary)] break-all">
                     {transaction.memo ?? "—"}
                   </td>
                 </tr>
@@ -192,10 +192,10 @@ export default async function TransactionPage({
             </table>
           </div>
 
-          <h2 className="font-extrabold text-base mb-3 text-[#0e0e12]">
+          <h2 className="font-extrabold text-base mb-3 text-[var(--color-text-primary)]">
             Operations
           </h2>
-          <div className="rounded-xl border border-[#e5e3ea] overflow-x-auto">
+          <div className="rounded-xl border border-[var(--color-border-default)] overflow-x-auto">
             {transaction.operations && transaction.operations.length > 0 ? (
               <table className="w-full text-sm border-collapse">
                 <thead>
@@ -211,16 +211,16 @@ export default async function TransactionPage({
                   {transaction.operations.map((op: Operation) => (
                     <tr
                       key={op.id}
-                      className="border-b border-[#f0eff3] last:border-0"
+                      className="border-b border-[var(--color-bg-overlay)] last:border-0"
                     >
-                      <td className="py-2.5 px-3 text-xs font-semibold text-[#0e0e12]">
+                      <td className="py-2.5 px-3 text-xs font-semibold text-[var(--color-text-primary)]">
                         {formatOperationType(op.type.toLowerCase())}
                       </td>
-                      <td className="py-2.5 px-3 mono text-xs text-[#6b6975]">
+                      <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-secondary)]">
                         {op.from ? (
                           <Link
                             href={`/accounts/${op.from}`}
-                            className="hover:text-[#7c3aed] hover:underline transition-colors"
+                            className="hover:text-[var(--color-accent-text)] hover:underline transition-colors"
                           >
                             {truncateAddress(op.from, 6)}
                           </Link>
@@ -228,11 +228,11 @@ export default async function TransactionPage({
                           "—"
                         )}
                       </td>
-                      <td className="py-2.5 px-3 mono text-xs text-[#6b6975]">
+                      <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-secondary)]">
                         {op.to ? (
                           <Link
                             href={`/accounts/${op.to}`}
-                            className="hover:text-[#7c3aed] hover:underline transition-colors"
+                            className="hover:text-[var(--color-accent-text)] hover:underline transition-colors"
                           >
                             {truncateAddress(op.to, 6)}
                           </Link>
@@ -240,12 +240,12 @@ export default async function TransactionPage({
                           "—"
                         )}
                       </td>
-                      <td className="py-2.5 px-3 mono text-xs text-[#0e0e12]">
+                      <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-primary)]">
                         {op.amount
                           ? `${formatXLM(op.amount)} ${op.asset ?? ""}`.trim()
                           : "—"}
                       </td>
-                      <td className="py-2.5 px-3 text-xs text-[#c3c1cb]">
+                      <td className="py-2.5 px-3 text-xs text-[var(--color-text-faint)]">
                         <TimeAgo isoString={op.createdAt} />
                       </td>
                     </tr>
@@ -253,7 +253,7 @@ export default async function TransactionPage({
                 </tbody>
               </table>
             ) : (
-              <div className="p-8 text-center text-[#a6a3b0] text-sm">
+              <div className="p-8 text-center text-[var(--color-text-muted)] text-sm">
                 No operations were indexed for this transaction.
               </div>
             )}

@@ -62,7 +62,7 @@ export default function WatchAlertSettings({ address, filters }: WatchAlertSetti
       <div>
         <label
           htmlFor={`watch-type-${address}`}
-          className="block text-[11px] font-semibold uppercase tracking-[0.06em] text-[#a6a3b0] mb-1"
+          className="block text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--color-text-muted)] mb-1"
         >
           Operation
         </label>
@@ -76,7 +76,7 @@ export default function WatchAlertSettings({ address, filters }: WatchAlertSetti
                 .value as OperationFilters["operationType"],
             })
           }
-          className="w-full rounded-lg border border-[#e5e3ea] bg-white px-2.5 py-2 text-[13px]"
+          className="w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-base)] px-2.5 py-2 text-[13px]"
         >
           {OPERATION_TYPE_FILTERS.map((value) => (
             <option key={value} value={value}>
@@ -89,7 +89,7 @@ export default function WatchAlertSettings({ address, filters }: WatchAlertSetti
       <div>
         <label
           htmlFor={`watch-amount-${address}`}
-          className="block text-[11px] font-semibold uppercase tracking-[0.06em] text-[#a6a3b0] mb-1"
+          className="block text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--color-text-muted)] mb-1"
         >
           Minimum amount
         </label>
@@ -113,14 +113,14 @@ export default function WatchAlertSettings({ address, filters }: WatchAlertSetti
                 Number.isFinite(parsed) && parsed >= 0 ? parsed : null,
             });
           }}
-          className="w-full rounded-lg border border-[#e5e3ea] bg-white px-2.5 py-2 text-[13px]"
+          className="w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-base)] px-2.5 py-2 text-[13px]"
         />
       </div>
 
       <div>
         <label
           htmlFor={`watch-asset-${address}`}
-          className="block text-[11px] font-semibold uppercase tracking-[0.06em] text-[#a6a3b0] mb-1"
+          className="block text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--color-text-muted)] mb-1"
         >
           Asset
         </label>
@@ -130,11 +130,11 @@ export default function WatchAlertSettings({ address, filters }: WatchAlertSetti
           placeholder="Any"
           value={draft.asset}
           onChange={(event) => commit({ ...draft, asset: event.target.value })}
-          className="w-full rounded-lg border border-[#e5e3ea] bg-white px-2.5 py-2 text-[13px] mono"
+          className="w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-base)] px-2.5 py-2 text-[13px] mono"
         />
       </div>
 
-      <p className="sm:col-span-3 flex items-center gap-3 text-[12px] text-[#6b6975]">
+      <p className="sm:col-span-3 flex items-center gap-3 text-[12px] text-[var(--color-text-secondary)]">
         <span data-testid="watch-alert-active-count">
           {active === 0
             ? "No filter — every operation alerts."
@@ -144,7 +144,7 @@ export default function WatchAlertSettings({ address, filters }: WatchAlertSetti
           <button
             type="button"
             onClick={() => commit({ ...DEFAULT_OPERATION_FILTERS })}
-            className="font-semibold text-[#7c3aed] hover:text-[#6d28d9] hover:underline"
+            className="font-semibold text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline"
           >
             Reset to default
           </button>

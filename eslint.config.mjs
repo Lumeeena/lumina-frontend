@@ -20,20 +20,30 @@ const noRawHexColorsRule = {
     },
   },
   create(context) {
+    // Match hex colors: #fff, #ffffff, #fff0, #ffffff00, etc.
+    const hexColorPattern = /#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?(?:[0-9a-fA-F]{2})?\b/g;
+
+    function report(node, value) {
+      let match;
+      hexColorPattern.lastIndex = 0;
+      while ((match = hexColorPattern.exec(value)) !== null) {
+        context.report({
+          node,
+          messageId: "noRawHex",
+          data: { color: match[0] },
+        });
+      }
+    }
+
     return {
+      // Plain strings…
       Literal(node) {
-        if (typeof node.value === "string") {
-          // Match hex colors: #fff, #ffffff, #fff0, #ffffff00, etc.
-          const hexColorPattern = /#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?(?:[0-9a-fA-F]{2})?\b/g;
-          let match;
-          while ((match = hexColorPattern.exec(node.value)) !== null) {
-            context.report({
-              node,
-              messageId: "noRawHex",
-              data: { color: match[0] },
-            });
-          }
-        }
+        if (typeof node.value === "string") report(node, node.value);
+      },
+      // …and the parts of `bg-[#8b5cf6]` written inside a template literal,
+      // which would otherwise slip past a rule that only looked at Literals.
+      TemplateLiteral(node) {
+        for (const quasi of node.quasis) report(node, quasi.value.cooked ?? "");
       },
     };
   },

@@ -64,7 +64,7 @@ export default function AccountActivityFeed({ address }: { address: string }) {
   return (
     <div className="mb-9" data-testid="account-activity">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="font-extrabold text-base text-[#0e0e12]">
+        <h2 className="font-extrabold text-base text-[var(--color-text-primary)]">
           Live Activity
         </h2>
         <ConnectionIndicator
@@ -74,34 +74,34 @@ export default function AccountActivityFeed({ address }: { address: string }) {
         />
       </div>
 
-      <div className="rounded-xl border border-[#e5e3ea] overflow-hidden">
+      <div className="rounded-xl border border-[var(--color-border-default)] overflow-hidden">
         {operations.length === 0 ? (
-          <div className="p-6 text-center text-[#a6a3b0] text-sm">
+          <div className="p-6 text-center text-[var(--color-text-muted)] text-sm">
             Waiting for new activity on this account&hellip;
           </div>
         ) : (
           operations.map((operation) => (
             <div
               key={operation.id}
-              className="flex items-center gap-3 px-4 py-2.5 border-b border-[#f0eff3] last:border-0"
+              className="flex items-center gap-3 px-4 py-2.5 border-b border-[var(--color-bg-overlay)] last:border-0"
             >
-              <span className="text-[11px] font-semibold rounded-full bg-[#f3effe] text-[#6d28d9] px-2.5 py-0.5 shrink-0">
+              <span className="text-[11px] font-semibold rounded-full bg-[var(--color-accent-surface)] text-[var(--color-accent-text)] px-2.5 py-0.5 shrink-0">
                 {operation.type}
               </span>
               <a
                 href={`https://stellar.expert/explorer/public/tx/${operation.transactionHash}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mono text-xs text-[#7c3aed] hover:text-[#6d28d9] hover:underline transition-colors"
+                className="mono text-xs text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline transition-colors"
               >
                 {truncateAddress(operation.transactionHash, 5)}
               </a>
               {operation.amount && (
-                <span className="mono text-xs text-[#0e0e12]">
+                <span className="mono text-xs text-[var(--color-text-primary)]">
                   {operation.amount} {operation.asset ?? "XLM"}
                 </span>
               )}
-              <span className="ml-auto text-[11px] text-[#c3c1cb]"><TimeAgo isoString={operation.createdAt} /></span>
+              <span className="ml-auto text-[11px] text-[var(--color-text-faint)]"><TimeAgo isoString={operation.createdAt} /></span>
             </div>
           ))
         )}

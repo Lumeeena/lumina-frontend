@@ -56,8 +56,8 @@ export default async function StatsPage() {
 
   return (
     <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
-      <h1 className="font-extrabold text-3xl mb-2 text-[#0e0e12]">Network Stats</h1>
-      <p className="text-[#6b6975] mb-8">Indexer health and Stellar network throughput at a glance.</p>
+      <h1 className="font-extrabold text-3xl mb-2 text-[var(--color-text-primary)]">Network Stats</h1>
+      <p className="text-[var(--color-text-secondary)] mb-8">Indexer health and Stellar network throughput at a glance.</p>
       {unavailable && <BackendUnavailable />}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-9">
@@ -67,21 +67,21 @@ export default async function StatsPage() {
         <StatCard title="Avg Ledger Time" value="~5s" subtitle="Protocol target, not a live average" />
       </div>
 
-      <h2 className="font-extrabold text-base mb-3.5 text-[#0e0e12]">Operation Type Breakdown</h2>
-      <p className="text-xs text-[#a6a3b0] mb-3">Based on the most recent {indexed.length} indexed operations.</p>
-      <div className="border border-[#e5e3ea] rounded-xl p-5 flex flex-col gap-3.5">
+      <h2 className="font-extrabold text-base mb-3.5 text-[var(--color-text-primary)]">Operation Type Breakdown</h2>
+      <p className="text-xs text-[var(--color-text-muted)] mb-3">Based on the most recent {indexed.length} indexed operations.</p>
+      <div className="border border-[var(--color-border-default)] rounded-xl p-5 flex flex-col gap-3.5">
         {breakdown.length === 0 ? (
-          <p className="text-sm text-[#a6a3b0]">No operations indexed yet.</p>
+          <p className="text-sm text-[var(--color-text-muted)]">No operations indexed yet.</p>
         ) : (
           breakdown.map((op) => (
             <div key={op.label}>
               <div className="flex justify-between text-[13px] mb-1.5">
-                <span className="font-semibold text-[#0e0e12]">{op.label}</span>
-                <span className="mono text-[#a6a3b0]">{op.pct}%</span>
+                <span className="font-semibold text-[var(--color-text-primary)]">{op.label}</span>
+                <span className="mono text-[var(--color-text-muted)]">{op.pct}%</span>
               </div>
-              <div className="h-2 rounded-full bg-[#f0eff3] overflow-hidden">
+              <div className="h-2 rounded-full bg-[var(--color-bg-overlay)] overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-[#8b5cf6]"
+                  className="h-full rounded-full bg-[var(--color-accent-fill)]"
                   style={{ width: `${op.pct}%` }}
                 />
               </div>

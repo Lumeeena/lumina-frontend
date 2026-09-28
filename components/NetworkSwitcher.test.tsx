@@ -87,11 +87,11 @@ describe("NetworkSwitcher", () => {
     // have to be read off the address bar.
     renderAt();
     const neutral = select().className;
-    expect(neutral).toContain("border-[#e5e3ea]");
-    expect(neutral).not.toContain("border-[#fcd34d]");
+    expect(neutral).toContain("border-[var(--color-border-default)]");
+    expect(neutral).not.toContain("border-[var(--color-warning-border)]");
 
     cleanup();
     renderAt("?network=testnet");
-    expect(select().className).toContain("border-[#fcd34d]");
+    expect(select().className).toContain("border-[var(--color-warning-border)]");
   });
 });

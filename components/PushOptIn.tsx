@@ -54,7 +54,7 @@ export default function PushOptIn() {
 
   if (state === "unsupported") {
     return (
-      <p className="text-[13px] text-[#6b6975]" data-testid="push-state">
+      <p className="text-[13px] text-[var(--color-text-secondary)]" data-testid="push-state">
         This browser cannot deliver notifications for watched activity. The
         in-app alerts still work.
       </p>
@@ -65,7 +65,7 @@ export default function PushOptIn() {
     // A refusal is final from the browser's side, so the honest thing is to say
     // where to change it rather than offer a button that cannot work.
     return (
-      <p className="text-[13px] text-[#6b6975]" data-testid="push-state">
+      <p className="text-[13px] text-[var(--color-text-secondary)]" data-testid="push-state">
         Notifications are blocked for this site. Re-enable them in your
         browser&apos;s site settings to get alerts while this tab is in the
         background. The in-app alerts are unaffected.
@@ -79,7 +79,7 @@ export default function PushOptIn() {
         className="flex flex-wrap items-center gap-3"
         data-testid="push-state"
       >
-        <p className="text-[13px] text-[#6b6975]">
+        <p className="text-[13px] text-[var(--color-text-secondary)]">
           Browser notifications are on. You will be notified when a watched
           address is active and this tab is in the background.
         </p>
@@ -87,7 +87,7 @@ export default function PushOptIn() {
           type="button"
           onClick={handleDisable}
           disabled={busy}
-          className="rounded-lg border border-[#e5e3ea] px-3 py-1.5 text-[12px] font-semibold text-[#6b6975] hover:border-[#c4b5fd] hover:text-[#0e0e12] disabled:opacity-50"
+          className="rounded-lg border border-[var(--color-border-default)] px-3 py-1.5 text-[12px] font-semibold text-[var(--color-text-secondary)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-text-primary)] disabled:opacity-50"
         >
           Turn off
         </button>
@@ -97,7 +97,7 @@ export default function PushOptIn() {
 
   return (
     <div className="flex flex-wrap items-center gap-3" data-testid="push-state">
-      <p className="text-[13px] text-[#6b6975]">
+      <p className="text-[13px] text-[var(--color-text-secondary)]">
         {VAPID_PUBLIC_KEY
           ? "Get a browser notification when a watched address is active and this tab is in the background."
           : "Browser notifications need a VAPID public key. Set NEXT_PUBLIC_VAPID_PUBLIC_KEY to enable them — the in-app alerts work without it."}
@@ -107,7 +107,7 @@ export default function PushOptIn() {
         onClick={handleEnable}
         disabled={busy}
         data-testid="push-enable"
-        className="rounded-lg bg-[#7c3aed] hover:bg-[#6d28d9] disabled:opacity-50 text-white font-bold text-[13px] px-4 py-2 transition-colors"
+        className="rounded-lg bg-[var(--color-accent-fill)] hover:bg-[var(--color-accent-fill-hover)] disabled:opacity-50 text-white font-bold text-[13px] px-4 py-2 transition-colors"
       >
         {busy ? "Enabling…" : "Enable notifications"}
       </button>

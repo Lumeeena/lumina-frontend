@@ -27,16 +27,16 @@ export default function Breadcrumbs({ items }: BreadcrumbsProps) {
           return (
             <li key={index} className="flex items-center gap-2">
               {isLast ? (
-                <span className="text-[#0e0e12] font-medium">{item.label}</span>
+                <span className="text-[var(--color-text-primary)] font-medium">{item.label}</span>
               ) : (
                 <>
                   <Link
                     href={item.href || "#"}
-                    className="text-[#7c3aed] hover:text-[#6d28d9] focus:outline-none focus:ring-2 focus:ring-[#7c3aed] focus:ring-offset-2 rounded px-1"
+                    className="text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-fill)] focus:ring-offset-2 rounded px-1"
                   >
                     {item.label}
                   </Link>
-                  <span className="text-[#a6a3b0]" aria-hidden="true">
+                  <span className="text-[var(--color-text-muted)]" aria-hidden="true">
                     /
                   </span>
                 </>

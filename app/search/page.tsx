@@ -50,7 +50,7 @@ async function searchMemo(query: string): Promise<{
 }
 
 const th =
-  "text-left text-[11px] tracking-[0.06em] uppercase text-[#a6a3b0] px-3 py-2.5 border-b border-[#e5e3ea] bg-[#fafafa]";
+  "text-left text-[11px] tracking-[0.06em] uppercase text-[var(--color-text-muted)] px-3 py-2.5 border-b border-[var(--color-border-default)] bg-[var(--color-bg-subtle)]";
 
 export default async function SearchPage({
   searchParams,
@@ -66,39 +66,39 @@ export default async function SearchPage({
   if (!query) {
     return (
       <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
-        <h1 className="font-extrabold text-3xl mb-2 text-[#0e0e12]">Search</h1>
-        <p className="text-[#6b6975] mb-7">
+        <h1 className="font-extrabold text-3xl mb-2 text-[var(--color-text-primary)]">Search</h1>
+        <p className="text-[var(--color-text-secondary)] mb-7">
           One box for everything on the network. Type what you have — no need to
           say what it is.
         </p>
-        <div className="rounded-xl border border-[#e5e3ea] overflow-hidden max-w-[640px]">
+        <div className="rounded-xl border border-[var(--color-border-default)] overflow-hidden max-w-[640px]">
           <table className="w-full text-sm border-collapse">
             <tbody>
-              <tr className="border-b border-[#f0eff3]">
-                <td className="py-2.5 px-3 mono text-xs text-[#7c3aed] w-[170px]">
+              <tr className="border-b border-[var(--color-bg-overlay)]">
+                <td className="py-2.5 px-3 mono text-xs text-[var(--color-accent-text)] w-[170px]">
                   G… (56 chars)
                 </td>
-                <td className="py-2.5 px-3 text-[#0e0e12]">Account address</td>
+                <td className="py-2.5 px-3 text-[var(--color-text-primary)]">Account address</td>
               </tr>
-              <tr className="border-b border-[#f0eff3]">
-                <td className="py-2.5 px-3 mono text-xs text-[#7c3aed]">
+              <tr className="border-b border-[var(--color-bg-overlay)]">
+                <td className="py-2.5 px-3 mono text-xs text-[var(--color-accent-text)]">
                   C… (56 chars)
                 </td>
-                <td className="py-2.5 px-3 text-[#0e0e12]">
+                <td className="py-2.5 px-3 text-[var(--color-text-primary)]">
                   Contract id — its events
                 </td>
               </tr>
-              <tr className="border-b border-[#f0eff3]">
-                <td className="py-2.5 px-3 mono text-xs text-[#7c3aed]">
+              <tr className="border-b border-[var(--color-bg-overlay)]">
+                <td className="py-2.5 px-3 mono text-xs text-[var(--color-accent-text)]">
                   64 hex chars
                 </td>
-                <td className="py-2.5 px-3 text-[#0e0e12]">Transaction hash</td>
+                <td className="py-2.5 px-3 text-[var(--color-text-primary)]">Transaction hash</td>
               </tr>
               <tr>
-                <td className="py-2.5 px-3 mono text-xs text-[#7c3aed]">
+                <td className="py-2.5 px-3 mono text-xs text-[var(--color-accent-text)]">
                   anything else
                 </td>
-                <td className="py-2.5 px-3 text-[#0e0e12]">
+                <td className="py-2.5 px-3 text-[var(--color-text-primary)]">
                   Memo search, ranked by the backend
                 </td>
               </tr>
@@ -113,14 +113,14 @@ export default async function SearchPage({
 
   return (
     <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
-      <h1 className="font-extrabold text-3xl mb-2 text-[#0e0e12]">Search</h1>
-      <p className="text-[#6b6975] mb-7">
+      <h1 className="font-extrabold text-3xl mb-2 text-[var(--color-text-primary)]">Search</h1>
+      <p className="text-[var(--color-text-secondary)] mb-7">
         {unavailable
           ? "Searching the index…"
           : `${items.length} transaction${items.length === 1 ? "" : "s"} matching `}
         {!unavailable && (
           <>
-            <span className="mono text-[#0e0e12]">“{query}”</span>, ranked by
+            <span className="mono text-[var(--color-text-primary)]">“{query}”</span>, ranked by
             memo relevance.
           </>
         )}
@@ -129,14 +129,14 @@ export default async function SearchPage({
       {unavailable ? (
         <BackendUnavailable />
       ) : items.length === 0 ? (
-        <div className="p-8 rounded-xl border border-[#e5e3ea] text-center">
-          <p className="text-[#a6a3b0] text-sm">
+        <div className="p-8 rounded-xl border border-[var(--color-border-default)] text-center">
+          <p className="text-[var(--color-text-muted)] text-sm">
             No transactions carry anything like this memo. Memo search matches
             order references and short codes — try a few characters of it.
           </p>
         </div>
       ) : (
-        <div className="rounded-xl border border-[#e5e3ea] overflow-x-auto">
+        <div className="rounded-xl border border-[var(--color-border-default)] overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr>
@@ -158,9 +158,9 @@ export default async function SearchPage({
         </div>
       )}
 
-      <p className="text-[#a6a3b0] text-xs mt-4">
+      <p className="text-[var(--color-text-muted)] text-xs mt-4">
         Looking for an account or contract? Paste its full address —{" "}
-        <Link href="/explorer" className="text-[#7c3aed] hover:underline">
+        <Link href="/explorer" className="text-[var(--color-accent-text)] hover:underline">
           the explorer
         </Link>{" "}
         takes you straight there.

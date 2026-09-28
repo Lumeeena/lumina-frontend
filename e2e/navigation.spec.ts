@@ -60,7 +60,7 @@ test("the nav marks the section you are in", async ({ page }) => {
   await page.goto("/registry");
 
   const active = page.getByRole("link", { name: "Registry", exact: true });
-  await expect(active).toHaveClass(/bg-\[#f6f5f8\]/);
+  await expect(active).toHaveClass(/bg-\[var\(--color-bg-raised\)\]/);
 });
 
 test("an account page degrades to a not-found state when the backend is down", async ({

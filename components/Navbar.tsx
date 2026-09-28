@@ -36,8 +36,8 @@ function NavContent({
         className="flex items-center gap-2 mr-4 sm:mr-7 shrink-0"
       >
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="9" stroke="#7c3aed" strokeWidth="2" />
-          <circle cx="17" cy="7" r="3.4" fill="#8b5cf6" />
+          <circle cx="12" cy="12" r="9" className="stroke-[var(--color-accent-text)]" strokeWidth="2" />
+          <circle cx="17" cy="7" r="3.4" className="fill-[var(--color-accent-fill)]" />
         </svg>
         <span className="font-extrabold text-[17px] tracking-tight text-[var(--color-text-primary)]">Lumina</span>
       </Link>

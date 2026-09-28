@@ -48,14 +48,14 @@ export default function SearchBar({
           onChange={(e) => setValue(e.target.value)}
           placeholder={placeholder}
           aria-label="Search"
-          className={`w-full min-h-[46px] px-3.5 py-2.5 text-[13px] mono bg-[#fafafa] border border-[#e5e3ea] rounded-[9px] outline-none focus:border-[#c4b5fd] ${
+          className={`w-full min-h-[46px] px-3.5 py-2.5 text-[13px] mono bg-[var(--color-bg-subtle)] border border-[var(--color-border-default)] rounded-[9px] outline-none focus:border-[var(--color-border-strong)] ${
             classified ? "pr-[104px]" : ""
           }`}
         />
         {classified && (
           <span
             aria-hidden="true"
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-[#6d28d9] bg-[#f3effe] rounded-md px-2 py-[3px]"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-[var(--color-accent-text)] bg-[var(--color-accent-surface)] rounded-md px-2 py-[3px]"
           >
             {SEARCH_KIND_LABEL[classified.kind]}
           </span>
@@ -63,7 +63,7 @@ export default function SearchBar({
       </div>
       <button
         type="submit"
-        className="bg-[#8b5cf6] hover:bg-[#7c3aed] text-white font-bold text-sm px-6 rounded-[9px] transition-colors"
+        className="bg-[var(--color-accent-fill)] hover:bg-[var(--color-accent-fill-hover)] text-white font-bold text-sm px-6 rounded-[9px] transition-colors"
       >
         {buttonLabel}
       </button>

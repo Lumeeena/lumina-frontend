@@ -17,7 +17,7 @@ function Badge({ icon, label, title }: { icon: React.ReactNode; label: string; t
   return (
     <span
       title={title}
-      className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#f6f5f8] text-[#6b6975]"
+      className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[var(--color-bg-raised)] text-[var(--color-text-secondary)]"
     >
       {icon}
       {label}
@@ -35,7 +35,7 @@ export function VerifiedBadge() {
       // it.
       icon={
         <BadgeCheck
-          className="w-3 h-3 text-[#7c3aed]"
+          className="w-3 h-3 text-[var(--color-accent-text)]"
           role="img"
           aria-label="Attested by registry governance"
         />

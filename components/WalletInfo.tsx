@@ -34,7 +34,7 @@ export default function WalletInfo({
           />
         ) : (
           <span
-            className="w-[18px] h-[18px] rounded bg-[var(--color-accent-3)] text-[var(--color-accent-11)] text-[10px] font-bold flex items-center justify-center shrink-0"
+            className="w-[18px] h-[18px] rounded bg-[var(--color-accent-surface)] text-[var(--color-accent-text)] text-[10px] font-bold flex items-center justify-center shrink-0"
             aria-hidden="true"
           >
             {walletName.charAt(0).toUpperCase()}

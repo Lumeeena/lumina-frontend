@@ -1,4 +1,5 @@
 import { SITE_NAME } from "@/lib/site";
+import { colorTokens } from "@/lib/generated/palette";
 
 /**
  * The share-card layout, shared by the default card and the per-account one so
@@ -6,7 +7,9 @@ import { SITE_NAME } from "@/lib/site";
  *
  * Rendered by Satori, not a browser, which is why this is flexbox-only with no
  * `className`: `display: grid`, CSS shorthand and most of the cascade do not
- * exist there, so anything a card needs is written out in full.
+ * exist there, so anything a card needs is written out in full. Satori never
+ * loads `globals.css`, so the palette itself is spread onto the root below —
+ * the values are still authored once, in `app/globals.css`.
  */
 export default function OgCard({
   eyebrow,
@@ -21,12 +24,13 @@ export default function OgCard({
   return (
     <div
       style={{
+        ...(colorTokens as Record<string, string>),
         width: "100%",
         height: "100%",
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
-        backgroundImage: "linear-gradient(135deg, #4c1d95 0%, #7c3aed 45%, #8b5cf6 75%, #a78bfa 100%)",
+        backgroundImage: "var(--color-accent-gradient)",
         padding: "72px 80px",
       }}
     >
@@ -50,7 +54,7 @@ export default function OgCard({
               width: 22,
               height: 22,
               borderRadius: 9999,
-              backgroundColor: "#ffffff",
+              backgroundColor: "var(--color-text-inverse)",
             }}
           />
         </div>
@@ -60,7 +64,7 @@ export default function OgCard({
             marginLeft: 26,
             fontSize: 34,
             fontWeight: 700,
-            color: "#ffffff",
+            color: "var(--color-text-inverse)",
           }}
         >
           {SITE_NAME}
@@ -81,7 +85,7 @@ export default function OgCard({
         >
           {eyebrow}
         </div>
-        <div style={{ display: "flex", fontSize: 62, fontWeight: 800, lineHeight: 1.14, color: "#ffffff" }}>
+        <div style={{ display: "flex", fontSize: 62, fontWeight: 800, lineHeight: 1.14, color: "var(--color-text-inverse)" }}>
           {title}
         </div>
         <div

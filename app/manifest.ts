@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { colorTokens } from "@/lib/generated/palette";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -8,8 +9,8 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/",
     scope: "/",
     display: "standalone",
-    background_color: "#ffffff",
-    theme_color: "#8b5cf6",
+    background_color: colorTokens["--color-bg-base"],
+    theme_color: colorTokens["--color-accent-fill"],
     icons: [
       { src: "/icons/icon-192.svg", sizes: "192x192", type: "image/svg+xml", purpose: "any" },
       { src: "/icons/icon-512.svg", sizes: "512x512", type: "image/svg+xml", purpose: "any" },

@@ -230,7 +230,7 @@ export default function RegisterContractForm({
                 onClick={() => toggleCategory(category)}
                 className={`text-xs font-semibold px-2.5 py-1.5 rounded-full border transition-colors ${
                   selected
-                    ? 'bg-[var(--color-accent-3)] text-[var(--color-accent-11)] border-[var(--color-border-strong)]'
+                    ? 'bg-[var(--color-accent-surface)] text-[var(--color-accent-text)] border-[var(--color-border-strong)]'
                     : 'bg-[var(--color-bg-base)] text-[var(--color-text-secondary)] border-[var(--color-border-default)] hover:border-[var(--color-border-strong)]'
                 }`}
               >

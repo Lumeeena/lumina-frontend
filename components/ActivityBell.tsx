@@ -82,13 +82,13 @@ export default function ActivityBell() {
             : `Watched address alerts, ${unread} unread`
         }
         data-testid="activity-bell"
-        className="relative inline-flex items-center justify-center size-8 rounded-lg text-[#6b6975] hover:bg-[#f6f5f8] hover:text-[#0e0e12] transition-colors"
+        className="relative inline-flex items-center justify-center size-8 rounded-lg text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-raised)] hover:text-[var(--color-text-primary)] transition-colors"
       >
         <Bell aria-hidden="true" className="size-4" strokeWidth={2} />
         {unread > 0 && (
           <span
             data-testid="activity-bell-count"
-            className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-[#dc2626] text-white text-[10px] font-bold leading-4 text-center tabular-nums"
+            className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-[var(--color-error-text)] text-white text-[10px] font-bold leading-4 text-center tabular-nums"
           >
             {unread > MAX_VISIBLE_BADGE_COUNT ? `${MAX_VISIBLE_BADGE_COUNT}+` : unread}
           </span>
@@ -99,17 +99,17 @@ export default function ActivityBell() {
         <div
           id={panelId}
           data-testid="activity-panel"
-          className="absolute right-0 top-full z-30 mt-2 w-[min(22rem,calc(100vw-2rem))] rounded-xl border border-[#e5e3ea] bg-white shadow-lg overflow-hidden"
+          className="absolute right-0 top-full z-30 mt-2 w-[min(22rem,calc(100vw-2rem))] rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-base)] shadow-lg overflow-hidden"
         >
-          <div className="flex items-center justify-between px-4 py-3 border-b border-[#f0eff3]">
-            <h2 className="text-[13px] font-extrabold text-[#0e0e12]">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-bg-overlay)]">
+            <h2 className="text-[13px] font-extrabold text-[var(--color-text-primary)]">
               Watched activity
             </h2>
             {notifications.length > 0 && (
               <button
                 type="button"
                 onClick={handleClear}
-                className="text-[11px] font-semibold text-[#6b6975] hover:text-[#0e0e12] hover:underline"
+                className="text-[11px] font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:underline"
               >
                 Clear all
               </button>
@@ -117,11 +117,11 @@ export default function ActivityBell() {
           </div>
 
           {notifications.length === 0 ? (
-            <p className="px-4 py-6 text-center text-[13px] text-[#a6a3b0]">
+            <p className="px-4 py-6 text-center text-[13px] text-[var(--color-text-muted)]">
               Nothing yet. Alerts appear here when a watched address is active.
             </p>
           ) : (
-            <ul className="max-h-[min(24rem,60vh)] overflow-y-auto divide-y divide-[#f0eff3]">
+            <ul className="max-h-[min(24rem,60vh)] overflow-y-auto divide-y divide-[var(--color-bg-overlay)]">
               {notifications.map((item) => (
                 <NotificationRow key={item.id} notification={item} />
               ))}
@@ -149,14 +149,14 @@ function NotificationRow({ notification }: { notification: ActivityNotification 
         className="block hover:underline"
       >
         <span className="flex items-center gap-2">
-          <span className="text-[11px] font-semibold rounded-full bg-[#f3effe] text-[#6d28d9] px-2 py-0.5">
+          <span className="text-[11px] font-semibold rounded-full bg-[var(--color-accent-surface)] text-[var(--color-accent-text)] px-2 py-0.5">
             {notification.operationType}
           </span>
-          <span className="mono text-[11px] text-[#6b6975]">
+          <span className="mono text-[11px] text-[var(--color-text-secondary)]">
             {truncateAddress(notification.address, 4)}
           </span>
         </span>
-        <span className="mt-1 block text-[12px] text-[#0e0e12]">
+        <span className="mt-1 block text-[12px] text-[var(--color-text-primary)]">
           {notification.amount === null
             ? "Operation on a watched address"
             : `${notification.amount} ${notification.asset ?? "XLM"}`}

@@ -69,18 +69,18 @@ export default async function Home() {
 
   return (
     <div>
-      <section className="px-4 sm:px-7 pt-14 sm:pt-20 pb-10 sm:pb-14 border-b border-[#e5e3ea]">
+      <section className="px-4 sm:px-7 pt-14 sm:pt-20 pb-10 sm:pb-14 border-b border-[var(--color-border-default)]">
         <div className="max-w-[1160px] mx-auto grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-10 lg:gap-14 items-start">
           <div>
-            <div className="inline-flex items-center gap-2 text-xs font-semibold tracking-wide text-[#6d28d9] bg-[#f3effe] px-3 py-1.5 rounded-full mb-6">
+            <div className="inline-flex items-center gap-2 text-xs font-semibold tracking-wide text-[var(--color-accent-text)] bg-[var(--color-accent-surface)] px-3 py-1.5 rounded-full mb-6">
               Open-source · Live indexer
             </div>
-            <h1 className="font-extrabold text-4xl sm:text-5xl leading-[1.08] tracking-tight mb-5 text-[#0e0e12]">
+            <h1 className="font-extrabold text-4xl sm:text-5xl leading-[1.08] tracking-tight mb-5 text-[var(--color-text-primary)]">
               Stellar network data,
               <br />
-              <span className="text-[#8b5cf6]">illuminated.</span>
+              <span className="text-[var(--color-accent-text)]">illuminated.</span>
             </h1>
-            <p className="text-[17px] text-[#6b6975] max-w-[54ch] mb-7 leading-relaxed">
+            <p className="text-[17px] text-[var(--color-text-secondary)] max-w-[54ch] mb-7 leading-relaxed">
               Lumina polls Stellar Horizon, indexes ledgers, transactions,
               operations, accounts and Soroban contract events into Postgres,
               and serves it all through a typed GraphQL API.
@@ -88,20 +88,20 @@ export default async function Home() {
             <div className="flex gap-3 flex-wrap">
               <Link
                 href="/explorer"
-                className="bg-[#8b5cf6] hover:bg-[#7c3aed] text-white font-bold text-sm px-[22px] py-[13px] rounded-lg shadow-[0_1px_2px_rgba(139,92,246,0.3)] transition-colors"
+                className="bg-[var(--color-accent-fill)] hover:bg-[var(--color-accent-fill-hover)] text-white font-bold text-sm px-[22px] py-[13px] rounded-lg shadow-[0_1px_2px_rgba(139,92,246,0.3)] transition-colors"
               >
                 Open Explorer
               </Link>
               <Link
                 href="/graphql"
-                className="bg-white border border-[#e5e3ea] hover:border-[#c4b5fd] text-[#0e0e12] font-bold text-sm px-[22px] py-[13px] rounded-lg transition-colors"
+                className="bg-[var(--color-bg-base)] border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] text-[var(--color-text-primary)] font-bold text-sm px-[22px] py-[13px] rounded-lg transition-colors"
               >
                 GraphQL Playground
               </Link>
             </div>
           </div>
-          <div className="border border-[#e5e3ea] rounded-2xl p-[22px] bg-[#fafafa]">
-            <div className="text-xs font-semibold text-[#6b6975] mb-2.5">
+          <div className="border border-[var(--color-border-default)] rounded-2xl p-[22px] bg-[var(--color-bg-subtle)]">
+            <div className="text-xs font-semibold text-[var(--color-text-secondary)] mb-2.5">
               Search the network
             </div>
             {/* The one search box: it classifies an account, transaction hash
@@ -117,7 +117,7 @@ export default async function Home() {
           <BackendUnavailable />
         </div>
       )}
-      <section className="px-4 sm:px-7 py-8 border-b border-[#e5e3ea] bg-[#fafafa]">
+      <section className="px-4 sm:px-7 py-8 border-b border-[var(--color-border-default)] bg-[var(--color-bg-subtle)]">
         <div className="max-w-[1160px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard
             title="Latest Ledger"
@@ -147,13 +147,13 @@ export default async function Home() {
       <section className="px-4 sm:px-7 py-10 sm:py-12">
         <div className="max-w-[1160px] mx-auto grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-7 items-start">
           <div>
-            <h2 className="font-extrabold text-[17px] mb-3.5 text-[#0e0e12]">
+            <h2 className="font-extrabold text-[17px] mb-3.5 text-[var(--color-text-primary)]">
               Live Transaction Feed
             </h2>
             <LiveFeed />
           </div>
           <div>
-            <h2 className="font-extrabold text-[17px] mb-3.5 text-[#0e0e12]">
+            <h2 className="font-extrabold text-[17px] mb-3.5 text-[var(--color-text-primary)]">
               Quick Access
             </h2>
             <div className="flex flex-col gap-2.5">
@@ -161,12 +161,12 @@ export default async function Home() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="text-left bg-white border border-[#e5e3ea] hover:border-[#c4b5fd] rounded-xl p-4 flex flex-col gap-1 transition-colors"
+                  className="text-left bg-[var(--color-bg-base)] border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] rounded-xl p-4 flex flex-col gap-1 transition-colors"
                 >
-                  <span className="font-bold text-sm text-[#0e0e12]">
+                  <span className="font-bold text-sm text-[var(--color-text-primary)]">
                     {item.label}
                   </span>
-                  <span className="text-xs text-[#a6a3b0]">{item.desc}</span>
+                  <span className="text-xs text-[var(--color-text-muted)]">{item.desc}</span>
                 </Link>
               ))}
             </div>

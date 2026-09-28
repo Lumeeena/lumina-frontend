@@ -55,11 +55,11 @@ describe("TransactionRow", () => {
 
   it("distinguishes a failed transaction from a successful one", () => {
     const ok = renderRow(tx({ successful: true }));
-    expect(ok.container.querySelector(".bg-\\[\\#16a34a\\]")).not.toBeNull();
+    expect(ok.container.querySelector(".bg-\\[var\\(--color-success-text\\)\\]")).not.toBeNull();
     cleanup();
 
     const failed = renderRow(tx({ successful: false }));
-    expect(failed.container.querySelector(".bg-\\[\\#dc2626\\]")).not.toBeNull();
+    expect(failed.container.querySelector(".bg-\\[var\\(--color-error-text\\)\\]")).not.toBeNull();
   });
 
   it("renders the ledger with thousands separators and the operation count", () => {

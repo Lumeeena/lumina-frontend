@@ -35,8 +35,8 @@ export default function WatchIndicator({ address }: { address: string }) {
       aria-pressed={watched}
       className={`inline-flex items-center justify-center rounded transition-colors shrink-0
         ${watched
-          ? 'text-[#7c3aed] hover:text-[#6d28d9]'
-          : 'text-[#c3c1cb] hover:text-[#7c3aed]'
+          ? 'text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)]'
+          : 'text-[var(--color-text-faint)] hover:text-[var(--color-accent-text)]'
         }`}
     >
       {/* Bookmark icon — filled when watched, outline when not */}

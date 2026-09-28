@@ -411,7 +411,7 @@ export default function OwnerContracts({
   }
 
   if (state === "loading") {
-    return <p className="text-sm text-[#a6a3b0]">Loading your contracts…</p>;
+    return <p className="text-sm text-[var(--color-text-muted)]">Loading your contracts…</p>;
   }
 
   if (state === 'error') {
@@ -420,11 +420,11 @@ export default function OwnerContracts({
 
   if (entries.length === 0) {
     return (
-      <div className="border border-[#e5e3ea] rounded-xl p-6 text-center">
-        <p className="text-sm text-[#6b6975] mb-1">
+      <div className="border border-[var(--color-border-default)] rounded-xl p-6 text-center">
+        <p className="text-sm text-[var(--color-text-secondary)] mb-1">
           You haven&apos;t registered any contracts yet.
         </p>
-        <p className="text-xs text-[#a6a3b0]">
+        <p className="text-xs text-[var(--color-text-muted)]">
           Register one with the form to opt it into Lumina indexing.
         </p>
       </div>
@@ -445,12 +445,12 @@ export default function OwnerContracts({
         return (
           <div
             key={entry.contractId}
-            className="border border-[#e5e3ea] rounded-xl p-4"
+            className="border border-[var(--color-border-default)] rounded-xl p-4"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-bold text-sm text-[#0e0e12]">
+                  <span className="font-bold text-sm text-[var(--color-text-primary)]">
                     {entry.name}
                   </span>
                   <StatusPill active={entry.active} />
@@ -463,10 +463,10 @@ export default function OwnerContracts({
                     />
                   )}
                 </div>
-                <p className="mono text-[11px] text-[#a6a3b0] mt-1 break-all">
+                <p className="mono text-[11px] text-[var(--color-text-muted)] mt-1 break-all">
                   {truncateAddress(entry.contractId, 6)}
                 </p>
-                <p className="text-xs text-[#6b6975] mt-1.5">
+                <p className="text-xs text-[var(--color-text-secondary)] mt-1.5">
                   {entry.description}
                 </p>
               </div>
@@ -475,7 +475,7 @@ export default function OwnerContracts({
                 <button
                   onClick={() => handleDeactivate(entry)}
                   disabled={isPending}
-                  className="shrink-0 border border-[#e5e3ea] hover:border-[#dc2626] hover:text-[#dc2626] disabled:opacity-50 text-[#6b6975] font-bold text-xs px-3 py-2 rounded-lg transition-colors"
+                  className="shrink-0 border border-[var(--color-border-default)] hover:border-[var(--color-error-text)] hover:text-[var(--color-error-text)] disabled:opacity-50 text-[var(--color-text-secondary)] font-bold text-xs px-3 py-2 rounded-lg transition-colors"
                 >
                   {isPending && pendingAction === "deactivate"
                     ? DEACTIVATE_LABELS[pendingPhase]
@@ -484,8 +484,8 @@ export default function OwnerContracts({
               )}
             </div>
 
-            <div className="mt-3 border-t border-[#f0eff3] pt-3">
-              <p className="text-xs text-[#6b6975] mb-2">
+            <div className="mt-3 border-t border-[var(--color-bg-overlay)] pt-3">
+              <p className="text-xs text-[var(--color-text-secondary)] mb-2">
                 Staked:{" "}
                 <span className="mono">
                   {info ? info.stake.toString() : "—"}
@@ -503,12 +503,12 @@ export default function OwnerContracts({
                       [entry.contractId]: e.target.value,
                     }))
                   }
-                  className="min-h-[34px] px-2.5 text-xs mono bg-[#fafafa] border border-[#e5e3ea] rounded-lg w-44"
+                  className="min-h-[34px] px-2.5 text-xs mono bg-[var(--color-bg-subtle)] border border-[var(--color-border-default)] rounded-lg w-44"
                 />
                 <button
                   onClick={() => handleStake(entry)}
                   disabled={pendingId !== null}
-                  className="border border-[#e5e3ea] hover:border-[#8b5cf6] hover:text-[#7c3aed] disabled:opacity-50 text-[#6b6975] font-bold text-xs px-3 py-2 rounded-lg transition-colors"
+                  className="border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-accent-text)] disabled:opacity-50 text-[var(--color-text-secondary)] font-bold text-xs px-3 py-2 rounded-lg transition-colors"
                 >
                   {isPending && pendingAction === "stake"
                     ? "Staking…"
@@ -517,7 +517,7 @@ export default function OwnerContracts({
                 <button
                   onClick={() => handleWithdraw(entry)}
                   disabled={pendingId !== null || blockers.length > 0}
-                  className="border border-[#e5e3ea] hover:border-[#8b5cf6] hover:text-[#7c3aed] disabled:opacity-50 text-[#6b6975] font-bold text-xs px-3 py-2 rounded-lg transition-colors"
+                  className="border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-accent-text)] disabled:opacity-50 text-[var(--color-text-secondary)] font-bold text-xs px-3 py-2 rounded-lg transition-colors"
                 >
                   {isPending && pendingAction === "withdraw"
                     ? "Withdrawing…"
@@ -525,7 +525,7 @@ export default function OwnerContracts({
                 </button>
               </div>
               {blockers.length > 0 && (
-                <ul className="mt-2 list-disc pl-4 text-[11px] text-[#b45309]">
+                <ul className="mt-2 list-disc pl-4 text-[11px] text-[var(--color-warning-text)]">
                   {blockers.map((b) => (
                     <li key={b}>{b}</li>
                   ))}
@@ -536,7 +536,7 @@ export default function OwnerContracts({
             {rowError[entry.contractId] && (
               <div
                 role="alert"
-                className="mt-3 text-xs text-[#dc2626] bg-[#fef2f2] rounded-lg px-3 py-2"
+                className="mt-3 text-xs text-[var(--color-error-text)] bg-[var(--color-error-bg)] rounded-lg px-3 py-2"
               >
                 {rowError[entry.contractId]}
               </div>
@@ -545,16 +545,16 @@ export default function OwnerContracts({
             <button
               onClick={() => toggleHistory(entry)}
               aria-expanded={isOpen}
-              className="mt-3 text-[11px] font-bold text-[#8b5cf6] hover:underline underline-offset-2"
+              className="mt-3 text-[11px] font-bold text-[var(--color-accent-text)] hover:underline underline-offset-2"
             >
               {isOpen ? "Hide history" : `History (${entryHistory.length})`}
             </button>
 
             {isOpen && (
-              <div className="mt-2.5 border-t border-[#f0eff3] pt-2.5 flex flex-col gap-3">
+              <div className="mt-2.5 border-t border-[var(--color-bg-overlay)] pt-2.5 flex flex-col gap-3">
                 <ul className="flex flex-col gap-1.5" data-testid="history-list">
                   {entryHistory.length === 0 ? (
-                    <li className="text-xs text-[#a6a3b0]">
+                    <li className="text-xs text-[var(--color-text-muted)]">
                       No registry events indexed for this contract yet.
                     </li>
                   ) : (
@@ -563,10 +563,10 @@ export default function OwnerContracts({
                         key={item.id}
                         className="flex items-baseline justify-between gap-3"
                       >
-                        <span className="text-xs text-[#0e0e12]">
+                        <span className="text-xs text-[var(--color-text-primary)]">
                           {REGISTRY_EVENT_LABELS[item.type]}
                         </span>
-                        <span className="mono text-[11px] text-[#a6a3b0] shrink-0">
+                        <span className="mono text-[11px] text-[var(--color-text-muted)] shrink-0">
                           ledger {item.ledger} · <TimeAgo isoString={item.createdAt} />
                         </span>
                       </li>
@@ -575,11 +575,11 @@ export default function OwnerContracts({
                 </ul>
 
                 <section aria-label="Slash history">
-                  <h4 className="text-[11px] font-bold text-[#a6a3b0] uppercase tracking-[0.05em] mb-1.5">
+                  <h4 className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-[0.05em] mb-1.5">
                     Slash history
                   </h4>
                   {reputation && reputation.slashedTotal > BigInt(0) && (
-                    <p className="text-xs text-[#6b6975] mb-1.5">
+                    <p className="text-xs text-[var(--color-text-secondary)] mb-1.5">
                       Lifetime slashed:{" "}
                       <span className="mono">
                         {formatStroops(reputation.slashedTotal)} XLM
@@ -587,16 +587,16 @@ export default function OwnerContracts({
                     </p>
                   )}
                   {slashesLoading[entry.contractId] ? (
-                    <p className="text-xs text-[#a6a3b0]">
+                    <p className="text-xs text-[var(--color-text-muted)]">
                       Loading slash history…
                     </p>
                   ) : slashErrors[entry.contractId] ? (
-                    <p role="alert" className="text-xs text-[#dc2626]">
+                    <p role="alert" className="text-xs text-[var(--color-error-text)]">
                       {slashErrors[entry.contractId]}
                     </p>
                   ) : slashes[entry.contractId] &&
                     slashes[entry.contractId].length === 0 ? (
-                    <p className="text-xs text-[#a6a3b0]">
+                    <p className="text-xs text-[var(--color-text-muted)]">
                       No slashes recorded.
                     </p>
                   ) : (
@@ -608,16 +608,16 @@ export default function OwnerContracts({
                             key={`${slash.slashedAt}-${i}`}
                             className="flex items-baseline justify-between gap-3"
                           >
-                            <span className="text-xs text-[#0e0e12] min-w-0">
+                            <span className="text-xs text-[var(--color-text-primary)] min-w-0">
                               <span className="mono">
                                 −{formatStroops(slash.amount)} XLM
                               </span>
-                              <span className="text-[#6b6975]">
+                              <span className="text-[var(--color-text-secondary)]">
                                 {" "}
                                 · {slash.reason}
                               </span>
                             </span>
-                            <span className="mono text-[11px] text-[#a6a3b0] shrink-0">
+                            <span className="mono text-[11px] text-[var(--color-text-muted)] shrink-0">
                               ledger {slash.slashedAt.toLocaleString()}
                             </span>
                           </li>
@@ -649,7 +649,7 @@ function StatusPill({ active }: { active: boolean }) {
   return (
     <span
       className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-        active ? "bg-[#f0fdf4] text-[#16a34a]" : "bg-[#f4f4f5] text-[#6b6975]"
+        active ? "bg-[var(--color-active-bg)] text-[var(--color-active-text)]" : "bg-[var(--color-neutral-bg)] text-[var(--color-neutral-text)]"
       }`}
     >
       {active ? "Active" : "Deactivated"}
@@ -660,10 +660,10 @@ function StatusPill({ active }: { active: boolean }) {
 function ActivityPill({ state }: { state: ActivityState }) {
   const tone =
     state === "active"
-      ? "bg-[#f5f3ff] text-[#7c3aed]"
+      ? "bg-[var(--color-accent-surface)] text-[var(--color-accent-text)]"
       : state === "quiet"
-        ? "bg-[#f4f4f5] text-[#a6a3b0]"
-        : "bg-[#fffbeb] text-[#b45309]";
+        ? "bg-[var(--color-neutral-bg)] text-[var(--color-text-muted)]"
+        : "bg-[var(--color-warning-bg)] text-[var(--color-warning-text)]";
 
   return (
     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${tone}`}>

@@ -31,16 +31,16 @@ export interface ButtonProps
 
 const BASE =
   'inline-flex items-center justify-center font-bold rounded-lg transition-colors ' +
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-9)] ' +
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-fill)] ' +
   'disabled:opacity-50 disabled:cursor-not-allowed';
 
 const VARIANTS: Record<ButtonVariant, string> = {
   primary:
-    'bg-[var(--color-accent-9)] hover:bg-[var(--color-accent-10)] text-white',
+    'bg-[var(--color-accent-fill)] hover:bg-[var(--color-accent-fill-hover)] text-white',
   secondary:
     'bg-[var(--color-bg-raised)] border border-[var(--color-border-default)] ' +
     'text-[var(--color-text-secondary)] hover:border-[var(--color-border-strong)] ' +
-    'hover:text-[var(--color-accent-11)]',
+    'hover:text-[var(--color-accent-text)]',
   destructive:
     'border border-[var(--color-border-default)] text-[var(--color-text-secondary)] ' +
     'hover:border-[var(--color-error-text)] hover:text-[var(--color-error-text)]',

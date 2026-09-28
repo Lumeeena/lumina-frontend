@@ -116,7 +116,7 @@ export default function KeyboardShortcuts() {
         type="button"
         onClick={openHelp}
         aria-haspopup="dialog"
-        className="fixed bottom-4 right-4 z-20 border border-[#e5e3ea] bg-white text-[#6b6975] hover:text-[#0e0e12] text-xs font-bold px-3 py-2 rounded-lg shadow-sm"
+        className="fixed bottom-4 right-4 z-20 border border-[var(--color-border-default)] bg-[var(--color-bg-base)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] text-xs font-bold px-3 py-2 rounded-lg shadow-sm"
       >
         Keyboard shortcuts
       </button>
@@ -131,11 +131,11 @@ export default function KeyboardShortcuts() {
             aria-modal="true"
             aria-labelledby="shortcuts-title"
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-2xl border border-[#e5e3ea] p-6 w-full max-w-sm"
+            className="bg-[var(--color-bg-base)] rounded-2xl border border-[var(--color-border-default)] p-6 w-full max-w-sm"
           >
             <h2
               id="shortcuts-title"
-              className="font-extrabold text-base mb-3 text-[#0e0e12]"
+              className="font-extrabold text-base mb-3 text-[var(--color-text-primary)]"
             >
               Keyboard shortcuts
             </h2>
@@ -150,11 +150,11 @@ export default function KeyboardShortcuts() {
                 />
               ))}
             </dl>
-            <p className="text-xs text-[#6b6975] mb-3">
+            <p className="text-xs text-[var(--color-text-secondary)] mb-3">
               Shortcuts never use Ctrl, Cmd or Alt and are ignored while you
               type in a field.
             </p>
-            <label className="flex items-center gap-2 text-xs text-[#0e0e12] mb-4">
+            <label className="flex items-center gap-2 text-xs text-[var(--color-text-primary)] mb-4">
               <input
                 type="checkbox"
                 checked={enabled}
@@ -166,7 +166,7 @@ export default function KeyboardShortcuts() {
               ref={closeButton}
               type="button"
               onClick={closeHelp}
-              className="bg-[#8b5cf6] hover:bg-[#7c3aed] text-white font-bold text-sm px-4 py-2 rounded-lg transition-colors"
+              className="bg-[var(--color-accent-fill)] hover:bg-[var(--color-accent-fill-hover)] text-white font-bold text-sm px-4 py-2 rounded-lg transition-colors"
             >
               Close
             </button>
@@ -180,8 +180,8 @@ export default function KeyboardShortcuts() {
 function Row({ keys, label }: { keys: string; label: string }) {
   return (
     <>
-      <dt className="mono text-[12px] text-[#7c3aed]">{keys}</dt>
-      <dd className="m-0 text-[#0e0e12]">{label}</dd>
+      <dt className="mono text-[12px] text-[var(--color-accent-text)]">{keys}</dt>
+      <dd className="m-0 text-[var(--color-text-primary)]">{label}</dd>
     </>
   );
 }

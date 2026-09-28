@@ -50,18 +50,18 @@ export default function RegistryEntryCard({ profile, loadSlashes = defaultLoadSl
   }
 
   return (
-    <div className="border border-[#e5e3ea] rounded-[10px] p-3.5 px-4">
+    <div className="border border-[var(--color-border-default)] rounded-[10px] p-3.5 px-4">
       <div className="flex items-center justify-between gap-2 mb-1">
-        <span className="font-bold text-sm text-[#0e0e12]">{profile.name}</span>
-        <span className="mono text-[11px] text-[#a6a3b0]">{truncateAddress(profile.contractId, 5)}</span>
+        <span className="font-bold text-sm text-[var(--color-text-primary)]">{profile.name}</span>
+        <span className="mono text-[11px] text-[var(--color-text-muted)]">{truncateAddress(profile.contractId, 5)}</span>
       </div>
-      <p className="text-xs text-[#6b6975] m-0">{profile.description}</p>
+      <p className="text-xs text-[var(--color-text-secondary)] m-0">{profile.description}</p>
       {profile.categories && profile.categories.length > 0 && (
         <ul className="flex flex-wrap gap-1.5 mt-2 list-none p-0 m-0" aria-label="Categories">
           {profile.categories.map(category => (
             <li
               key={category}
-              className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#f5f3ff] text-[#7c3aed]"
+              className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[var(--color-accent-surface)] text-[var(--color-accent-text)]"
             >
               {CATEGORY_LABELS[category]}
             </li>
@@ -77,29 +77,29 @@ export default function RegistryEntryCard({ profile, loadSlashes = defaultLoadSl
       <button
         onClick={toggle}
         aria-expanded={open}
-        className="mt-2.5 text-[11px] font-bold text-[#8b5cf6] hover:underline underline-offset-2"
+        className="mt-2.5 text-[11px] font-bold text-[var(--color-accent-text)] hover:underline underline-offset-2"
       >
         {open ? 'Hide slash history' : 'Slash history'}
       </button>
 
       {open && (
-        <div className="mt-2 border-t border-[#f0eff3] pt-2.5">
+        <div className="mt-2 border-t border-[var(--color-bg-overlay)] pt-2.5">
           {loading ? (
-            <p className="text-xs text-[#a6a3b0]">Loading slash history…</p>
+            <p className="text-xs text-[var(--color-text-muted)]">Loading slash history…</p>
           ) : error ? (
-            <p role="alert" className="text-xs text-[#dc2626]">{error}</p>
+            <p role="alert" className="text-xs text-[var(--color-error-text)]">{error}</p>
           ) : slashes !== null && slashes.length === 0 ? (
-            <p className="text-xs text-[#a6a3b0]">No slashes recorded.</p>
+            <p className="text-xs text-[var(--color-text-muted)]">No slashes recorded.</p>
           ) : (
             slashes !== null && (
               <ul className="flex flex-col gap-1.5">
                 {slashes.map((slash, i) => (
                   <li key={`${slash.slashedAt}-${i}`} className="flex items-baseline justify-between gap-3">
-                    <span className="text-xs text-[#0e0e12] min-w-0">
+                    <span className="text-xs text-[var(--color-text-primary)] min-w-0">
                       <span className="mono">−{formatStroops(slash.amount)} XLM</span>
-                      <span className="text-[#6b6975]"> · {slash.reason}</span>
+                      <span className="text-[var(--color-text-secondary)]"> · {slash.reason}</span>
                     </span>
-                    <span className="mono text-[11px] text-[#a6a3b0] shrink-0">
+                    <span className="mono text-[11px] text-[var(--color-text-muted)] shrink-0">
                       ledger {slash.slashedAt.toLocaleString()}
                     </span>
                   </li>
