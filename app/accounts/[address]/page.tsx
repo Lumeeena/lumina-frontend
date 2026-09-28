@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
-import { AccountDetailDocument as ACCOUNT_QUERY } from "@/lib/generated/graphql";
+import {
+  AccountDetailDocument as ACCOUNT_QUERY,
+  AccountTrustlineOpsDocument as TRUSTLINE_QUERY,
+} from "@/lib/generated/graphql";
 import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
 import { accountOgImage, routeMetadata } from "@/lib/metadata";
-import type { Account } from "@/lib/types";
+import type { Account, TrustlineOp } from "@/lib/types";
 import { formatXLM, truncateAddress } from "@/lib/formatters";
 import CopyAddressButton from "@/components/CopyAddressButton";
 import WatchIndicator from "@/components/WatchIndicator";
@@ -10,6 +13,7 @@ import AccountActivityFeed from "@/components/AccountActivityFeed";
 import AccountPortfolio from "@/components/AccountPortfolio";
 import AccountTransactionList from "@/components/AccountTransactionList";
 import AccountOperationList from "@/components/AccountOperationList";
+import AccountTrustlineTimeline from "@/components/AccountTrustlineTimeline";
 import BackendUnavailable from "@/components/BackendUnavailable";
 import Breadcrumbs from "@/components/Breadcrumbs";
 
@@ -46,6 +50,25 @@ async function getAccount(address: string): Promise<{ account: Account | null; u
   }
 }
 
+/**
+ * Fetch the first page of change_trust operations for this account.
+ * This is a dedicated fetch so the seed is accurate regardless of how busy
+ * the general operation history is — a high-volume account might fill 10
+ * general ops without a single CHANGE_TRUST appearing in the shared seed.
+ * Failures return an empty array rather than breaking the page.
+ */
+async function getTrustlineOps(address: string): Promise<TrustlineOp[]> {
+  try {
+    const data = await gqlFetch(GRAPHQL_URL, TRUSTLINE_QUERY, {
+      address,
+      limit: 10,
+    });
+    return data.operations.items;
+  } catch {
+    return [];
+  }
+}
+
 const th = "text-left text-[11px] tracking-[0.06em] uppercase text-[var(--color-text-muted)] px-3 py-2.5 border-b border-[var(--color-border-default)] bg-[var(--color-bg-subtle)]";
 const stat = "bg-[var(--color-bg-subtle)] border border-[var(--color-border-default)] rounded-xl p-4";
 const statLabel = "text-[11px] text-[var(--color-text-muted)] uppercase tracking-[0.05em]";
@@ -57,7 +80,10 @@ export default async function AccountPage({
   params: Promise<{ address: string }>;
 }) {
   const { address } = await params;
-  const result = await getAccount(address);
+  const [result, trustlineOps] = await Promise.all([
+    getAccount(address),
+    getTrustlineOps(address),
+  ]);
   const account = result.account;
 
   const flagTags = account
@@ -200,6 +226,14 @@ export default async function AccountPage({
           <AccountOperationList
             address={account.address}
             initial={account.operations ?? []}
+          />
+
+          <h2 className="font-extrabold text-base mt-9 mb-3 text-[var(--color-text-primary)]">
+            Trustline History
+          </h2>
+          <AccountTrustlineTimeline
+            address={account.address}
+            initial={trustlineOps}
           />
         </div>
       )}

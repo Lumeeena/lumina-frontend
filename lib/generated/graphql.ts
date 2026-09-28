@@ -1190,3 +1190,31 @@ export const AssetVolumeDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<AssetVolumeQuery, AssetVolumeQueryVariables>;
+
+export type AccountTrustlineOpsQueryVariables = Exact<{
+  address: Scalars['String']['input'];
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  cursor?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+export type AccountTrustlineOpsQuery = { operations: { items: Array<{ id: string, type: OperationType, createdAt: string, transactionHash: string, sourceAccount: string, asset: string | null, amount: string | null }>, pageInfo: { hasNextPage: boolean, cursor: string | null } } };
+
+export const AccountTrustlineOpsDocument = new TypedDocumentString(`
+    query AccountTrustlineOps($address: String!, $limit: Int, $cursor: String) {
+  operations(account: $address, type: CHANGE_TRUST, limit: $limit, cursor: $cursor) {
+    items {
+      id
+      type
+      createdAt
+      transactionHash
+      sourceAccount
+      asset
+      amount
+    }
+    pageInfo {
+      hasNextPage
+      cursor
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<AccountTrustlineOpsQuery, AccountTrustlineOpsQueryVariables>;

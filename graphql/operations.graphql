@@ -289,3 +289,21 @@ query AssetVolume($asset: String!, $from: String, $to: String, $bucketSeconds: I
     }
   }
 }
+
+query AccountTrustlineOps($address: String!, $limit: Int, $cursor: String) {
+  operations(account: $address, type: CHANGE_TRUST, limit: $limit, cursor: $cursor) {
+    items {
+      id
+      type
+      createdAt
+      transactionHash
+      sourceAccount
+      asset
+      amount
+    }
+    pageInfo {
+      hasNextPage
+      cursor
+    }
+  }
+}
