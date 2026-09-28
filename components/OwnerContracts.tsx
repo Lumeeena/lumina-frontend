@@ -73,9 +73,9 @@ export interface OwnerContractsProps {
   loadHistory?: () => Promise<RegistryHistoryEntry[]>;
   loadActivity?: (contractIds: string[]) => Promise<Map<string, ActivityState>>;
   loadStake?: (contractId: string) => Promise<StakeInfo>;
-  deactivate?: (contractId: string, owner: string) => Promise<{ hash: string } | void>;
-  stake?: (contractId: string, owner: string, amount: bigint) => Promise<{ hash: string } | void>;
-  withdraw?: (contractId: string, owner: string) => Promise<{ hash: string } | void>;
+  deactivate?: (contractId: string, owner: string, onFeeEstimated?: (fee: string) => void) => Promise<{ hash: string } | void>;
+  stake?: (contractId: string, owner: string, amount: bigint, onFeeEstimated?: (fee: string) => void) => Promise<{ hash: string } | void>;
+  withdraw?: (contractId: string, owner: string, onFeeEstimated?: (fee: string) => void) => Promise<{ hash: string } | void>;
   /** Notifies the parent so the global list can refresh after a change. */
   onChanged?: () => void;
 }
@@ -90,7 +90,12 @@ const defaultLoadActivity = (contractIds: string[]) =>
 
 const defaultLoadStake = (contractId: string) => getStakeInfo(contractId);
 
-async function callRegistry(owner: string, method: string, args: xdr.ScVal[]): Promise<{ hash: string }> {
+async function callRegistry(
+  owner: string,
+  method: string,
+  args: xdr.ScVal[],
+  onFeeEstimated?: (fee: string) => void
+): Promise<{ hash: string }> {
   // Imported lazily rather than at module scope: the wallet kit pulls in
   // browser-only CommonJS (Freighter et al) that cannot be loaded outside a
   // browser, which would otherwise make this component untestable — the exact
@@ -108,28 +113,29 @@ async function callRegistry(owner: string, method: string, args: xdr.ScVal[]): P
     sign: signWithWallet,
     walletAddress: owner,
     networkPassphrase: NETWORK_PASSPHRASE,
+    onFeeEstimated,
   });
   return { hash: result.hash };
 }
 
-const defaultDeactivate = (contractId: string, owner: string) =>
+const defaultDeactivate = (contractId: string, owner: string, onFeeEstimated?: (fee: string) => void) =>
   callRegistry(owner, "deactivate", [
     nativeToScVal(owner, { type: "address" }),
     nativeToScVal(contractId, { type: "address" }),
-  ]);
+  ], onFeeEstimated);
 
-const defaultStake = (contractId: string, owner: string, amount: bigint) =>
+const defaultStake = (contractId: string, owner: string, amount: bigint, onFeeEstimated?: (fee: string) => void) =>
   callRegistry(owner, "stake", [
     nativeToScVal(owner, { type: "address" }),
     nativeToScVal(contractId, { type: "address" }),
     nativeToScVal(amount, { type: "i128" }),
-  ]);
+  ], onFeeEstimated);
 
-const defaultWithdraw = (contractId: string, owner: string) =>
+const defaultWithdraw = (contractId: string, owner: string, onFeeEstimated?: (fee: string) => void) =>
   callRegistry(owner, "withdraw_stake", [
     nativeToScVal(owner, { type: "address" }),
     nativeToScVal(contractId, { type: "address" }),
-  ]);
+  ], onFeeEstimated);
 
 /**
  * The unmet good-standing conditions for `withdraw_stake`, worked out up front
@@ -196,6 +202,7 @@ export default function OwnerContracts({
   const [stakeInput, setStakeInput] = useState<Record<string, string>>({});
   const [rowError, setRowError] = useState<Record<string, string>>({});
   const [pendingTxHash, setPendingTxHash] = useState<string | null>(null);
+  const [estimatedFee, setEstimatedFee] = useState<string | null>(null);
 
   const applyLoaded = useCallback(
     (owned: RegistryEntry[], isCurrent: () => boolean) => {
@@ -233,15 +240,6 @@ export default function OwnerContracts({
     if (!isCurrent()) return;
     setState('error');
   }, []);
-
-  // History is per row, and the panels are long enough that leaving several
-  // open at once turns the dashboard into a wall — so opening one closes the
-  // last.
-  const toggleHistory = useCallback(
-    (entry: { contractId: string }) =>
-      setExpanded(current => (current === entry.contractId ? null : entry.contractId)),
-    []
-  );
 
   useEffect(() => {
     // The effect body only starts the fetch; every setState happens in a
@@ -324,6 +322,7 @@ export default function OwnerContracts({
     setPendingId(entry.contractId);
     setPendingAction(action);
     setPendingPhase("building");
+    setEstimatedFee(null);
     setRowError((prev) => {
       const next = { ...prev };
       delete next[entry.contractId];
@@ -360,14 +359,14 @@ export default function OwnerContracts({
       setRowError((prev) => ({
         ...prev,
         [entry.contractId]:
-          "Enter a whole amount greater than zero, in the stake token’s base units.",
+          "Enter a whole amount greater than zero, in the stake token's base units.",
       }));
       return;
     }
     await runRowAction(
       entry,
       "stake",
-      () => stake(entry.contractId, walletAddress, BigInt(raw)),
+      () => stake(entry.contractId, walletAddress, BigInt(raw), setEstimatedFee),
       "Staking failed.",
     );
     setStakeInput((prev) => ({ ...prev, [entry.contractId]: "" }));
@@ -377,7 +376,7 @@ export default function OwnerContracts({
     runRowAction(
       entry,
       "withdraw",
-      () => withdraw(entry.contractId, walletAddress),
+      () => withdraw(entry.contractId, walletAddress, setEstimatedFee),
       "Withdrawal failed.",
     );
 
@@ -385,6 +384,7 @@ export default function OwnerContracts({
     setPendingId(entry.contractId);
     setPendingAction("deactivate");
     setPendingPhase("building");
+    setEstimatedFee(null);
     setRowError((prev) => {
       const next = { ...prev };
       delete next[entry.contractId];
@@ -392,7 +392,7 @@ export default function OwnerContracts({
     });
 
     try {
-      const result = await deactivate(entry.contractId, walletAddress);
+      const result = await deactivate(entry.contractId, walletAddress, setEstimatedFee);
       if (result?.hash) {
         setPendingTxHash(result.hash);
         sessionStorage.setItem(`tx-${Date.now()}`, result.hash);
@@ -559,6 +559,12 @@ export default function OwnerContracts({
               >
                 {rowError[entry.contractId]}
               </div>
+            )}
+
+            {estimatedFee && isPending && (
+              <p className="mt-2 text-[11px] text-[#a6a3b0]">
+                Estimated fee: {formatStroops(estimatedFee)} XLM
+              </p>
             )}
 
             <button

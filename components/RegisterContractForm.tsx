@@ -13,6 +13,7 @@ import { nativeToScVal } from '@stellar/stellar-sdk';
 import { REGISTRY_CATEGORIES, type RegistryCategory } from '@/lib/categories';
 import { NETWORK_PASSPHRASE, REGISTRY_CONTRACT_ID, SOROBAN_RPC_URL } from '@/lib/registry';
 import { createStellarDriver, submitContractCall, type TxPhase } from '@/lib/sorobanTx';
+import { formatStroops } from '@/lib/formatters';
 import { Button } from '@/components/ui/Button';
 
 
@@ -29,7 +30,8 @@ export interface RegisterContractFormProps {
     input: RegistrationInput,
     owner: string,
     onPhase: (p: TxPhase) => void,
-    wait?: (ms: number) => Promise<void>
+    wait?: (ms: number) => Promise<void>,
+    onFeeEstimated?: (fee: string) => void
   ) => Promise<{ hash: string } | void>;
   /** Overrides transaction polling delay in integration tests. */
   transactionWait?: (ms: number) => Promise<void>;
@@ -40,7 +42,8 @@ const defaultRegister = async (
   input: RegistrationInput,
   owner: string,
   onPhase: (p: TxPhase) => void,
-  wait?: (ms: number) => Promise<void>
+  wait?: (ms: number) => Promise<void>,
+  onFeeEstimated?: (fee: string) => void
 ) => {
   // Lazy so the browser-only wallet kit stays out of this module's import
   // graph — see the matching note in OwnerContracts.
@@ -76,6 +79,7 @@ const defaultRegister = async (
     walletAddress: owner,
     networkPassphrase: NETWORK_PASSPHRASE,
     onPhase,
+    onFeeEstimated,
     wait,
   });
   return { hash: result.hash };
@@ -105,6 +109,7 @@ export default function RegisterContractForm({
   const [phase, setPhase] = useState<TxPhase>('idle');
   const [message, setMessage] = useState('');
   const [transactionHash, setTransactionHash] = useState<string | null>(null);
+  const [estimatedFee, setEstimatedFee] = useState<string | null>(null);
 
   const busy = phase === 'building' || phase === 'awaiting-signature' || phase === 'submitting' || phase === 'confirming';
 
@@ -146,9 +151,10 @@ export default function RegisterContractForm({
     }
 
     setMessage('');
+    setEstimatedFee(null);
     setPhase('building');
     try {
-      const result = await register(input, walletAddress, setPhase, transactionWait);
+      const result = await register(input, walletAddress, setPhase, transactionWait, setEstimatedFee);
       if (result?.hash) {
         setTransactionHash(result.hash);
         sessionStorage.setItem(`tx-${Date.now()}`, result.hash);
@@ -160,6 +166,7 @@ export default function RegisterContractForm({
       setDescription('');
       setCategories([]);
       setTransactionHash(null);
+      setEstimatedFee(null);
       onRegistered?.();
     } catch (err) {
       setPhase('error');
@@ -256,6 +263,12 @@ export default function RegisterContractForm({
       >
         {SUBMIT_LABELS[phase]}
       </Button>
+
+      {estimatedFee && phase !== 'idle' && phase !== 'success' && (
+        <p className="text-xs text-[var(--color-text-muted)] text-center">
+          Estimated fee: {formatStroops(estimatedFee)} XLM
+        </p>
+      )}
 
       {phase === 'success' && (
         <div role="status" className="text-xs text-[var(--color-success-text)] bg-[var(--color-success-bg)] rounded-lg px-3 py-2.5">

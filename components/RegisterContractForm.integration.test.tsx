@@ -71,7 +71,7 @@ function renderFlow() {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  flow.driver.prepare.mockResolvedValue('PREPARED_XDR');
+  flow.driver.prepare.mockResolvedValue({ xdr: 'PREPARED_XDR', estimatedFee: '50000' });
   flow.driver.send.mockResolvedValue('HASH');
   flow.driver.status.mockResolvedValue('SUCCESS');
   flow.kit.signTransaction.mockResolvedValue({ signedTxXdr: 'SIGNED_XDR' });
@@ -94,7 +94,7 @@ describe('wallet transaction flow integration', () => {
     fillAndSubmit();
     expect((await screen.findByRole('button', { name: /preparing transaction/i })).hasAttribute('disabled')).toBe(true);
 
-    await act(async () => prepared.resolve('PREPARED_XDR'));
+    await act(async () => prepared.resolve({ xdr: 'PREPARED_XDR', estimatedFee: '50000' }));
     expect((await screen.findByRole('button', { name: /approve in your wallet/i })).hasAttribute('disabled')).toBe(true);
     expect(flow.kit.signTransaction).toHaveBeenCalledWith('PREPARED_XDR', {
       networkPassphrase: expect.any(String),

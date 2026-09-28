@@ -13,7 +13,7 @@ const PASSPHRASE = 'Test SDF Network ; September 2015';
 /** A driver whose every step can be made to succeed, fail, or stall. */
 function driver(overrides: Partial<ContractCallDriver> = {}): ContractCallDriver {
   return {
-    prepare: vi.fn(async () => 'PREPARED_XDR'),
+    prepare: vi.fn(async () => ({ xdr: 'PREPARED_XDR', estimatedFee: '50000' })),
     send: vi.fn(async () => 'HASH'),
     status: vi.fn(async () => 'SUCCESS'),
     ...overrides,
@@ -53,6 +53,18 @@ describe('submitContractCall', () => {
       networkPassphrase: PASSPHRASE,
       address: WALLET,
     });
+  });
+
+  it('reports the estimated fee before signing', async () => {
+    const onFeeEstimated = vi.fn();
+    const sign = vi.fn(async () => ({ signedTxXdr: 'SIGNED_XDR' }));
+    await submit(driver(), { onFeeEstimated, sign });
+
+    expect(onFeeEstimated).toHaveBeenCalledWith('50000');
+    // The fee is reported before the signing phase.
+    expect(onFeeEstimated.mock.invocationCallOrder[0]).toBeLessThan(
+      sign.mock.invocationCallOrder[0]
+    );
   });
 
   it('reports phases in order', async () => {

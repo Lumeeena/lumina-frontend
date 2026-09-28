@@ -42,8 +42,11 @@ export interface ContractCall {
  * equivalent to the real thing.
  */
 export interface ContractCallDriver {
-  /** Simulate and assemble, returning prepared but unsigned XDR. */
-  prepare(call: ContractCall): Promise<string>;
+  /**
+   * Simulate and assemble, returning prepared but unsigned XDR and the
+   * estimated fee in stroops (capped at the driver's configured ceiling).
+   */
+  prepare(call: ContractCall): Promise<{ xdr: string; estimatedFee: string }>;
   /** Submit signed XDR. Returns the transaction hash. */
   send(signedXdr: string): Promise<string>;
   /** Poll a submitted transaction's status. */
@@ -62,6 +65,8 @@ export interface SubmitOptions {
   walletAddress: string;
   networkPassphrase: string;
   onPhase?: (phase: TxPhase) => void;
+  /** Called with the estimated fee in stroops before the signing prompt. */
+  onFeeEstimated?: (fee: string) => void;
   /** Injected so tests don't spend real seconds waiting between polls. */
   wait?: (ms: number) => Promise<void>;
   pollIntervalMs?: number;
@@ -102,6 +107,7 @@ export async function submitContractCall({
   walletAddress,
   networkPassphrase,
   onPhase,
+  onFeeEstimated,
   wait = defaultWait,
   pollIntervalMs = 2000,
   maxPolls = 15,
@@ -109,17 +115,21 @@ export async function submitContractCall({
   const phase = (next: TxPhase) => onPhase?.(next);
 
   phase('building');
-  let prepared: string;
+  let prepared: { xdr: string; estimatedFee: string };
   try {
     prepared = await driver.prepare(call);
   } catch (err) {
     throw new ContractCallError(messageOf(err, 'Could not prepare the transaction.'), 'building');
   }
 
+  // Report the estimated fee before the signing prompt so the user can see
+  // what they're about to pay.
+  onFeeEstimated?.(prepared.estimatedFee);
+
   phase('awaiting-signature');
   let signedTxXdr: string;
   try {
-    ({ signedTxXdr } = await sign(prepared, { networkPassphrase, address: walletAddress }));
+    ({ signedTxXdr } = await sign(prepared.xdr, { networkPassphrase, address: walletAddress }));
   } catch (err) {
     // The overwhelmingly common case here is the user closing the wallet
     // prompt, which is not an error worth a red banner full of stack trace.
@@ -172,7 +182,11 @@ export interface StellarDriverConfig {
   networkPassphrase: string;
   /** Source account for the transaction — the connected wallet. */
   walletAddress: string;
-  fee?: string;
+  /**
+   * Maximum fee in stroops. The simulated fee is capped at this value.
+   * Defaults to '1000000' (0.1 XLM).
+   */
+  maxFee?: string;
 }
 
 /** The real driver, wrapping `@stellar/stellar-sdk`. */
@@ -180,7 +194,7 @@ export function createStellarDriver({
   rpcUrl,
   networkPassphrase,
   walletAddress,
-  fee = '1000000',
+  maxFee = '1000000',
 }: StellarDriverConfig): ContractCallDriver {
   const server = new rpc.Server(rpcUrl);
 
@@ -188,7 +202,8 @@ export function createStellarDriver({
     async prepare({ contractId, method, args }) {
       const account = await server.getAccount(walletAddress);
       const contract = new Contract(contractId);
-      const tx = new TransactionBuilder(account, { fee, networkPassphrase })
+      // Use a minimal fee for simulation — the real fee comes from the result.
+      const tx = new TransactionBuilder(account, { fee: '100', networkPassphrase })
         .addOperation(contract.call(method, ...args))
         .setTimeout(60)
         .build();
@@ -197,7 +212,23 @@ export function createStellarDriver({
       if (rpc.Api.isSimulationError(sim)) {
         throw new Error(sim.error);
       }
-      return rpc.assembleTransaction(tx, sim).build().toXDR();
+
+      // Extract the estimated fee from the simulation result's transaction data.
+      const sorobanData = sim.transactionData.build();
+      const simulatedFee = sorobanData.fee().toString();
+
+      // Cap at the configurable ceiling.
+      const estimatedFee =
+        BigInt(simulatedFee) > BigInt(maxFee) ? maxFee : simulatedFee;
+
+      // Rebuild with the correct fee and the simulated Soroban data.
+      const finalTx = new TransactionBuilder(account, { fee: estimatedFee, networkPassphrase })
+        .addOperation(contract.call(method, ...args))
+        .setTimeout(60)
+        .setSorobanData(sorobanData)
+        .build();
+
+      return { xdr: finalTx.toXDR(), estimatedFee };
     },
 
     async send(signedXdr) {
