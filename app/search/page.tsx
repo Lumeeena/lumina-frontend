@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { MemoSearchDocument as SEARCH_QUERY } from "@/lib/generated/graphql";
 import Link from "next/link";
 import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
 import { routeMetadata } from "@/lib/metadata";
 import { SEARCH } from "@/lib/routes";
-import type { Transaction } from "@/lib/types";
+import type { MemoSearchQuery } from "@/lib/generated/graphql";
 import BackendUnavailable from "@/components/BackendUnavailable";
 import TransactionRow from "@/components/TransactionRow";
 
@@ -15,34 +16,12 @@ export const metadata: Metadata = routeMetadata(SEARCH);
  * The same selection set as the transactions table, so a result row is
  * directly renderable by the shared `TransactionRow`.
  */
-const SEARCH_QUERY = `
-  query MemoSearch($query: String!) {
-    search(query: $query, limit: 20) {
-      items {
-        hash
-        ledger
-        createdAt
-        sourceAccount
-        feeCharged
-        operationCount
-        successful
-        memoType
-        memo
-      }
-    }
-  }
-`;
-
 async function searchMemo(query: string): Promise<{
-  items: Transaction[];
+  items: MemoSearchQuery["search"]["items"];
   unavailable: boolean;
 }> {
   try {
-    const data = await gqlFetch<{ search: { items: Transaction[] } }>(
-      GRAPHQL_URL,
-      SEARCH_QUERY,
-      { query },
-    );
+    const data = await gqlFetch(GRAPHQL_URL, SEARCH_QUERY, { query });
     return { items: data.search.items, unavailable: false };
   } catch {
     return { items: [], unavailable: true };

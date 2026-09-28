@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   EMPTY_FILTERS,
   countActiveFilters,
@@ -21,6 +21,35 @@ export interface TransactionFiltersProps {
   onDeletePreset: (name: string) => void;
 }
 
+function SourceAccountInput({
+  value,
+  onCommit,
+  className,
+}: {
+  value: string;
+  onCommit: (value: string) => void;
+  className: string;
+}) {
+  const [draft, setDraft] = useState(value);
+
+  useEffect(() => {
+    if (draft === value) return;
+    const timer = window.setTimeout(() => onCommit(draft), 300);
+    return () => window.clearTimeout(timer);
+  }, [draft, onCommit, value]);
+
+  return (
+    <input
+      id="filter-source"
+      type="text"
+      placeholder="G..."
+      className={className}
+      value={draft}
+      onChange={event => setDraft(event.target.value)}
+    />
+  );
+}
+
 export default function TransactionFilters({
   filters,
   onChange,
@@ -31,6 +60,10 @@ export default function TransactionFilters({
 }: TransactionFiltersProps) {
   const [presetName, setPresetName] = useState("");
   const activeCount = countActiveFilters(filters);
+  const commitSource = useCallback(
+    (source: string) => onChange({ ...filters, source }),
+    [filters, onChange],
+  );
 
   function set<K extends keyof Filters>(key: K, value: Filters[K]) {
     onChange({ ...filters, [key]: value });
@@ -84,13 +117,11 @@ export default function TransactionFilters({
         </div>
         <div>
           <label className={label} htmlFor="filter-source">Source account</label>
-          <input
-            id="filter-source"
-            type="text"
-            placeholder="G..."
-            className={`${field} w-full mono`}
+          <SourceAccountInput
+            key={filters.source}
             value={filters.source}
-            onChange={e => set("source", e.target.value)}
+            onCommit={commitSource}
+            className={`${field} w-full mono`}
           />
         </div>
         <div>

@@ -1,6 +1,5 @@
-import { LatestLedgerDocument as LATEST_LEDGER_QUERY } from "@/lib/generated/graphql";
 import Link from "next/link";
-import type { Metadata } from "next";
+import { LatestLedgerDocument as LATEST_LEDGER_QUERY } from "@/lib/generated/graphql";
 import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
 import { shareCard } from "@/lib/metadata";
 import { DEFAULT_DESCRIPTION, SITE_TITLE } from "@/lib/site";
@@ -40,26 +39,31 @@ const QUICK_LINKS = [
     href: "/explorer",
     label: "Account Explorer",
     desc: "Search any Stellar account",
+    prefetch: true,
   },
   {
     href: "/transactions",
     label: "All Transactions",
     desc: "Browse recent transactions",
+    prefetch: true,
   },
   {
     href: "/events",
     label: "Contract Events",
     desc: "Soroban events by contract",
+    prefetch: false,
   },
   {
     href: "/graphql",
     label: "GraphQL Playground",
     desc: "Query the Lumina API",
+    prefetch: false,
   },
   {
     href: "/registry",
     label: "Registry",
     desc: "Register a contract for indexing",
+    prefetch: false,
   },
 ];
 

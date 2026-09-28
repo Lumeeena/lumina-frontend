@@ -20,8 +20,8 @@
 /** The set of scalar types a filter field can hold. */
 export type FilterValue = string | number | null;
 
-/** A filter object, keyed by field. */
-export type FilterShape = Record<string, FilterValue>;
+/** A filter object whose declared fields use the scalar values above. */
+export type FilterShape = object;
 
 export interface FilterField<R> {
   /** Query-string parameter name. */
@@ -69,32 +69,33 @@ export function fieldName(field: FilterField<unknown>): string {
   return field.field ?? field.key;
 }
 
-export function countActiveFilters<R>(
-  filters: FilterShape,
+export function countActiveFilters<R, F extends FilterShape>(
+  filters: F,
   spec: FilterSpec<R>,
 ): number {
   let active = 0;
   for (const field of spec) {
-    if (!field.isDefault(filters[fieldName(field)] ?? field.default)) active++;
+    const values = filters as Record<string, FilterValue>;
+    if (!field.isDefault(values[fieldName(field)] ?? field.default)) active++;
   }
   return active;
 }
 
-export function isEmptyFilters<R>(
-  filters: FilterShape,
+export function isEmptyFilters<R, F extends FilterShape>(
+  filters: F,
   spec: FilterSpec<R>,
 ): boolean {
   return countActiveFilters(filters, spec) === 0;
 }
 
 /** Every field has to accept the record; the spec order is the check order. */
-export function matchesFilters<R>(
+export function matchesFilters<R, F extends FilterShape>(
   record: R,
-  filters: FilterShape,
+  filters: F,
   spec: FilterSpec<R>,
 ): boolean {
   for (const field of spec) {
-    const value = filters[fieldName(field)] ?? field.default;
+    const value = (filters as Record<string, FilterValue>)[fieldName(field)] ?? field.default;
     if (!field.matches(value, record)) return false;
   }
   return true;
@@ -104,13 +105,13 @@ export function matchesFilters<R>(
  * Only non-default values are written, so an unfiltered view has a clean URL
  * and a shared link carries exactly the filters someone actually set.
  */
-export function filtersToQueryString<R>(
-  filters: FilterShape,
+export function filtersToQueryString<R, F extends FilterShape>(
+  filters: F,
   spec: FilterSpec<R>,
 ): string {
   const params = new URLSearchParams();
   for (const field of spec) {
-    const value = filters[fieldName(field)] ?? field.default;
+    const value = (filters as Record<string, FilterValue>)[fieldName(field)] ?? field.default;
     if (field.isDefault(value)) continue;
     params.set(field.key, field.serialise(value));
   }
@@ -129,7 +130,7 @@ export function filtersFromQueryString<F extends FilterShape>(
   defaults: F,
 ): F {
   const params = typeof query === "string" ? new URLSearchParams(query) : query;
-  const result: FilterShape = { ...defaults };
+  const result: Record<string, FilterValue> = { ...defaults } as Record<string, FilterValue>;
   for (const field of spec) {
     if (!params.has(field.key)) continue;
     const raw = params.get(field.key);

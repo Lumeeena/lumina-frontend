@@ -53,10 +53,6 @@ export interface RegistryReputation {
   withdrawLockedUntil: number;
 }
 
-export interface RegistryProfile extends RegistryEntry {
-  reputation: RegistryReputation;
-}
-
 export interface SlashRecord {
   amount: bigint;
   reason: string;

@@ -71,6 +71,9 @@ export default function TransactionExplorer({
   // Offset read back from this view's snapshot, handed to the table, which
   // re-applies it once the virtualized rows exist to scroll against.
   const [restoredScrollTop, setRestoredScrollTop] = useState(0);
+  const loadedHashes = useRef(new Set<string>());
+  const loadingRef = useRef(false);
+  const requestControllerRef = useRef<AbortController | null>(null);
 
   // The URL is the source of truth for filters, so a refresh, a back button
   // and a pasted link all land on the same view.
@@ -82,6 +85,9 @@ export default function TransactionExplorer({
 
   const setFilters = useCallback(
     (next: Filters) => {
+      // A changed filter makes an auto-page chase obsolete. Aborting it lets
+      // the next filter start its own request as soon as this one settles.
+      requestControllerRef.current?.abort();
       const query = filtersToQueryString(next);
       router.replace(query ? `${pathname}?${query}` : pathname, {
         scroll: false,
@@ -97,8 +103,10 @@ export default function TransactionExplorer({
     setPresets(loadPresets());
   }, []);
 
-  const loadedHashes = useRef(new Set<string>());
-  const loadingRef = useRef(false);
+  useEffect(
+    () => () => requestControllerRef.current?.abort(),
+    [],
+  );
 
   // Key this view's snapshot is stored under. Kept in step with the filters on
   // screen, so narrowing the list re-keys the saved view rather than
@@ -141,6 +149,8 @@ export default function TransactionExplorer({
   const loadMore = useCallback(() => {
     if (loadingRef.current) return;
     loadingRef.current = true;
+    const controller = new AbortController();
+    requestControllerRef.current = controller;
     setLoading(true);
     setError(null);
 

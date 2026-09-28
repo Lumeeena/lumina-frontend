@@ -16,6 +16,8 @@ export interface RouteInfo {
   label: string;
   /** One sentence about the page, used for its meta description and social card. */
   description: string;
+  /** Prefetch only the destinations users reach most often from the nav. */
+  prefetch?: boolean;
   /**
    * Whether the sitemap should list this route. Defaults to true.
    *
@@ -32,6 +34,7 @@ export const HOME: RouteInfo = {
   label: "Home",
   description:
     "Lumina indexes Stellar into Postgres and serves it over a typed GraphQL API: ledgers, transactions, operations, accounts and Soroban contract events.",
+  prefetch: true,
 };
 
 export const EXPLORER: RouteInfo = {
@@ -39,6 +42,7 @@ export const EXPLORER: RouteInfo = {
   label: "Explorer",
   description:
     "Search any Stellar account or browse recent transactions, updated live over a GraphQL subscription.",
+  prefetch: true,
 };
 
 export const TRANSACTIONS: RouteInfo = {
@@ -46,6 +50,7 @@ export const TRANSACTIONS: RouteInfo = {
   label: "Transactions",
   description:
     "Every indexed Stellar transaction, with filters, saved presets and cursor pagination.",
+  prefetch: true,
 };
 
 export const SEARCH: RouteInfo = {
@@ -81,6 +86,7 @@ export const STATS: RouteInfo = {
   label: "Stats",
   description:
     "Indexer health and Stellar network throughput: latest ledger, transaction volume and the mix of operation types.",
+  prefetch: true,
 };
 
 export const WATCHES: RouteInfo = {

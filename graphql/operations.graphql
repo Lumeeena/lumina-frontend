@@ -59,8 +59,8 @@ query AccountDetail($address: String!) {
   }
 }
 
-query ContractEvents($contractId: String!, $limit: Int) {
-  events(contractId: $contractId, limit: $limit) {
+query ContractEvents($contractId: String!, $limit: Int, $cursor: String) {
+  events(contractId: $contractId, limit: $limit, cursor: $cursor) {
     items {
       id
       type
@@ -71,6 +71,7 @@ query ContractEvents($contractId: String!, $limit: Int) {
       topics
       value
     }
+    pageInfo { hasNextPage cursor }
   }
 }
 
@@ -102,6 +103,46 @@ query TransactionPage($limit: Int, $cursor: String) {
     pageInfo {
       hasNextPage
       cursor
+    }
+  }
+}
+
+query MemoSearch($query: String!) {
+  search(query: $query, limit: 20) {
+    items {
+      hash
+      ledger
+      createdAt
+      sourceAccount
+      feeCharged
+      operationCount
+      successful
+      memoType
+      memo
+    }
+  }
+}
+
+query TransactionDetail($hash: String!) {
+  transaction(hash: $hash) {
+    hash
+    ledger
+    createdAt
+    sourceAccount
+    feeCharged
+    operationCount
+    successful
+    memoType
+    memo
+    operations {
+      id
+      type
+      createdAt
+      sourceAccount
+      from
+      to
+      amount
+      asset
     }
   }
 }
