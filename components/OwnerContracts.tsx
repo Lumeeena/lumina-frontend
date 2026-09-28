@@ -46,10 +46,11 @@ import {
   type ActivityState,
 } from '@/lib/contractActivity';
 import type { ContractEvent } from '@/lib/types';
-import { formatStroops, truncateAddress } from '@/lib/formatters';
+import { formatStroops } from '@/lib/formatters';
 import TimeAgo from './TimeAgo';
 import { LifetimeSlashedBadge, StakeBadge, VerifiedBadge } from './RegistryBadges';
 import BackendUnavailable from './BackendUnavailable';
+import ContractLink from './ContractLink';
 import { t } from '@/lib/i18n';
 
 async function fetchEvents(
@@ -490,8 +491,8 @@ export default function OwnerContracts({
                     />
                   )}
                 </div>
-                <p className="mono text-[11px] text-[var(--color-text-muted)] mt-1 break-all">
-                  {truncateAddress(entry.contractId, 6)}
+                <p className="text-[11px] mt-1 break-all">
+                  <ContractLink contractId={entry.contractId} truncate={6} />
                 </p>
                 <p className="text-xs text-[var(--color-text-secondary)] mt-1.5">
                   {entry.description}

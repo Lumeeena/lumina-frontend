@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import CopyAddressButton from "@/components/CopyAddressButton";
 import { truncateAddress } from "@/lib/formatters";
 
@@ -21,6 +24,8 @@ const ADDRESS_PATTERN = /^[GC][A-Z2-7]{39,}$/;
 interface SorobanValueProps {
   value: unknown;
   initialExpandedDepth?: number;
+  showRawToggle?: boolean;
+  rawValue?: string;
 }
 
 function parseValue(value: unknown): unknown {
@@ -293,17 +298,78 @@ function SorobanNode({
   return <ScalarValue value={value} />;
 }
 
+function RawValue({ value }: { value: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(value);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <code className="break-all bg-[var(--color-bg-subtle)] border border-[var(--color-border-default)] rounded px-2 py-1 text-xs">
+          {value}
+        </code>
+        <button
+          onClick={handleCopy}
+          className="flex-shrink-0 px-2 py-1 text-xs bg-[var(--color-accent-surface)] hover:bg-[var(--color-accent-surface-hover)] text-[var(--color-accent-text)] rounded transition-colors"
+          title="Copy raw value"
+        >
+          {copied ? "✓" : "Copy"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function SorobanValue({
   value,
   initialExpandedDepth = 1,
+  showRawToggle = false,
+  rawValue,
 }: SorobanValueProps) {
+  const [showRaw, setShowRaw] = useState(false);
+
+  useEffect(() => {
+    if (!showRawToggle) return;
+    const stored = sessionStorage.getItem("soroban-raw-toggle");
+    if (stored === "true") {
+      setShowRaw(true);
+    }
+  }, [showRawToggle]);
+
+  const handleToggle = () => {
+    const newValue = !showRaw;
+    setShowRaw(newValue);
+    if (showRawToggle) {
+      sessionStorage.setItem("soroban-raw-toggle", String(newValue));
+    }
+  };
+
   return (
     <div className="min-w-0 break-words text-xs text-[var(--color-text-secondary)]">
-      <SorobanNode
-        value={parseValue(value)}
-        depth={0}
-        initialExpandedDepth={initialExpandedDepth}
-      />
+      {showRawToggle && rawValue && (
+        <div className="mb-2 flex items-center gap-2">
+          <button
+            onClick={handleToggle}
+            className="text-xs px-2 py-1 bg-[var(--color-bg-subtle)] hover:bg-[var(--color-bg-muted)] border border-[var(--color-border-default)] rounded transition-colors"
+          >
+            {showRaw ? "Decoded" : "Raw XDR"}
+          </button>
+        </div>
+      )}
+      {showRaw && rawValue ? (
+        <RawValue value={rawValue} />
+      ) : (
+        <SorobanNode
+          value={parseValue(value)}
+          depth={0}
+          initialExpandedDepth={initialExpandedDepth}
+        />
+      )}
     </div>
   );
 }

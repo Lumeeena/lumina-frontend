@@ -12,8 +12,9 @@
 import { useState } from 'react';
 import { getSlashes, type RegistryProfile, type SlashRecord } from '@/lib/registry';
 import { CATEGORY_LABELS } from '@/lib/registry';
-import { formatStroops, truncateAddress } from '@/lib/formatters';
+import { formatStroops } from '@/lib/formatters';
 import { LifetimeSlashedBadge, StakeBadge, VerifiedBadge } from './RegistryBadges';
+import ContractLink from './ContractLink';
 
 export interface RegistryEntryCardProps {
   profile: RegistryProfile;
@@ -53,7 +54,7 @@ export default function RegistryEntryCard({ profile, loadSlashes = defaultLoadSl
     <div className="border border-[var(--color-border-default)] rounded-[10px] p-3.5 px-4">
       <div className="flex items-center justify-between gap-2 mb-1">
         <span className="font-bold text-sm text-[var(--color-text-primary)]">{profile.name}</span>
-        <span className="mono text-[11px] text-[var(--color-text-muted)]">{truncateAddress(profile.contractId, 5)}</span>
+        <ContractLink contractId={profile.contractId} truncate={5} className="text-[11px]" />
       </div>
       <p className="text-xs text-[var(--color-text-secondary)] m-0">{profile.description}</p>
       {profile.categories && profile.categories.length > 0 && (
