@@ -38,7 +38,9 @@ function baseLanguage(locale: string): string {
  * switches the app away from English.
  */
 export function isSupportedLocale(locale: string): boolean {
-  return locale in CATALOGUES || RTL_LANGUAGES.has(baseLanguage(locale));
+  return locale in CATALOGUES || RTL_LANGUAGES.has(baseLanguage(locale)) || [
+    "en", "zh", "ja", "ko", "ru", "ar", "he", "es", "pt"
+  ].includes(baseLanguage(locale));
 }
 
 /**
