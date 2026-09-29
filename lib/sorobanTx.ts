@@ -53,7 +53,7 @@ export interface ContractCallDriver {
 export type SignFn = (
   xdr: string,
   opts: { networkPassphrase: string; address: string }
-) => Promise<{ signedTxXdr: string }>;
+) => Promise<{ signedTxXdr: string } | { error: string }>;
 
 export interface SubmitOptions {
   driver: ContractCallDriver;
@@ -126,7 +126,12 @@ export async function submitContractCall({
   phase('awaiting-signature');
   let signedTxXdr: string;
   try {
-    ({ signedTxXdr } = await sign(prepared.xdr, { networkPassphrase, address: walletAddress }));
+    const signResult = await sign(prepared.xdr, { networkPassphrase, address: walletAddress });
+    if ('error' in signResult) {
+      // Handle network mismatch or other signing errors
+      throw new ContractCallError(signResult.error, 'awaiting-signature');
+    }
+    signedTxXdr = signResult.signedTxXdr;
   } catch (err) {
     // The overwhelmingly common case here is the user closing the wallet
     // prompt, which is not an error worth a red banner full of stack trace.

@@ -12,6 +12,7 @@ import {
   type RegistryProfile,
 } from "@/lib/registry";
 import {
+  checkNetworkMismatch,
   connectWallet,
   disconnectWallet,
   getConnectedWallet,
@@ -162,11 +163,20 @@ function RegistryContent() {
       setConnectError(result.error);
       setWalletLocked(result.isLocked ?? false);
     } else {
-      // Re-fetch full session so we get name + icon too (#88).
-      const session = await getConnectedWallet();
-      setWallet(session);
-      setTab("mine");
-      setWalletLocked(false);
+      // Check for network mismatch after successful connection
+      const mismatch = await checkNetworkMismatch();
+      if (mismatch) {
+        setConnectError(mismatch.error);
+        // Still set the wallet session so user can see their wallet info
+        const session = await getConnectedWallet();
+        setWallet(session);
+      } else {
+        // Re-fetch full session so we get name + icon too (#88).
+        const session = await getConnectedWallet();
+        setWallet(session);
+        setTab("mine");
+        setWalletLocked(false);
+      }
     }
     setConnecting(false);
   }
@@ -230,6 +240,13 @@ function RegistryContent() {
                     <div>
                       <p className="font-semibold mb-1">Your wallet is locked</p>
                       <p className="text-[var(--color-error-dark)]">Unlock your wallet extension and try again.</p>
+                    </div>
+                  ) : connectError.includes('Network mismatch') ? (
+                    <div>
+                      <p className="font-semibold mb-1">Network Mismatch</p>
+                      <p className="text-[var(--color-error-dark)]">
+                        {connectError}
+                      </p>
                     </div>
                   ) : (
                     connectError

@@ -28,6 +28,7 @@ export interface ChartContainerProps {
  *  - Accessible region: the chart is announced by `role="img"` and
  *    `aria-label` = `description`; the SVG itself is marked
  *    `aria-hidden` so screen readers do not try to read axis ticks.
+ *  - Focus management for keyboard navigation.
  *
  * Every chart in Lumina must be rendered inside this container so that
  * the palette and a11y contract stay consistent.
@@ -54,6 +55,7 @@ export function ChartContainer({
         aria-label={description}
         style={{ height }}
         className="w-full"
+        tabIndex={0}
       >
         {children}
       </div>
