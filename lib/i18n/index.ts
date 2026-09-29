@@ -17,9 +17,10 @@
  */
 import type { MessageCatalogue, MessageKey } from "./types";
 import en from "./en";
+import de from "./de";
 import { getDirection, isRtl, RTL_LANGUAGES, type Direction } from "./direction";
 
-const CATALOGUES: Record<string, MessageCatalogue> = { en };
+const CATALOGUES: Record<string, MessageCatalogue> = { en, de };
 
 let activeCatalogue: MessageCatalogue = en;
 let activeLocale = "en";

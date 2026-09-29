@@ -112,18 +112,10 @@ export default function AccountTransactionList({
           <caption className="sr-only">Account transactions</caption>
           <thead>
             <tr>
-              <th scope="col" className={th}>
-                Hash
-              </th>
-              <th scope="col" className={th}>
-                Ledger
-              </th>
-              <th scope="col" className={th}>
-                Ops
-              </th>
-              <th scope="col" className={th}>
-                Time
-              </th>
+              <th scope="col" className={th}>{t("table.hash")}</th>
+              <th scope="col" className={th}>{t("table.ledger")}</th>
+              <th scope="col" className={th}>{t("table.ops")}</th>
+              <th scope="col" className={th}>{t("table.time")}</th>
             </tr>
           </thead>
           <tbody>

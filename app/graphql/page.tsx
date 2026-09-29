@@ -114,7 +114,7 @@ export default function GraphQLPage() {
   }, [unavailable, query]);
 
   return (
-    <div className="max-w-[1280px] mx-auto px-4 sm:px-7 py-12">
+    <div className="max-w-[1280px] mx-auto px-4 sm:px-7 py-12 overflow-x-hidden">
       <h1 className="font-extrabold text-3xl mb-2 text-[var(--color-text-primary)]">GraphQL Playground</h1>
       <div className="flex items-center gap-2.5 mb-7 flex-wrap">
         <p className="text-[var(--color-text-secondary)] text-[13px] m-0">Lumina GraphQL endpoint:</p>

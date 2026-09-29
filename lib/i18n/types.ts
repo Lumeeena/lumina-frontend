@@ -179,6 +179,140 @@ export interface MessageCatalogue {
   "activity.indexed": string;
   "activity.noEvents": string;
   "activity.unknown": string;
+
+  // ── Table headers ─────────────────────────────────────────────────────
+  "table.hash": string;
+  "table.ledger": string;
+  "table.ops": string;
+  "table.time": string;
+  "table.type": string;
+  "table.transaction": string;
+  "table.detail": string;
+  "table.source": string;
+  "table.operations": string;
+  "table.fee": string;
+  "table.contract": string;
+  "table.topic": string;
+  "table.value": string;
+
+  // ── Common UI ─────────────────────────────────────────────────────────
+  "common.search": string;
+  "common.close": string;
+  "common.clear": string;
+  "common.save": string;
+  "common.cancel": string;
+  "common.loading": string;
+  "common.error": string;
+  "common.retry": string;
+  "common.connect": string;
+  "common.disconnect": string;
+  "common.copy": string;
+  "common.copied": string;
+  "common.xlm": string;
+
+  // ── Skip link ─────────────────────────────────────────────────────────
+  "skipLink.skipToMain": string;
+
+  // ── Theme toggle ──────────────────────────────────────────────────────
+  "theme.system": string;
+  "theme.light": string;
+  "theme.dark": string;
+
+  // ── Keyboard shortcuts ────────────────────────────────────────────────
+  "shortcuts.title": string;
+  "shortcuts.search": string;
+  "shortcuts.showList": string;
+  "shortcuts.description": string;
+  "shortcuts.enable": string;
+
+  // ── Search page ───────────────────────────────────────────────────────
+  "search.heading": string;
+  "search.description": string;
+  "search.accountAddress": string;
+  "search.contractId": string;
+  "search.transactionHash": string;
+  "search.memoSearch": string;
+  "search.searching": string;
+  "search.resultsCount": string;
+  "search.rankedByMemo": string;
+  "search.helpText": string;
+
+  // ── Transactions page ─────────────────────────────────────────────────
+  "transactions.heading": string;
+  "transactions.loading": string;
+
+  // ── Stats page ────────────────────────────────────────────────────────
+  "stats.heading": string;
+  "stats.description": string;
+  "stats.latestLedger": string;
+  "stats.stellarMainnet": string;
+  "stats.txsLastLedger": string;
+  "stats.successfulFailed": string;
+  "stats.contractsRegistered": string;
+  "stats.viaLumina": string;
+  "stats.avgLedgerTime": string;
+  "stats.protocolTarget": string;
+  "stats.protocolTargetHint": string;
+  "stats.operationBreakdown": string;
+  "stats.basedOnRecent": string;
+
+  // ── Registry page ─────────────────────────────────────────────────────
+  "registry.heading": string;
+  "registry.description": string;
+  "registry.registerContract": string;
+  "registry.connecting": string;
+  "registry.connectPrompt": string;
+  "registry.walletLocked": string;
+  "registry.unlockHint": string;
+  "registry.myContracts": string;
+  "registry.recentlyRegistered": string;
+  "registry.all": string;
+  "registry.filterByCategory": string;
+  "registry.connectToSee": string;
+  "registry.loadingEntries": string;
+  "registry.noActiveContracts": string;
+  "registry.noContractsYet": string;
+  "registry.couldNotReach": string;
+
+  // ── GraphQL page ──────────────────────────────────────────────────────
+  "graphql.heading": string;
+  "graphql.endpoint": string;
+  "graphql.queryExamples": string;
+  "graphql.recentQueries": string;
+  "graphql.noHistory": string;
+  "graphql.queryEditor": string;
+  "graphql.running": string;
+  "graphql.runQuery": string;
+  "graphql.response": string;
+  "graphql.clickToRun": string;
+
+  // ── Explorer page ─────────────────────────────────────────────────────
+  "explorer.heading": string;
+  "explorer.description": string;
+  "explorer.searchPlaceholder": string;
+  "explorer.recentTransactions": string;
+  "explorer.loading": string;
+
+  // ── Events page ───────────────────────────────────────────────────────
+  "events.heading": string;
+  "events.description": string;
+  "events.contractIdPlaceholder": string;
+  "events.filter": string;
+
+  // ── Assets page ───────────────────────────────────────────────────────
+  "assets.heading": string;
+  "assets.description": string;
+
+  // ── Watch page ────────────────────────────────────────────────────────
+  "watch.backgroundNotifications": string;
+  "watch.notificationDescription": string;
+
+  // ── Footer ────────────────────────────────────────────────────────────
+  "footer.version": string;
+  "footer.copyVersion": string;
+
+  // ── SearchBar ─────────────────────────────────────────────────────────
+  "searchBar.placeholder": string;
 }
 
 export type MessageKey = keyof MessageCatalogue;

@@ -109,18 +109,10 @@ export default function AccountOperationList({
           <caption className="sr-only">Account operations</caption>
           <thead>
             <tr>
-              <th scope="col" className={th}>
-                Type
-              </th>
-              <th scope="col" className={th}>
-                Transaction
-              </th>
-              <th scope="col" className={th}>
-                Detail
-              </th>
-              <th scope="col" className={th}>
-                Time
-              </th>
+              <th scope="col" className={th}>{t("table.type")}</th>
+              <th scope="col" className={th}>{t("table.transaction")}</th>
+              <th scope="col" className={th}>{t("table.detail")}</th>
+              <th scope="col" className={th}>{t("table.time")}</th>
             </tr>
           </thead>
           <tbody>
