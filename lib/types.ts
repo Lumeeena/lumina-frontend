@@ -6,6 +6,7 @@ import type {
   AccountTrustlineOpsQuery,
   OwnerContractEventsQuery,
   LatestLedgerQuery,
+  AssetVolumeQuery,
 } from "./generated/graphql";
 
 export type Transaction = TransactionPageQuery["transactions"]["items"][number];
@@ -16,3 +17,8 @@ export type Balance = Account["balances"][number];
 export type AccountFlags = Account["flags"];
 export type ContractEvent = OwnerContractEventsQuery["events"]["items"][number];
 export type Ledger = NonNullable<LatestLedgerQuery["latestLedger"]>;
+
+// Asset types - matching the backend schema
+export type AssetStats = NonNullable<AssetVolumeQuery["asset"]>;
+export type TrustlineChange = TrustlineOp;
+export type VolumeBucket = AssetStats["series"][number];
