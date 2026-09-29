@@ -7,6 +7,7 @@ import { NAV_ROUTES } from "@/lib/routes";
 import { DEFAULT_NETWORK, withNetwork, type NetworkId } from "@/lib/network";
 import { useNetwork } from "@/lib/useNetwork";
 import NetworkSwitcher from "./NetworkSwitcher";
+import LocaleSwitcher from "./LocaleSwitcher";
 import ThemeToggle from "@/components/ThemeToggle";
 
 /**
@@ -87,8 +88,9 @@ export default function Navbar() {
         <RoutedNavContent pathname={pathname} />
       </Suspense>
 
-      {/* Push the toggle to the far right */}
-      <div className="ms-auto shrink-0">
+      {/* Push the toggle and switcher to the far right */}
+      <div className="ms-auto shrink-0 flex items-center gap-2">
+        <LocaleSwitcher />
         <ThemeToggle />
       </div>
     </nav>
