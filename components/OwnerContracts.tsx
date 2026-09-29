@@ -112,7 +112,13 @@ async function callRegistry(
       walletAddress: owner,
     }),
     call: { contractId: REGISTRY_CONTRACT_ID, method, args },
-    sign: signWithWallet,
+    sign: async (xdr, opts) => {
+      const signResult = await signWithWallet(xdr, opts);
+      if ('error' in signResult) {
+        throw new Error(signResult.error);
+      }
+      return { signedTxXdr: signResult.signedTxXdr };
+    },
     walletAddress: owner,
     networkPassphrase: NETWORK_PASSPHRASE,
     onFeeEstimated,

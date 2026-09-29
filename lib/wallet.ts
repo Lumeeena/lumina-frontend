@@ -10,6 +10,7 @@
  * concurrent callers share one import and one init.
  */
 import { NETWORK_PASSPHRASE } from './registry';
+import { NETWORKS, type NetworkId } from './network';
 
 type KitModule = typeof import('@creit.tech/stellar-wallets-kit');
 type WalletsKit = KitModule['StellarWalletsKit'];
@@ -27,6 +28,13 @@ export interface WalletSession {
   walletId: string;
   walletName: string;
   walletIcon: string;
+}
+
+export interface NetworkMismatchError {
+  error: string;
+  walletNetwork: string;
+  appNetwork: string;
+  canSwitch: boolean;
 }
 
 /**
@@ -79,8 +87,21 @@ async function importKit(): Promise<WalletsKit> {
   ]);
 
   if (!kitInitialized) {
+    // Determine the correct network based on NETWORK_PASSPHRASE
+    let network: string;
+    if (NETWORK_PASSPHRASE === NETWORKS[0].passphrase) {
+      network = Networks.PUBLIC; // mainnet
+    } else if (NETWORK_PASSPHRASE === NETWORKS[1].passphrase) {
+      network = Networks.TESTNET; // testnet
+    } else if (NETWORK_PASSPHRASE === NETWORKS[2].passphrase) {
+      network = Networks.FUTURENET; // futurenet
+    } else {
+      // Default to testnet for unknown passphrases
+      network = Networks.TESTNET;
+    }
+    
     StellarWalletsKit.init({
-      network: NETWORK_PASSPHRASE === Networks.PUBLIC ? Networks.PUBLIC : Networks.TESTNET,
+      network,
       modules: [new FreighterModule(), new xBullModule(), new AlbedoModule(), new RabetModule(), new LobstrModule()],
     });
     kitInitialized = true;
@@ -151,7 +172,13 @@ export async function getConnectedWallet(): Promise<WalletSession | null> {
 export async function signWithWallet(
   xdr: string,
   opts: { networkPassphrase: string; address: string }
-): Promise<{ signedTxXdr: string }> {
+): Promise<{ signedTxXdr: string } | { error: string }> {
+  // Check for network mismatch before signing
+  const mismatch = await checkNetworkMismatch();
+  if (mismatch) {
+    return { error: mismatch.error };
+  }
+  
   const kit = await loadKit();
   return kit.signTransaction(xdr, opts);
 }
@@ -159,4 +186,65 @@ export async function signWithWallet(
 export async function disconnectWallet(): Promise<void> {
   const kit = await loadKit();
   await kit.disconnect();
+}
+
+/**
+ * Get the network the wallet is currently configured for.
+ * Returns the network ID or null if it cannot be determined.
+ * This is a best-effort check since not all wallets expose their network.
+ */
+async function getWalletNetwork(): Promise<NetworkId | null> {
+  try {
+    const kit = await loadKit();
+    // Try to get network from the kit - this may not be available in all wallet implementations
+    // @ts-ignore - network property may not be in types
+    const network = kit.network || kit._network;
+    
+    // Map StellarWalletsKit network strings to our NetworkId
+    if (network === 'PUBLIC') return 'mainnet';
+    if (network === 'TESTNET') return 'testnet';
+    if (network === 'FUTURENET') return 'futurenet';
+    
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Check if the wallet is on the correct network for the app.
+ * Returns a mismatch error if networks don't match, null if they match or cannot be determined.
+ */
+export async function checkNetworkMismatch(): Promise<NetworkMismatchError | null> {
+  const walletNetwork = await getWalletNetwork();
+  
+  if (!walletNetwork) {
+    // Cannot determine wallet network - proceed with caution
+    // This is common with some wallets that don't expose network info
+    return null;
+  }
+  
+  // Find the app's expected network from NETWORK_PASSPHRASE
+  const appNetworkInfo = NETWORKS.find(n => n.passphrase === NETWORK_PASSPHRASE);
+  const appNetwork = appNetworkInfo?.id || 'mainnet';
+  
+  if (walletNetwork !== appNetwork) {
+    const walletNetworkInfo = NETWORKS.find(n => n.id === walletNetwork);
+    return {
+      error: `Network mismatch: your wallet is on ${walletNetworkInfo?.label || walletNetwork} but this app is configured for ${appNetworkInfo?.label || appNetwork}. Please switch your wallet network in your wallet settings.`,
+      walletNetwork: walletNetworkInfo?.label || walletNetwork,
+      appNetwork: appNetworkInfo?.label || appNetwork,
+      canSwitch: true, // Most wallets support network switching via their UI
+    };
+  }
+  
+  return null;
+}
+
+/**
+ * Get human-readable network information for the current app configuration.
+ */
+export function getAppNetworkInfo() {
+  const appNetworkInfo = NETWORKS.find(n => n.passphrase === NETWORK_PASSPHRASE);
+  return appNetworkInfo || NETWORKS[0]; // Default to mainnet
 }

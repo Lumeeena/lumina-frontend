@@ -76,7 +76,13 @@ const defaultRegister = async (
         nativeToScVal(input.categories, { type: input.categories.map(() => 'symbol') }),
       ],
     },
-    sign: signWithWallet,
+    sign: async (xdr, opts) => {
+      const signResult = await signWithWallet(xdr, opts);
+      if ('error' in signResult) {
+        throw new Error(signResult.error);
+      }
+      return { signedTxXdr: signResult.signedTxXdr };
+    },
     walletAddress: owner,
     networkPassphrase: NETWORK_PASSPHRASE,
     onPhase,
