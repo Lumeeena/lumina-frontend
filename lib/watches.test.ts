@@ -3,6 +3,8 @@ import {
   MAX_WATCHES,
   WATCHES_STORAGE_KEY,
   addWatch,
+  exportWatches,
+  importWatches,
   isWatched,
   loadWatches,
   removeWatch,
@@ -206,3 +208,55 @@ describe("no storage available", () => {
     expect(watchFiltersFor(ADDRESS, null)).toEqual(DEFAULT_OPERATION_FILTERS);
   });
 });
+
+describe("exportWatches & importWatches", () => {
+  it("exports and imports cleanly in replace mode", () => {
+    const storage = memoryStorage();
+    addWatch(ADDRESS, storage);
+    addWatch(OTHER, storage);
+
+    const exported = exportWatches(storage);
+    const targetStorage = memoryStorage();
+
+    const result = importWatches(exported, "replace", targetStorage);
+    expect(result.success).toBe(true);
+    expect(result.count).toBe(2);
+    expect(watchedAddresses(targetStorage)).toEqual([ADDRESS, OTHER]);
+  });
+
+  it("merges imported watches with existing ones without duplicating", () => {
+    const storage = memoryStorage();
+    addWatch(ADDRESS, storage);
+
+    const importData = JSON.stringify([ADDRESS, OTHER]);
+    const result = importWatches(importData, "merge", storage);
+
+    expect(result.success).toBe(true);
+    expect(watchedAddresses(storage)).toEqual([ADDRESS, OTHER]);
+  });
+
+  it("rejects invalid JSON with a clear error message", () => {
+    const storage = memoryStorage();
+    const result = importWatches("{ invalid json }", "merge", storage);
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("Invalid JSON format");
+  });
+
+  it("rejects non-array JSON structure", () => {
+    const storage = memoryStorage();
+    const result = importWatches(JSON.stringify({ address: ADDRESS }), "merge", storage);
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("expected a JSON array");
+  });
+
+  it("rejects file containing no valid addresses", () => {
+    const storage = memoryStorage();
+    const result = importWatches(JSON.stringify([123, null, ""]), "merge", storage);
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("no valid Stellar address entries");
+  });
+});
+
