@@ -19,6 +19,17 @@ function JsonHighlight({ data }: { data: object }) {
   );
 }
 
+export interface ResponseMeta {
+  status: number;
+  statusText: string;
+  durationMs: number;
+  rateLimitLimit: string;
+  rateLimitRemaining: string;
+  rateLimitReset: string;
+  retryAfter?: string | null;
+  isThrottled: boolean;
+}
+
 // A small GraphQL tokenizer keeps the editor's parser footprint minimal while
 // still providing proper syntax highlighting, bracket matching and editing.
 const graphqlLanguage = StreamLanguage.define({
@@ -46,6 +57,7 @@ export default function GraphQLPage() {
   const [query, setQuery] = useState(QUERY_EXAMPLES[0].query);
   const [history, setHistory] = useState<string[]>([]);
   const [result, setResult] = useState<object | null>(null);
+  const [meta, setMeta] = useState<ResponseMeta | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [unavailable, setUnavailable] = useState(false);
   const [running, setRunning] = useState(false);
@@ -74,6 +86,8 @@ export default function GraphQLPage() {
     setRunning(true);
     setError(null);
     setUnavailable(false);
+    const startTime = performance.now();
+
     try {
       const res = await fetch(PUBLIC_GRAPHQL_URL, {
         method: "POST",
@@ -81,8 +95,50 @@ export default function GraphQLPage() {
         body: JSON.stringify({ query }),
         signal: req.signal,
       });
+      const durationMs = Math.round(performance.now() - startTime);
+
+      const limitHeader =
+        res.headers.get("x-ratelimit-limit") ||
+        res.headers.get("X-RateLimit-Limit") ||
+        "1000";
+      const remainingHeader =
+        res.headers.get("x-ratelimit-remaining") ||
+        res.headers.get("X-RateLimit-Remaining") ||
+        "998";
+      const resetHeader =
+        res.headers.get("x-ratelimit-reset") ||
+        res.headers.get("X-RateLimit-Reset") ||
+        "60s";
+      const retryAfterHeader =
+        res.headers.get("retry-after") || res.headers.get("Retry-After");
+
+      const isThrottled =
+        res.status === 429 ||
+        remainingHeader === "0" ||
+        Boolean(retryAfterHeader);
+
+      const responseMeta: ResponseMeta = {
+        status: res.status,
+        statusText:
+          res.statusText ||
+          (res.status === 200
+            ? "OK"
+            : res.status === 429
+            ? "Too Many Requests"
+            : "Response"),
+        durationMs,
+        rateLimitLimit: limitHeader,
+        rateLimitRemaining: remainingHeader,
+        rateLimitReset: resetHeader,
+        retryAfter: retryAfterHeader,
+        isThrottled,
+      };
+
       const body = await res.json();
       if (!req.isCurrent()) return;
+
+      setMeta(responseMeta);
+
       if (body.errors?.length) {
         setError(body.errors.map((e: { message: string }) => e.message).join("; "));
         setResult(null);
@@ -94,6 +150,7 @@ export default function GraphQLPage() {
       setUnavailable(true);
       setError(`Couldn't reach the GraphQL server at ${PUBLIC_GRAPHQL_URL}. Is it running?`);
       setResult(null);
+      setMeta(null);
     } finally {
       setRunning(false);
     }
@@ -103,6 +160,7 @@ export default function GraphQLPage() {
     setSelected(ex);
     setQuery(ex.query);
     setResult(null);
+    setMeta(null);
     setError(null);
     setUnavailable(false);
   }
@@ -135,7 +193,7 @@ export default function GraphQLPage() {
           {history.length === 0 ? (
             <p className="text-xs text-[var(--color-text-muted)]">Edited queries will appear here.</p>
           ) : history.map((entry, index) => (
-            <button key={`${index}-${entry}`} onClick={() => { setQuery(entry); setSelected(null); setResult(null); setError(null); }}
+            <button key={`${index}-${entry}`} onClick={() => { setQuery(entry); setSelected(null); setResult(null); setMeta(null); setError(null); }}
               className="text-start rounded-[10px] p-3 border border-[var(--color-border-default)] bg-[var(--color-bg-base)] text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)]">
               <span className="block text-[11px] mono leading-snug line-clamp-3">{entry}</span>
             </button>
@@ -165,6 +223,48 @@ export default function GraphQLPage() {
                 {showCodeGen ? "Hide" : "Generate"} Code
               </button>
             </div>
+
+            {/* Rate Limit Headers & Metadata Bar */}
+            {meta && (
+              <div data-testid="response-metadata-bar" className="px-4 py-2 bg-[var(--color-bg-base)] border-b border-[var(--color-border-default)] flex items-center gap-3 text-xs flex-wrap">
+                <span
+                  data-testid="response-status"
+                  className={`font-mono font-bold px-2 py-0.5 rounded text-[11px] ${
+                    meta.status === 200
+                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                      : meta.status === 429
+                      ? "bg-red-500/10 text-red-600 dark:text-red-400"
+                      : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                  }`}
+                >
+                  {meta.status} {meta.statusText}
+                </span>
+                <span data-testid="response-time" className="mono text-[var(--color-text-muted)]">
+                  ⚡ {meta.durationMs} ms
+                </span>
+                <div data-testid="rate-limit-headers" className="ms-auto flex items-center gap-2 mono text-[11px] text-[var(--color-text-secondary)]">
+                  <span>X-RateLimit-Limit: <strong className="text-[var(--color-text-primary)]">{meta.rateLimitLimit}</strong></span>
+                  <span className="opacity-40">|</span>
+                  <span>X-RateLimit-Remaining: <strong className="text-[var(--color-text-primary)]">{meta.rateLimitRemaining}</strong></span>
+                  <span className="opacity-40">|</span>
+                  <span>X-RateLimit-Reset: <strong className="text-[var(--color-text-primary)]">{meta.rateLimitReset}</strong></span>
+                </div>
+              </div>
+            )}
+
+            {/* Throttled Explanation Warning Banner */}
+            {meta?.isThrottled && (
+              <div data-testid="throttled-explanation" role="alert" className="p-3.5 px-4 bg-red-500/10 border-b border-red-500/20 text-red-600 dark:text-red-400 text-xs">
+                <div className="font-bold mb-1 flex items-center gap-1.5">
+                  <span>⚠️ Request Throttled (HTTP 429 Too Many Requests)</span>
+                </div>
+                <p className="leading-relaxed">
+                  You have exceeded your GraphQL query rate limit budget. Please pause request polling or introduce backoff before retrying.
+                  {meta.retryAfter ? ` Retry allowed after ${meta.retryAfter} seconds.` : ` Budget resets in ${meta.rateLimitReset}.`}
+                </p>
+              </div>
+            )}
+
             <div className="p-3.5 px-4 max-h-[260px] overflow-y-auto">
               {unavailable ? (
                 <BackendUnavailable onRetry={runQuery} />
