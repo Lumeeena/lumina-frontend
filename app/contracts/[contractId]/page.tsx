@@ -5,6 +5,7 @@ import { routeMetadata } from "@/lib/metadata";
 import { truncateAddress } from "@/lib/formatters";
 import BackendUnavailable from "@/components/BackendUnavailable";
 import CopyAddressButton from "@/components/CopyAddressButton";
+import WatchIndicator from "@/components/WatchIndicator";
 import SorobanValue from "@/components/SorobanValue";
 import TimeAgo from "@/components/TimeAgo";
 
@@ -103,6 +104,7 @@ export default async function ContractPage({
               {contractId}
             </h1>
             <CopyAddressButton address={contractId} variant="hash" />
+            <WatchIndicator address={contractId} />
           </div>
           <p className="text-[var(--color-text-muted)] text-[13px] mb-6">
             Soroban contract storage

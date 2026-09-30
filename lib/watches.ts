@@ -1,7 +1,17 @@
 /**
- * Watch list — a localStorage-backed set of Stellar addresses the user wants to
- * track, each with the filter that decides what counts as activity. Part of
- * #9 / #85, extended for #80 and #83.
+ * Watch list — a localStorage-backed set of Stellar addresses (accounts and contracts)
+ * the user wants to track, each with the filter that decides what counts as activity.
+ * Part of #9 / #79 / #85, extended for #80, #83, and #84.
+ *
+ * Server-side path (#79):
+ * Starting locally in browser storage avoids blocking on backend authentication services.
+ * When user auth & backend watch list endpoints arrive, local watches can be synced
+ * up to the server account on login, while continuing to fall back to browser storage
+ * when unauthenticated or offline.
+ *
+ * Graceful storage degradation (#79):
+ * Access to localStorage is wrapped in try/catch to handle sandboxed iFrames,
+ * disabled cookies, or private browsing restrictions without crashing the page.
  *
  * The storage format is a plain JSON array. Entries are objects, but the
  * original format was a bare array of address strings, so a list written by
