@@ -168,3 +168,13 @@ the numbers are in the Bundle report section of
 - **New on-chain write** — extend `ContractCallDriver` if the RPC surface grew,
   and drive it through `submitContractCall`; keep it framework-free so the fake
   driver keeps covering it.
+
+## Developer identity and API key protection
+
+Lumina's primary identity mechanism is a connected Stellar wallet.
+Developer API keys and usage quotas (`/developers/usage`) are scoped to the active wallet address (`#78`):
+
+- **Key Ownership Association**: API keys and quota tracking are bound 1:1 to the connected Stellar wallet address (`ownerAddress`).
+- **Protected Management**: The usage dashboard requires an active wallet connection (`readPersistedSession()` / `getConnectedWallet()`) before rendering key details or allowing key creation/revocation.
+- **Graceful Disconnection**: Disconnecting a wallet immediately hides sensitive API keys and usage data. Keys remain safely stored and bound to the wallet address in storage, restoring visibility when the owner reconnects.
+

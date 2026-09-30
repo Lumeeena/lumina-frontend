@@ -1,9 +1,9 @@
-// Stellar Ed25519 public keys are Strkey-encoded:
-//   - Always start with 'G'
-//   - Exactly 56 characters
+// Stellar Ed25519 public keys & Soroban contract IDs are Strkey-encoded:
+//   - Account IDs start with 'G' (56 chars)
+//   - Contract IDs start with 'C' (56 chars)
 //   - Base32 alphabet: A-Z and 2-7 (case-insensitive input is normalised to upper)
 
-const STRKEY_REGEX = /^G[A-Z2-7]{55}$/;
+const STRKEY_REGEX = /^[GC][A-Z2-7]{55}$/;
 
 export type AddressValidation =
   | { valid: true }
@@ -20,8 +20,8 @@ export function validateStellarAddress(raw: string): AddressValidation {
   // Build a human-readable hint so the user knows what to fix.
   const hints: string[] = [];
 
-  if (!address.startsWith("G")) {
-    hints.push(`must start with "G" (starts with "${raw[0]}")`);
+  if (!address.startsWith("G") && !address.startsWith("C")) {
+    hints.push(`must start with "G" or "C" (starts with "${raw[0]}")`);
   }
 
   if (address.length !== 56) {
@@ -36,6 +36,7 @@ export function validateStellarAddress(raw: string): AddressValidation {
   return {
     valid: false,
     reason: "malformed",
-    hint: hints.length > 0 ? hints.join("; ") : "not a valid Stellar address",
+    hint: hints.length > 0 ? hints.join("; ") : "not a valid Stellar account or contract ID",
   };
 }
+
