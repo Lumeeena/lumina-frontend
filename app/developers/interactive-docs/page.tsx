@@ -137,7 +137,7 @@ items: [...]          # the actual results`}
               <div className="flex gap-3">
                 <Link
                   href={`/graphql?example=${encodeURIComponent(example.name)}`}
-                  className="px-4 py-2 rounded bg-[var(--color-accent-fill)] text-[var(--color-accent-text)] font-semibold hover:opacity-90 transition-opacity text-sm"
+                  className="px-4 py-2 rounded bg-[var(--color-accent-fill)] text-white font-semibold hover:opacity-90 transition-opacity text-sm"
                 >
                   Try in Playground
                 </Link>

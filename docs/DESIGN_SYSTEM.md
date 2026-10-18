@@ -39,8 +39,8 @@ mirror and `app/globals.css` ever disagree.
 |---|---|---|---|
 | `--color-text-primary` | `#0e0e12` | `#f2f0fa` | Body copy, headings |
 | `--color-text-secondary` | `#6b6975` | `#9b98a8` | Labels, captions, secondary info |
-| `--color-text-muted` | `#a6a3b0` | `#6b6975` | Placeholders, timestamps, "end of results" |
-| `--color-text-faint` | `#c3c1cb` | `#57545f` | Lowest-emphasis hints: row timestamps, idle dots |
+| `--color-text-muted` | `#6d6a78` | `#97939f` | Placeholders, timestamps, "end of results" |
+| `--color-text-faint` | `#6f6b7c` | `#8f8b9d` | Lowest-emphasis hints: row timestamps, idle dots |
 | `--color-text-inverse` | `#ffffff` | `#ffffff` | White content on a brand or inverse surface |
 
 ### Borders
@@ -54,8 +54,8 @@ mirror and `app/globals.css` ever disagree.
 
 | Token | Light | Dark | Use |
 |---|---|---|---|
-| `--color-accent-fill` | `#8b5cf6` | `#8b5cf6` | Primary button fill, focus ring, brand mark |
-| `--color-accent-fill-hover` | `#7c3aed` | `#a78bfa` | Primary button hover |
+| `--color-accent-fill` | `#7c3aed` | `#7c3aed` | Primary button fill, focus ring, brand mark |
+| `--color-accent-fill-hover` | `#6d28d9` | `#6d28d9` | Primary button hover |
 | `--color-accent-surface` | `#f5f3ff` | `#1e1a2e` | Selected chip / tab / badge background |
 | `--color-accent-text` | `#7c3aed` | `#c4b5fd` | Accent text (links, selected labels) |
 | `--color-accent-text-hover` | `#6d28d9` | `#a78bfa` | Hover state for accent text |
@@ -73,6 +73,62 @@ mirror and `app/globals.css` ever disagree.
 | `--color-error-border` / `--color-error-surface` | BackendUnavailable alert card |
 | `--color-neutral-bg` / `--color-neutral-text` | Neutral (deactivated) pills |
 | `--color-active-bg` / `--color-active-text` | Active status pills |
+
+### Contrast (WCAG AA, issue #20)
+
+Every text pair below was measured with the WCAG relative-luminance formula.
+Normal text needs ≥ 4.5:1, large text (≥ 18 pt, or 14 pt bold) needs ≥ 3:1,
+and non-text UI (dots, focus rings, button fills vs. page) needs ≥ 3:1.
+`lib/contrast.test.ts` re-computes these ratios and fails if any text pair
+drops below 4.5:1.
+
+Light theme — text on page surfaces (worst of `bg-base #ffffff`,
+`bg-subtle #fafafa`, `bg-raised #f6f5f8`, `bg-overlay #f0eff3` shown as min):
+
+| Foreground | On white | Min on all light surfaces | Pass |
+|---|---|---|---|
+| `text-primary #0e0e12` | 19.26 | 16.83 | ✓ |
+| `text-secondary #6b6975` | 5.38 | 4.70 | ✓ |
+| `text-muted #6d6a78` | 5.27 | 4.61 | ✓ |
+| `text-faint #6f6b7c` | 5.16 | 4.51 | ✓ |
+| `accent-text #7c3aed` | 5.70 | 4.98 | ✓ |
+| `accent-text-hover #6d28d9` | 7.10 | 6.21 | ✓ |
+| `success-text #15803d` | 5.02 | 4.62 on raised / 4.79 on `success-bg` | ✓ (in-use pairs) |
+| `error-text #b91c1c` | 6.47 | 5.65 (5.91 on `error-bg`) | ✓ |
+| `warning-text #92400e` | 7.09 | 6.19 (6.84 on `warning-bg`) | ✓ |
+| `neutral-text #6b6975` | 5.38 | 4.70 (4.90 on `neutral-bg`) | ✓ |
+| `active-text #15803d` | 5.02 | 4.62 (4.79 on `active-bg`) | ✓ |
+| `error-surface-text #9a3412` | 7.31 | 6.38 (7.04 on `error-surface`) | ✓ |
+| white on `accent-fill #7c3aed` | 5.70 | — | ✓ |
+| white on `accent-fill-hover #6d28d9` | 7.10 | — | ✓ |
+| white on `inverse-bg #0e0e12` | 19.26 | — | ✓ |
+
+Previous failures fixed: `text-muted #a6a3b0` was 2.47:1 on white,
+`text-faint #c3c1cb` was 1.78:1, `success/active #16a34a` was 3.30:1
+(3.15:1 on its own bg), `error #dc2626` was 4.41:1 on its own bg, and white
+on `accent-fill #8b5cf6` was 4.23:1. Replacements keep the same hue family
+(cool grey, violet, green/red/amber) with darker, AA-passing steps.
+
+Dark theme — text on dark surfaces (worst of `#0e0e12`, `#18181f`,
+`#1e1d27`, `#262534` shown as min):
+
+| Foreground | On `#0e0e12` | Min on all dark surfaces | Pass |
+|---|---|---|---|
+| `text-primary #f2f0fa` | 17.08 | 13.33 | ✓ |
+| `text-secondary #9b98a8` | 6.83 | 5.33 | ✓ |
+| `text-muted #97939f` | 6.41 | 5.00 | ✓ |
+| `text-faint #8f8b9d` | 5.82 | 4.55 | ✓ |
+| `accent-text #c4b5fd` | 10.43 | 8.14 | ✓ |
+| `success-text #4ade80` | 11.05 | 8.63 (8.55 on `success-bg`) | ✓ |
+| `error-text #f87171` | 6.96 | 5.44 (6.57 on `error-bg`) | ✓ |
+| `warning-text #fbbf24` | 11.54 | 9.01 (10.92 on `warning-bg`) | ✓ |
+
+Share cards (`OgCard`, Satori): title 62 px / eyebrow 24 px / subtitle 28 px
+are all large text (≥ 3:1). White on the gradient stops `#4c1d95` (10.95),
+`#6d28d9` (7.10), `#7c3aed` (5.70), `#8b5cf6` (4.23) all pass 3:1; the
+translucent eyebrow (78% white) and subtitle (85% white) pass 3:1 on every
+stop (worst 3.20 / 3.53 on `#8b5cf6`). Code-block pairs (`#e8e8e8` on
+`#2e3440`/`#1e1e1e`/`#2e2e2e`) are 10.19–13.61:1.
 
 ---
 

@@ -63,7 +63,7 @@ export default function CodeSnippet({
         </pre>
         <button
           onClick={handleCopy}
-          className="absolute top-2 right-2 px-3 py-1.5 rounded text-xs font-semibold bg-[var(--color-accent-fill)] text-[var(--color-accent-text)] hover:opacity-90 transition-opacity"
+          className="absolute top-2 right-2 px-3 py-1.5 rounded text-xs font-semibold bg-[var(--color-accent-fill)] text-white hover:opacity-90 transition-opacity"
         >
           {copied ? '✓ Copied' : copyLabel}
         </button>

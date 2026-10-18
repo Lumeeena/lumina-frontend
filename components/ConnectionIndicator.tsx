@@ -22,12 +22,12 @@ const LABEL_KEYS: Record<ConnectionState, Parameters<typeof t>[0]> = {
 };
 
 const DOT_STYLE: Record<ConnectionState, { dot: string; ring: string; pulse: boolean }> = {
-  idle: { dot: "bg-[var(--color-text-faint)]", ring: "rgba(195,193,203,0.15)", pulse: false },
-  connecting: { dot: "bg-[var(--color-warning-text)]", ring: "rgba(217,119,6,0.15)", pulse: true },
-  connected: { dot: "bg-[var(--color-success-text)]", ring: "rgba(22,163,74,0.15)", pulse: false },
-  reconnecting: { dot: "bg-[var(--color-warning-text)]", ring: "rgba(217,119,6,0.15)", pulse: true },
-  disconnected: { dot: "bg-[var(--color-text-muted)]", ring: "rgba(166,163,176,0.15)", pulse: false },
-  unsupported: { dot: "bg-[var(--color-text-muted)]", ring: "rgba(166,163,176,0.15)", pulse: false },
+  idle: { dot: "bg-[var(--color-text-faint)]", ring: "rgba(111,107,124,0.15)", pulse: false },
+  connecting: { dot: "bg-[var(--color-warning-text)]", ring: "rgba(146,64,14,0.15)", pulse: true },
+  connected: { dot: "bg-[var(--color-success-text)]", ring: "rgba(21,128,61,0.15)", pulse: false },
+  reconnecting: { dot: "bg-[var(--color-warning-text)]", ring: "rgba(146,64,14,0.15)", pulse: true },
+  disconnected: { dot: "bg-[var(--color-text-muted)]", ring: "rgba(109,106,120,0.15)", pulse: false },
+  unsupported: { dot: "bg-[var(--color-text-muted)]", ring: "rgba(109,106,120,0.15)", pulse: false },
 };
 
 const EXPLANATION_KEYS: Record<ConnectionState, Parameters<typeof t>[0]> = {

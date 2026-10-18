@@ -92,7 +92,7 @@ export default async function Home() {
             <div className="flex gap-3 flex-wrap">
               <Link
                 href="/explorer"
-                className="bg-[var(--color-accent-fill)] hover:bg-[var(--color-accent-fill-hover)] text-white font-bold text-sm px-[22px] py-[13px] rounded-lg shadow-[0_1px_2px_rgba(139,92,246,0.3)] transition-colors"
+                className="bg-[var(--color-accent-fill)] hover:bg-[var(--color-accent-fill-hover)] text-white font-bold text-sm px-[22px] py-[13px] rounded-lg shadow-[0_1px_2px_rgba(124,58,237,0.3)] transition-colors"
               >
                 Open Explorer
               </Link>
