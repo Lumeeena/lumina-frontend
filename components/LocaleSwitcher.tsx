@@ -32,11 +32,6 @@ export default function LocaleSwitcher() {
 
   useEffect(() => {
     setCurrentLocale(getLocale());
-    const handleLocaleChange = () => {
-      setCurrentLocale(getLocale());
-    };
-    // We would need to subscribe here if setLocale is called elsewhere, but
-    // since we control the UI here, it's mostly self-contained.
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -64,7 +59,7 @@ export default function LocaleSwitcher() {
         value={currentLocale}
         onChange={handleChange}
         aria-label="Select language"
-        className="appearance-none rounded-md border border-[var(--color-border-default)] bg-[var(--color-bg-raised)] pl-8 pr-7 py-1.5 font-medium shadow-sm transition hover:border-[var(--color-accent-fill)] cursor-pointer text-[var(--color-text-primary)]"
+        className="appearance-none rounded-md border border-[var(--color-border-default)] bg-[var(--color-bg-raised)] pl-8 pr-7 py-1.5 font-medium shadow-sm transition hover:border-[var(--color-accent-fill)] cursor-pointer text-[var(--color-text-primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-fill)] motion-reduce:transition-none"
       >
         {SUPPORTED_LOCALES.map((loc) => {
           const m = LOCALE_META[loc];
