@@ -16,6 +16,7 @@ import type { TransactionDetailQuery } from "@/lib/generated/graphql";
 import BackendUnavailable from "@/components/BackendUnavailable";
 import CopyAddressButton from "@/components/CopyAddressButton";
 import TimeAgo from "@/components/TimeAgo";
+import ViewTracker from "@/components/ViewTracker";
 
 export const dynamic = "force-dynamic";
 
@@ -71,6 +72,14 @@ export default async function TransactionPage({
 
   return (
     <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
+      {transaction && (
+        <ViewTracker
+          id={transaction.hash}
+          type="transaction"
+          label={truncateAddress(transaction.hash, 6)}
+          path={`/transactions/${transaction.hash}`}
+        />
+      )}
       <Link
         href="/transactions"
         className="inline-block text-[13px] font-semibold text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] mb-[18px]"

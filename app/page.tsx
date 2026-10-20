@@ -9,6 +9,7 @@ import StatCard from "@/components/StatCard";
 import SearchBar from "@/components/SearchBar";
 import LiveFeed from "@/components/LiveFeed";
 import BackendUnavailable from "@/components/BackendUnavailable";
+import RecentlyViewed from "@/components/RecentlyViewed";
 
 export const metadata: Metadata = {
   // `absolute` because this is the route the title template's own default
@@ -157,23 +158,26 @@ export default async function Home() {
             </h2>
             <LiveFeed />
           </div>
-          <div>
-            <h2 className="font-extrabold text-[17px] mb-3.5 text-[var(--color-text-primary)]">
-              Quick Access
-            </h2>
-            <div className="flex flex-col gap-2.5">
-              {QUICK_LINKS.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="text-start bg-[var(--color-bg-base)] border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] rounded-xl p-4 flex flex-col gap-1 transition-colors"
-                >
-                  <span className="font-bold text-sm text-[var(--color-text-primary)]">
-                    {item.label}
-                  </span>
-                  <span className="text-xs text-[var(--color-text-muted)]">{item.desc}</span>
-                </Link>
-              ))}
+          <div className="space-y-8">
+            <RecentlyViewed limit={5} compact />
+            <div>
+              <h2 className="font-extrabold text-[17px] mb-3.5 text-[var(--color-text-primary)]">
+                Quick Access
+              </h2>
+              <div className="flex flex-col gap-2.5">
+                {QUICK_LINKS.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="text-start bg-[var(--color-bg-base)] border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] rounded-xl p-4 flex flex-col gap-1 transition-colors"
+                  >
+                    <span className="font-bold text-sm text-[var(--color-text-primary)]">
+                      {item.label}
+                    </span>
+                    <span className="text-xs text-[var(--color-text-muted)]">{item.desc}</span>
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
         </div>

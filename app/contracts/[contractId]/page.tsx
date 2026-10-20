@@ -8,6 +8,7 @@ import BackendUnavailable from "@/components/BackendUnavailable";
 import CopyAddressButton from "@/components/CopyAddressButton";
 import WatchIndicator from "@/components/WatchIndicator";
 import SorobanValue from "@/components/SorobanValue";
+import ViewTracker from "@/components/ViewTracker";
 
 export const dynamic = "force-dynamic";
 
@@ -89,6 +90,12 @@ export default async function ContractPage({
 
   return (
     <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
+      <ViewTracker
+        id={contractId}
+        type="contract"
+        label={truncateAddress(contractId, 6)}
+        path={`/contracts/${contractId}`}
+      />
       <Link
         href="/events"
         className="inline-block text-[13px] font-semibold text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] mb-[18px]"

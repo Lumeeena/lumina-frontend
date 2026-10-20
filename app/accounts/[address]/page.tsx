@@ -16,6 +16,7 @@ import AccountOperationList from "@/components/AccountOperationList";
 import AccountTrustlineTimeline from "@/components/AccountTrustlineTimeline";
 import BackendUnavailable from "@/components/BackendUnavailable";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import ViewTracker from "@/components/ViewTracker";
 
 export const dynamic = "force-dynamic";
 
@@ -97,6 +98,14 @@ export default async function AccountPage({
 
   return (
     <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
+      {account && (
+        <ViewTracker
+          id={account.address}
+          type="account"
+          label={truncateAddress(account.address, 6)}
+          path={`/accounts/${account.address}`}
+        />
+      )}
       <Breadcrumbs
         items={[
           { label: "Explorer", href: "/explorer" },
