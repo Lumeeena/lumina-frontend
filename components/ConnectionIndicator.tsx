@@ -107,14 +107,13 @@ export default function ConnectionIndicator({ state, failureReason = null, onRet
           />
         </button>
       )}
-      {expanded && (
-        <p
-          id={explanationId}
-          className="absolute start-0 top-full z-20 mt-2 w-[min(19rem,calc(100vw-2rem))] rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-base)] p-3 text-sm/5 font-normal tracking-normal text-[var(--color-text-secondary)] shadow-lg"
-        >
-          {t(EXPLANATION_KEYS[state])}
-        </p>
-      )}
+      <p
+        id={explanationId}
+        hidden={!expanded}
+        className="absolute start-0 top-full z-20 mt-2 w-[min(19rem,calc(100vw-2rem))] rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-base)] p-3 text-sm/5 font-normal tracking-normal text-[var(--color-text-secondary)] shadow-lg"
+      >
+        {t(EXPLANATION_KEYS[state])}
+      </p>
     </div>
   );
 }
