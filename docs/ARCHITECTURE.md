@@ -142,6 +142,14 @@ misbehaves.
 wallet (the list is a plain contract read), and only asks for a connection when
 the user wants to register or deactivate a contract.
 
+Every contract write is also tracked in `lib/pendingTransactions.ts`. The form
+that starts a write owns its phase in component state, which navigation
+discards, so the progress lives in a module-level store instead.
+`components/PendingTransactions.tsx` renders it from the root layout, so an
+in-flight write stays visible, and its outcome is reported, on every route. A
+confirmed write also clears the query cache, because the write may have changed
+what a cached read shows.
+
 ## Rendering and performance
 
 Long lists are virtualized with `@tanstack/react-virtual`. The live feed caps
@@ -149,6 +157,17 @@ its length (`MAX_FEED_LENGTH`) because a subscription-backed list would
 otherwise grow without bound on a tab left open overnight; it is a "what is
 happening now" panel, not scrollback. React Compiler memoization is enabled per
 component via an annotation, and the boundary is measured rather than assumed.
+
+Client reads that are repeated on every visit can use `lib/queryCache.ts`. A
+cached answer is shown at once, is refetched only once it is older than the
+caller's freshness window, and stays on screen while that refresh runs. A
+failed refresh never replaces an answer that is already shown. Today this is
+the account portfolio's volume chart; other reads are not yet cached.
+
+The GraphQL and Soroban RPC origins are preconnected from the root layout
+(`lib/preconnect.ts`), so the first request to each skips its DNS, TCP and TLS
+setup. The hints carry `crossorigin`, because the fetches send no credentials
+and the browser only reuses a preconnected socket opened the same way.
 
 First-load JavaScript is budgeted per route in `bundle-budget.json` and checked
 on every pull request, so a dependency that grows a page fails CI instead of
