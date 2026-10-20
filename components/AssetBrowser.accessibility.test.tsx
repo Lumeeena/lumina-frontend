@@ -30,11 +30,11 @@ describe("AssetBrowser accessibility", () => {
     expect(screen.getByRole("searchbox", { name: /search/i })).toBeTruthy();
     expect(screen.getByRole("group", { name: "Order assets by" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Holders" }).getAttribute("aria-pressed")).toBe("true");
+    await user.tab();
+    expect(document.activeElement).toBe(screen.getByRole("searchbox"));
+
     const region = screen.getByRole("region", { name: "Assets" });
     region.focus();
     expect(document.activeElement).toBe(region);
-
-    await user.tab();
-    expect(document.activeElement).toBe(screen.getByRole("searchbox"));
   });
 });
