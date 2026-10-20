@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import SkipLink from "@/components/SkipLink";
 import DirectionSync from "@/components/DirectionSync";
 import KeyboardShortcuts from "@/components/KeyboardShortcuts";
+import CommandPalette from "@/components/CommandPalette";
 import ThemeScript from "@/components/ThemeScript";
 import WatchActivityWatcher from "@/components/WatchActivityWatcher";
 import ErrorReporter from "@/components/ErrorReporter";
@@ -89,6 +90,7 @@ export default function RootLayout({
         <WatchActivityWatcher />
         <Navbar />
         <KeyboardShortcuts />
+        <CommandPalette />
         <main id="main" className="flex-1">
           {children}
         </main>
