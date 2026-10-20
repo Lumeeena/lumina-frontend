@@ -186,6 +186,21 @@ const de: MessageCatalogue = {
   "soroban.transactionFailed":
     "Die Transaktion war nicht erfolgreich (Status: {status}).",
 
+  // ── Pending transactions ──────────────────────────────────────────────
+  "pending.title": "Transaktionen",
+  "pending.register": "Vertrag {name} registrieren",
+  "pending.deactivate": "Vertrag {contract} deaktivieren",
+  "pending.stake": "Auf Vertrag {contract} staken",
+  "pending.withdraw": "Einsatz von Vertrag {contract} abheben",
+  "pending.building": "Wird vorbereitet",
+  "pending.awaitingSignature": "Warten auf Ihr Wallet",
+  "pending.submitting": "Wird gesendet",
+  "pending.confirming": "Wird im Netzwerk bestätigt",
+  "pending.succeeded": "Bestätigt",
+  "pending.failed": "Fehlgeschlagen",
+  "pending.failedFallback": "Die Transaktion wurde nicht abgeschlossen.",
+  "pending.dismiss": "Schließen",
+
   // ── Stats ─────────────────────────────────────────────────────────────
   "stats.noOperationsYet": "Noch keine Operationen indexiert.",
 

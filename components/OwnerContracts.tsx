@@ -49,7 +49,8 @@ import {
   type ActivityState,
 } from '@/lib/contractActivity';
 import type { ContractEvent } from '@/lib/types';
-import { formatStroops } from '@/lib/formatters';
+import { formatStroops, truncateAddress } from '@/lib/formatters';
+import { trackTransaction } from '@/lib/pendingTransactions';
 import {
   checkReserve,
   WORST_CASE_FEE_STROOPS,
@@ -119,7 +120,8 @@ async function callRegistry(
   owner: string,
   method: string,
   args: xdr.ScVal[],
-  onFeeEstimated?: (fee: string) => void
+  onFeeEstimated?: (fee: string) => void,
+  onPhase?: (phase: TxPhase) => void,
 ): Promise<{ hash: string }> {
   // Imported lazily rather than at module scope: the wallet kit pulls in
   // browser-only CommonJS (Freighter et al) that cannot be loaded outside a
@@ -145,28 +147,37 @@ async function callRegistry(
     walletAddress: owner,
     networkPassphrase: NETWORK_PASSPHRASE,
     onFeeEstimated,
+    onPhase,
   });
   return { hash: result.hash };
 }
 
+// Each write is tracked so its progress survives navigating away from this
+// page. See `lib/pendingTransactions.ts`.
 const defaultDeactivate = (contractId: string, owner: string, onFeeEstimated?: (fee: string) => void) =>
-  callRegistry(owner, "deactivate", [
-    nativeToScVal(owner, { type: "address" }),
-    nativeToScVal(contractId, { type: "address" }),
-  ], onFeeEstimated);
+  trackTransaction(t("pending.deactivate", { contract: truncateAddress(contractId, 5) }), (report) =>
+    callRegistry(owner, "deactivate", [
+      nativeToScVal(owner, { type: "address" }),
+      nativeToScVal(contractId, { type: "address" }),
+    ], onFeeEstimated, report),
+  );
 
 const defaultStake = (contractId: string, owner: string, amount: bigint, onFeeEstimated?: (fee: string) => void) =>
-  callRegistry(owner, "stake", [
-    nativeToScVal(owner, { type: "address" }),
-    nativeToScVal(contractId, { type: "address" }),
-    nativeToScVal(amount, { type: "i128" }),
-  ], onFeeEstimated);
+  trackTransaction(t("pending.stake", { contract: truncateAddress(contractId, 5) }), (report) =>
+    callRegistry(owner, "stake", [
+      nativeToScVal(owner, { type: "address" }),
+      nativeToScVal(contractId, { type: "address" }),
+      nativeToScVal(amount, { type: "i128" }),
+    ], onFeeEstimated, report),
+  );
 
 const defaultWithdraw = (contractId: string, owner: string, onFeeEstimated?: (fee: string) => void) =>
-  callRegistry(owner, "withdraw_stake", [
-    nativeToScVal(owner, { type: "address" }),
-    nativeToScVal(contractId, { type: "address" }),
-  ], onFeeEstimated);
+  trackTransaction(t("pending.withdraw", { contract: truncateAddress(contractId, 5) }), (report) =>
+    callRegistry(owner, "withdraw_stake", [
+      nativeToScVal(owner, { type: "address" }),
+      nativeToScVal(contractId, { type: "address" }),
+    ], onFeeEstimated, report),
+  );
 
 /**
  * The unmet good-standing conditions for `withdraw_stake`, worked out up front

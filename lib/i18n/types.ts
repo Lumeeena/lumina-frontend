@@ -169,6 +169,21 @@ export interface MessageCatalogue {
   "soroban.pendingConfirmation": string;
   "soroban.transactionFailed": string;
 
+  // ── Pending transactions ──────────────────────────────────────────────
+  "pending.title": string;
+  "pending.register": string;
+  "pending.deactivate": string;
+  "pending.stake": string;
+  "pending.withdraw": string;
+  "pending.building": string;
+  "pending.awaitingSignature": string;
+  "pending.submitting": string;
+  "pending.confirming": string;
+  "pending.succeeded": string;
+  "pending.failed": string;
+  "pending.failedFallback": string;
+  "pending.dismiss": string;
+
   // ── Stats ─────────────────────────────────────────────────────────────
   "stats.noOperationsYet": string;
 
