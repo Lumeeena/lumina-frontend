@@ -19,15 +19,17 @@ export default function BackendUnavailable({ onRetry }: { onRetry?: () => void }
   return (
     <div
       role="alert"
+      aria-labelledby="backend-unavailable-title"
       className="p-8 rounded-xl border border-[var(--color-error-border)] bg-[var(--color-error-surface)] text-center"
     >
-      <p className="text-[var(--color-error-surface-text)] font-semibold mb-2">
+      <p id="backend-unavailable-title" className="text-[var(--color-error-surface-text)] font-semibold mb-2">
         {t("error.backendUnavailableTitle")}
       </p>
       <p className="text-[var(--color-text-secondary)] text-sm max-w-lg mx-auto mb-4">
         {t("error.backendUnavailableBody")}
       </p>
       <Button
+        type="button"
         variant="secondary"
         size="sm"
         loading={retrying}
