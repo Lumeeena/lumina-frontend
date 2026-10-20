@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import CodeMirror from "@uiw/react-codemirror";
 import { StreamLanguage } from "@codemirror/language";
 import { QUERY_EXAMPLES, QueryExample } from "@/lib/queries";
@@ -11,6 +11,7 @@ import BackendUnavailable from "@/components/BackendUnavailable";
 import CodeSnippet from "@/components/CodeSnippet";
 import LanguageSelector from "@/components/LanguageSelector";
 import { generateJavaScriptClient, generatePythonClient } from "@/lib/codegen";
+import { queryRecovery } from "@/lib/errorRecovery";
 
 function JsonHighlight({ data }: { data: object }) {
   const str = JSON.stringify(data, null, 2);
@@ -62,7 +63,7 @@ export default function GraphQLPage() {
   const [unavailable, setUnavailable] = useState(false);
   const [running, setRunning] = useState(false);
   const [showCodeGen, setShowCodeGen] = useState(false);
-  const [codegenLanguage, setCodegenLanguage] = useState('javascript');
+  const [codegenLanguage, setCodegenLanguage] = useState<'javascript' | 'python'>('javascript');
 
   useEffect(() => {
     const timer = window.setTimeout(() => setHistory(loadQueryHistory()), 0);
@@ -80,7 +81,7 @@ export default function GraphQLPage() {
   // result the user has moved on from.
   const scope = useAbortScope();
 
-  async function runQuery() {
+  const runQuery = useCallback(async () => {
     const req = scope.next();
     setHistory(saveQueryToHistory(query));
     setRunning(true);
@@ -154,7 +155,7 @@ export default function GraphQLPage() {
     } finally {
       setRunning(false);
     }
-  }
+  }, [query, scope]);
 
   function selectExample(ex: QueryExample) {
     setSelected(ex);
@@ -169,7 +170,7 @@ export default function GraphQLPage() {
     const reconnect = () => { if (unavailable) void runQuery(); };
     window.addEventListener("lumina:online", reconnect);
     return () => window.removeEventListener("lumina:online", reconnect);
-  }, [unavailable, query]);
+  }, [unavailable, runQuery]);
 
   return (
     <div className="max-w-[1280px] mx-auto px-4 sm:px-7 py-12 overflow-x-hidden">
@@ -269,7 +270,10 @@ export default function GraphQLPage() {
               {unavailable ? (
                 <BackendUnavailable onRetry={runQuery} />
               ) : error ? (
-                <span className="text-[var(--color-error-text)] text-sm">{error}</span>
+                <div role="alert" className="text-[var(--color-error-text)] text-sm">
+                  <p>{error}</p>
+                  <p className="mt-1">{queryRecovery(error, meta?.isThrottled)}</p>
+                </div>
               ) : result === null ? (
                 <span className="text-[var(--color-text-muted)] text-sm">Click &ldquo;Run Query&rdquo; to see the response.</span>
               ) : (
@@ -286,7 +290,7 @@ export default function GraphQLPage() {
               <div className="p-4 space-y-4">
                 <LanguageSelector
                   selected={codegenLanguage}
-                  onChange={setCodegenLanguage}
+                  onChange={value => setCodegenLanguage(value === 'python' ? 'python' : 'javascript')}
                   languages={[
                     { id: 'javascript', label: 'JavaScript' },
                     { id: 'python', label: 'Python' },
@@ -298,7 +302,7 @@ export default function GraphQLPage() {
                       ? generatePythonClient(query)
                       : generateJavaScriptClient(query)
                   }
-                  language={codegenLanguage as any}
+                  language={codegenLanguage}
                   title="Generated Client Code"
                 />
                 <p className="text-xs text-[var(--color-text-muted)]">

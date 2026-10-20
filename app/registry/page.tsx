@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   CATEGORIES,
@@ -19,14 +19,27 @@ import {
   readPersistedSession,
   type WalletSession,
 } from "@/lib/wallet";
-import RegisterContractForm from "@/components/RegisterContractForm";
-import OwnerContracts from "@/components/OwnerContracts";
-import RegistryEntryCard from "@/components/RegistryEntryCard";
 import BackendUnavailable from "@/components/BackendUnavailable";
 import WalletInfo from "@/components/WalletInfo";
 import { Button } from "@/components/ui/Button";
 
 type Tab = "mine" | "all";
+
+const RegisterContractForm = lazy(() => import("@/components/RegisterContractForm"));
+const OwnerContracts = lazy(() => import("@/components/OwnerContracts"));
+const RegistryEntryCard = lazy(() => import("@/components/RegistryEntryCard"));
+
+function RegistryListPlaceholder({ count, message }: { count: number; message: string }) {
+  return (
+    <div role="status" className="flex flex-col gap-2 text-sm text-[var(--color-text-muted)]">
+      {Array.from({ length: Math.min(count, 3) }, (_, index) => (
+        <div key={index} className="min-h-36 rounded-[10px] border border-[var(--color-border-default)] bg-[var(--color-bg-subtle)] p-4">
+          {index === 0 ? message : null}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 // useSearchParams has to sit inside a Suspense boundary for Next to build.
 export default function RegistryPage() {
@@ -84,6 +97,29 @@ function RegistryContent() {
   const [tab, setTab] = useState<Tab>("all");
   // Bumped to make the owner dashboard re-read after a registration.
   const [ownerRefresh, setOwnerRefresh] = useState(0);
+  const [showEntries, setShowEntries] = useState(false);
+  const entriesPlaceholder = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (tab !== "all" || entriesLoading || entriesError || entries.length === 0 || showEntries) return;
+    const target = entriesPlaceholder.current;
+    if (!target || typeof IntersectionObserver === "undefined") {
+      // Older browsers still get the list; they simply skip viewport deferral.
+      queueMicrotask(() => setShowEntries(true));
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShowEntries(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "400px" },
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [tab, entriesLoading, entriesError, entries.length, showEntries]);
 
   const applyEntries = useCallback((result: RegistryProfile[]) => {
     setEntries(result);
@@ -134,12 +170,19 @@ function RegistryContent() {
 
     let cancelled = false;
 
-    getConnectedWallet().then((session) => {
-      if (cancelled) return;
-      setWallet(session);
-      if (session) setTab("mine");
-      setWalletResolving(false);
-    });
+    getConnectedWallet().then(
+      (session) => {
+        if (cancelled) return;
+        setWallet(session);
+        if (session) setTab("mine");
+        setWalletResolving(false);
+      },
+      () => {
+        if (cancelled) return;
+        setWalletResolving(false);
+        setConnectError("Your saved wallet session could not be restored.");
+      },
+    );
 
     return () => {
       cancelled = true;
@@ -158,36 +201,39 @@ function RegistryContent() {
     setConnecting(true);
     setConnectError(null);
     setWalletLocked(false);
-    const result = await connectWallet();
-    if ("error" in result) {
-      setConnectError(result.error);
-      setWalletLocked(result.isLocked ?? false);
-    } else {
-      // Check for network mismatch after successful connection
-      const mismatch = await checkNetworkMismatch();
-      if (mismatch) {
-        setConnectError(mismatch.error);
-        // Still set the wallet session so user can see their wallet info
-        const session = await getConnectedWallet();
-        setWallet(session);
+    try {
+      const result = await connectWallet();
+      if ("error" in result) {
+        setConnectError(result.error);
+        setWalletLocked(result.isLocked ?? false);
       } else {
-        // Re-fetch full session so we get name + icon too (#88).
+        const mismatch = await checkNetworkMismatch();
         const session = await getConnectedWallet();
         setWallet(session);
-        setTab("mine");
-        setWalletLocked(false);
+        if (mismatch) {
+          setConnectError(`${mismatch.error} Switch your wallet to the Stellar testnet before trying again.`);
+        } else {
+          setTab("mine");
+          setWalletLocked(false);
+        }
       }
+    } catch {
+      setConnectError("Could not connect to your wallet.");
+    } finally {
+      setConnecting(false);
     }
-    setConnecting(false);
   }
 
   async function handleDisconnect() {
     setDisconnecting(true);
     try {
       await disconnectWallet();
-    } finally {
       setWallet(null);
       setTab("all");
+      setConnectError(null);
+    } catch {
+      setConnectError("Could not disconnect your wallet. Disconnect in the wallet extension, then refresh this page.");
+    } finally {
       setDisconnecting(false);
     }
   }
@@ -249,13 +295,18 @@ function RegistryContent() {
                       </p>
                     </div>
                   ) : (
-                    connectError
+                    <p>{connectError} Open your wallet and choose Connect Wallet to try again.</p>
                   )}
                 </div>
               )}
             </div>
           ) : (
             <div className="flex flex-col gap-3">
+              {connectError && (
+                <p role="alert" className="text-xs text-[var(--color-error-text)] bg-[var(--color-error-bg)] rounded-lg px-3 py-2">
+                  {connectError}
+                </p>
+              )}
               <WalletInfo
                 address={wallet!.address}
                 walletName={wallet!.walletName}
@@ -263,10 +314,12 @@ function RegistryContent() {
                 onDisconnect={handleDisconnect}
                 disconnecting={disconnecting}
               />
-              <RegisterContractForm
-                walletAddress={walletAddress}
-                onRegistered={handleRegistered}
-              />
+              <Suspense fallback={<p className="text-sm text-[var(--color-text-muted)]">Loading registration form…</p>}>
+                <RegisterContractForm
+                  walletAddress={walletAddress}
+                  onRegistered={handleRegistered}
+                />
+              </Suspense>
             </div>
           )}
         </div>
@@ -311,11 +364,13 @@ function RegistryContent() {
 
           {tab === "mine" ? (
             walletAddress ? (
-              <OwnerContracts
-                key={`${walletAddress}:${ownerRefresh}`}
-                walletAddress={walletAddress}
-                onChanged={loadEntries}
-              />
+              <Suspense fallback={<p className="text-sm text-[var(--color-text-muted)]">Loading your contracts…</p>}>
+                <OwnerContracts
+                  key={`${walletAddress}:${ownerRefresh}`}
+                  walletAddress={walletAddress}
+                  onChanged={loadEntries}
+                />
+              </Suspense>
             ) : (
               <p className="text-sm text-[var(--color-text-muted)]">
                 Connect a wallet to see the contracts you registered.
@@ -332,10 +387,22 @@ function RegistryContent() {
                 : "No contracts registered yet."}
             </p>
           ) : (
-            <div className="flex flex-col gap-2">
-              {entries.map(entry => (
-                <RegistryEntryCard key={entry.contractId} profile={entry} />
-              ))}
+            <div
+              ref={entriesPlaceholder}
+              data-testid="registry-list"
+              className="flex flex-col gap-2"
+              aria-busy={!showEntries}
+              style={{ minHeight: entries.length * 144 + Math.max(0, entries.length - 1) * 8 }}
+            >
+              {showEntries ? (
+                <Suspense fallback={<RegistryListPlaceholder count={entries.length} message="Loading registry entries…" />}>
+                  {entries.map(entry => (
+                    <RegistryEntryCard key={entry.contractId} profile={entry} />
+                  ))}
+                </Suspense>
+              ) : (
+                <RegistryListPlaceholder count={entries.length} message="Registry entries will load as you scroll." />
+              )}
             </div>
           )}
         </div>

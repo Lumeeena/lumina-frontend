@@ -97,7 +97,6 @@ export default function VirtualizedTransactionTable({
               <span className="text-xs font-semibold text-[var(--color-text-muted)]">{t("table.source")}</span>
               <span className="mono text-xs text-[var(--color-text-primary)] truncate ms-2">{tx.sourceAccount.slice(0, 12)}…</span>
             </div>
-            </div>
             <div className="flex justify-between items-start mb-2">
               <span className="text-xs font-semibold text-[var(--color-text-muted)]">{t("table.operations")}</span>
               <span className="mono text-xs text-[var(--color-text-primary)]">{tx.operationCount}</span>
@@ -124,6 +123,7 @@ export default function VirtualizedTransactionTable({
       columnCount={COLUMNS}
       stickyHeader
       containerClassName="rounded-xl border border-[var(--color-border-default)] overflow-auto max-h-[70vh]"
+      onScroll={event => onScrollTopChange?.(event.currentTarget.scrollTop)}
       data-testid="transaction-scroll"
       emptyMessage={
         transactions.length === 0 && emptyMessage ? emptyMessage : undefined

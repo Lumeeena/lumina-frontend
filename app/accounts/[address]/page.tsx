@@ -56,6 +56,15 @@ async function getAccount(
   }
 }
 
+async function getTrustlineOps(address: string): Promise<{ items: TrustlineOp[]; unavailable: boolean }> {
+  try {
+    const data = await gqlFetch(GRAPHQL_URL, TRUSTLINE_QUERY, { address, limit: 10, cursor: null });
+    return { items: data.operations?.items ?? [], unavailable: false };
+  } catch {
+    return { items: [], unavailable: true };
+  }
+}
+
 const th =
   "text-left text-[11px] tracking-[0.06em] uppercase text-[var(--color-text-muted)] px-3 py-2.5 border-b border-[var(--color-border-default)] bg-[var(--color-bg-subtle)]";
 const stat =
@@ -108,6 +117,7 @@ export default async function AccountPage({
               {address}
             </span>{" "}
             does not exist on Stellar Mainnet, or has never been funded.
+            Check the address and network, or fund the account before looking it up again.
           </p>
         </div>
       ) : (
@@ -239,10 +249,13 @@ export default async function AccountPage({
           <h2 className="font-extrabold text-base mt-9 mb-3 text-[var(--color-text-primary)]">
             Trustline History
           </h2>
-          <AccountTrustlineTimeline
-            address={account.address}
-            initial={trustlineOps}
-          />
+          {trustlineOps.unavailable ? (
+            <p role="alert" className="text-sm text-[var(--color-error-text)]">
+              Trustline history is unavailable. Check your connection and refresh this page to try again.
+            </p>
+          ) : (
+            <AccountTrustlineTimeline address={account.address} initial={trustlineOps.items} />
+          )}
         </div>
       )}
     </div>

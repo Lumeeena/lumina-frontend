@@ -17,6 +17,7 @@ import { formatStroops } from '@/lib/formatters';
 import { Button } from '@/components/ui/Button';
 import { Fieldset, TextField, TextareaField } from '@/components/ui/FormField';
 import { t } from '@/lib/i18n';
+import { transactionRecovery } from '@/lib/errorRecovery';
 
 
 export interface RegistrationInput {
@@ -277,7 +278,8 @@ export default function RegisterContractForm({
       )}
       {phase === 'error' && (
         <div role="alert" className="text-xs text-[var(--color-error-text)] bg-[var(--color-error-bg)] rounded-lg px-3 py-2.5">
-          {message}
+          <p>{message}</p>
+          <p className="mt-1">{transactionRecovery(message)}</p>
         </div>
       )}
     </form>

@@ -41,7 +41,6 @@ export default function WatchedAddressList() {
       setFull(watchListIsFull());
     };
     // Hydrate browser-only storage after SSR; this intentionally needs one update.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     sync();
     return subscribeToWatches(sync);
   }, []);
@@ -60,7 +59,7 @@ export default function WatchedAddressList() {
         return;
       }
       if (entries.some((entry) => entry.address === address)) {
-        setError("That address is already on your watch list.");
+        setError("That address is already on your watch list. Choose a different address or remove the existing one first.");
         return;
       }
       addWatch(address);
@@ -104,7 +103,7 @@ export default function WatchedAddressList() {
     if (!pendingFileContent) return;
     const res = importWatches(pendingFileContent, importMode);
     if (!res.success) {
-      setError(res.error || "Failed to import watch list.");
+      setError(`${res.error || "Failed to import watch list."} Check the file format and select a valid watch list to try again.`);
     } else {
       setError(null);
     }

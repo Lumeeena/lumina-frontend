@@ -26,7 +26,9 @@ export default function LoadMoreFooter({
   if (error) {
     return (
       <div className="flex items-center justify-center gap-3 mt-4">
-        <span className="text-[13px] text-[var(--color-error-text)]" role="alert">{error}</span>
+        <span className="text-[13px] text-[var(--color-error-text)]" role="alert">
+          <span>{error}</span> Check your connection, then retry.
+        </span>
         <Button variant="secondary" size="sm" onClick={onLoadMore}>
           {t("loadMore.retry")}
         </Button>

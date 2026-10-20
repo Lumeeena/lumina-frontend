@@ -64,13 +64,18 @@ export default function CopyAddressButton({
             ? t("copy.failed")
             : t("copy.copy")}
       </button>
+      {state === "failed" && (
+        <span className="text-xs text-[var(--color-error-text)]">
+          Select and copy the {variant === "hash" ? "hash" : "address"} manually.
+        </span>
+      )}
       <span role="status" aria-live="polite" className="sr-only">
         {state === "copied"
           ? variant === "hash"
             ? t("copy.copiedHash")
             : t("copy.copiedAddress")
           : state === "failed"
-            ? t("copy.failed")
+            ? "Clipboard access failed. Select and copy the address manually."
             : ""}
       </span>
     </>

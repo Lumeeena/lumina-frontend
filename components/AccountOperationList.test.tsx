@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { Operation } from "@/lib/types";
+import { wcagViolations } from "@/lib/axeScan";
 
 const gqlFetch = vi.hoisted(() => vi.fn());
 
@@ -55,6 +56,46 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe("AccountOperationList", () => {
+  it("passes the automated WCAG scan and exposes the full transaction name", async () => {
+    const { container } = render(
+      <AccountOperationList address={ADDRESS} initial={[op("accessible")]} />,
+    );
+
+    expect(await wcagViolations(container)).toEqual([]);
+    expect(
+      screen.getByRole("link", {
+        name: /view transaction txaccessible on stellar expert \(opens in a new tab\)/i,
+      }),
+    ).toBeTruthy();
+  });
+
+  it("lets keyboard users scroll the region and open a transaction", async () => {
+    const user = userEvent.setup();
+    render(<AccountOperationList address={ADDRESS} initial={[op("keyboard")]} />);
+
+    await user.tab();
+    expect(screen.getByRole("region", { name: "Account operations" })).toBe(
+      document.activeElement,
+    );
+    await user.tab();
+    const link = screen.getByRole("link", { name: /view transaction txkeyboard/i });
+    expect(link).toBe(document.activeElement);
+    expect(link.getAttribute("href")).toContain("/tx/txkeyboard");
+  });
+
+  it("loads another page when the keyboard activates Load more", async () => {
+    mockOperationPage(count(25), false);
+    const user = userEvent.setup();
+    render(<AccountOperationList address={ADDRESS} initial={count(10)} />);
+
+    for (let i = 0; i < 12; i++) await user.tab();
+    expect(screen.getByRole("button", { name: /load more/i })).toBe(document.activeElement);
+    await user.keyboard("{Enter}");
+
+    await waitFor(() => expect(gqlFetch).toHaveBeenCalledTimes(1));
+    expect(await screen.findByText("End of results")).toBeTruthy();
+  });
+
   it("labels the seed as a sample, not the whole history", async () => {
     render(<AccountOperationList address={ADDRESS} initial={count(10)} />);
 
@@ -127,7 +168,7 @@ describe("AccountOperationList", () => {
   it("renders an empty state instead of an empty table", () => {
     render(<AccountOperationList address={ADDRESS} initial={[]} />);
 
-    expect(screen.getByText("No operations yet.")).toBeTruthy();
+    expect(screen.getByText("No operations yet")).toBeTruthy();
     expect(screen.queryByRole("table")).toBeNull();
   });
 
