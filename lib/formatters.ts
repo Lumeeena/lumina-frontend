@@ -33,7 +33,32 @@ export function absoluteTime(isoString: string, timezone?: string): string {
   }).format(new Date(isoString));
 }
 
-export function formatXLM(amount: string): string {
+/**
+ * Amount display preference (#230).
+ * Users can choose between stroops (raw) and decimal (XLM) display.
+ */
+export type AmountUnit = "stroops" | "decimal";
+
+const AMOUNT_UNIT_KEY = "lumina-amount-unit";
+
+export function getAmountUnit(): AmountUnit {
+  if (typeof window === "undefined") return "decimal";
+  return (localStorage.getItem(AMOUNT_UNIT_KEY) as AmountUnit) || "decimal";
+}
+
+export function setAmountUnit(unit: AmountUnit): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(AMOUNT_UNIT_KEY, unit);
+}
+
+export function formatXLM(amount: string, unit?: AmountUnit): string {
+  const resolvedUnit = unit || getAmountUnit();
+  if (resolvedUnit === "stroops") {
+    // Convert decimal XLM to stroops (1 XLM = 10^7 stroops) and show raw
+    const num = parseFloat(amount);
+    if (isNaN(num)) return amount;
+    return Math.round(num * 1e7).toString();
+  }
   const num = parseFloat(amount);
   if (isNaN(num)) return amount;
   return new Intl.NumberFormat(getLocale(), {
