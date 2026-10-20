@@ -66,7 +66,7 @@ export default function ConnectionIndicator({ state, failureReason = null, onRet
     >
       <span
         aria-hidden="true"
-        className={`w-[7px] h-[7px] rounded-full ${dot} ${pulse ? "motion-safe:animate-pulse motion-reduce:animate-none" : ""}`}
+        className={`w-[7px] h-[7px] rounded-full ${dot} ${pulse ? "animate-pulse motion-reduce:animate-none" : ""}`}
         style={{ boxShadow: `0 0 0 3px color-mix(in srgb, ${ring} 15%, transparent)` }}
       />
       <span data-testid="connection-label">
