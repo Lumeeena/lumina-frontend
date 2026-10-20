@@ -31,6 +31,7 @@ import {
 } from "@/lib/registry";
 import {
   ContractCallError,
+  WalletRejectedError,
   createStellarDriver,
   submitContractCall,
   type TxPhase,
@@ -237,6 +238,7 @@ export default function OwnerContracts({
   const [rowError, setRowError] = useState<Record<string, string>>({});
   const [pendingTxHash, setPendingTxHash] = useState<string | null>(null);
   const [estimatedFee, setEstimatedFee] = useState<string | null>(null);
+  const [rejected, setRejected] = useState<Record<string, { owner: string; retry: () => Promise<void> }>>({});
 
   // Every read below is started through this scope, so a wallet switch or an
   // unmount cancels them instead of letting a slow answer land afterwards.
@@ -381,7 +383,17 @@ export default function OwnerContracts({
       }
       refreshStake(entry.contractId);
       refreshHistory();
+      setRejected(prev => { const next = { ...prev }; delete next[entry.contractId]; return next; });
+      if (action === 'stake') setStakeInput(prev => ({ ...prev, [entry.contractId]: '' }));
     } catch (err) {
+      if (err instanceof WalletRejectedError) {
+        setRejected(prev => ({ ...prev, [entry.contractId]: {
+          owner: walletAddress,
+          retry: () => runRowAction(entry, action, err.retry, fallback),
+        } }));
+        return;
+      }
+      setRejected(prev => { const next = { ...prev }; delete next[entry.contractId]; return next; });
       const message =
         err instanceof Error && err.message ? err.message : fallback;
       setRowError((prev) => ({ ...prev, [entry.contractId]: message }));
@@ -428,7 +440,6 @@ export default function OwnerContracts({
       () => stake(entry.contractId, walletAddress, BigInt(raw), setEstimatedFee),
       t("owner.stakingFailed"),
     );
-    setStakeInput((prev) => ({ ...prev, [entry.contractId]: "" }));
   }
 
   const handleWithdraw = (entry: RegistryEntry) =>
@@ -439,7 +450,7 @@ export default function OwnerContracts({
       t("owner.withdrawalFailed"),
     );
 
-  async function handleDeactivate(entry: RegistryEntry) {
+  async function handleDeactivate(entry: RegistryEntry, retrySignature?: () => Promise<{ hash: string }>) {
     setPendingId(entry.contractId);
     setPendingAction("deactivate");
     setPendingPhase("building");
@@ -451,7 +462,8 @@ export default function OwnerContracts({
     });
 
     try {
-      const result = await deactivate(entry.contractId, walletAddress, setEstimatedFee);
+      const result = await (retrySignature ? retrySignature() : deactivate(entry.contractId, walletAddress, setEstimatedFee));
+      setRejected(prev => { const next = { ...prev }; delete next[entry.contractId]; return next; });
       if (result?.hash) {
         setPendingTxHash(result.hash);
         sessionStorage.setItem(`tx-${Date.now()}`, result.hash);
@@ -469,6 +481,14 @@ export default function OwnerContracts({
       refreshHistory();
       refreshStake(entry.contractId);
     } catch (err) {
+      if (err instanceof WalletRejectedError) {
+        setRejected(prev => ({ ...prev, [entry.contractId]: {
+          owner: walletAddress,
+          retry: () => handleDeactivate(entry, err.retry),
+        } }));
+        return;
+      }
+      setRejected(prev => { const next = { ...prev }; delete next[entry.contractId]; return next; });
       const message =
         err instanceof ContractCallError
           ? err.message
@@ -568,18 +588,20 @@ export default function OwnerContracts({
                 </span>
               </p>
               {isOwner && (
+              <>
               <div className="flex items-center gap-2 flex-wrap">
                 <input
                   inputMode="numeric"
                   aria-label={t("owner.stakeAmountLabel", { name: entry.name })}
                   placeholder={t("owner.stakeAmountPlaceholder")}
                   value={stakeInput[entry.contractId] ?? ""}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    setRejected(prev => { const next = { ...prev }; delete next[entry.contractId]; return next; });
                     setStakeInput((prev) => ({
                       ...prev,
                       [entry.contractId]: e.target.value,
-                    }))
-                  }
+                    }));
+                  }}
                   className="min-h-[34px] px-2.5 text-xs mono bg-[var(--color-bg-subtle)] border border-[var(--color-border-default)] rounded-lg w-44"
                 />
                 <button
@@ -608,6 +630,7 @@ export default function OwnerContracts({
                   ))}
                 </ul>
               )}
+              </>
               )}
             </div>
 
@@ -651,6 +674,14 @@ export default function OwnerContracts({
               </div>
             )}
 
+            {rejected[entry.contractId]?.owner === walletAddress && (
+              <div role="status" className="mt-3 text-xs text-[var(--color-text-secondary)]">
+                <p>{t('soroban.rejectionPreserved')}</p>
+                <button type="button" disabled={pendingId !== null} onClick={() => void rejected[entry.contractId].retry()} className="mt-2 font-bold underline">
+                  {t('soroban.retrySignature')}
+                </button>
+              </div>
+            )}
             {rowError[entry.contractId] && (
               <div
                 role="alert"

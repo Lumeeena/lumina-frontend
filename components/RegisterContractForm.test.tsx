@@ -127,7 +127,7 @@ describe("RegisterContractForm", () => {
     );
 
     await screen.findByRole('status');
-    expect(screen.getByRole('button', { name: 'DeFi', exact: true }).getAttribute('aria-pressed')).toBe('false');
+    expect(screen.getByRole('button', { name: 'DeFi' }).getAttribute('aria-pressed')).toBe('false');
   });
 
   it("reports progress through the wallet phases", async () => {

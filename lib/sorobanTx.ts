@@ -43,7 +43,7 @@ export interface ContractCallDriver {
    * Simulate and assemble, returning prepared but unsigned XDR and the
    * estimated fee in stroops (capped at the driver's configured ceiling).
    */
-  prepare(call: ContractCall): Promise<{ xdr: string; estimatedFee: string }>;
+  prepare(call: ContractCall): Promise<{ xdr: string; estimatedFee: string; expiresAt?: number }>;
   /** Submit signed XDR. Returns the transaction hash. */
   send(signedXdr: string): Promise<string>;
   /** Poll a submitted transaction's status. */
@@ -85,6 +85,22 @@ export class ContractCallError extends Error {
   }
 }
 
+/** A deliberate cancellation retains the unsigned transaction for an explicit retry. */
+export class WalletRejectedError extends ContractCallError {
+  constructor(readonly retry: () => Promise<SubmitResult>) {
+    super(t('soroban.signatureDeclined'), 'awaiting-signature');
+    this.name = 'WalletRejectedError';
+  }
+}
+
+function isWalletRejection(error: unknown): boolean {
+  if (typeof error === 'object' && error !== null && 'code' in error) {
+    if (error.code === 4001 || error.code === '4001') return true;
+  }
+  const message = messageOf(error, '');
+  return /(?:user|signature|request).*(?:reject|declin|cancel)|(?:reject|declin|cancel).*(?:user|signature|request)/i.test(message);
+}
+
 const defaultWait = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
 
 /**
@@ -112,7 +128,7 @@ export async function submitContractCall({
   const phase = (next: TxPhase) => onPhase?.(next);
 
   phase('building');
-  let prepared: { xdr: string; estimatedFee: string };
+  let prepared: Awaited<ReturnType<ContractCallDriver['prepare']>>;
   try {
     prepared = await driver.prepare(call);
   } catch (err) {
@@ -123,58 +139,68 @@ export async function submitContractCall({
   // what they're about to pay.
   onFeeEstimated?.(prepared.estimatedFee);
 
-  phase('awaiting-signature');
-  let signedTxXdr: string;
-  try {
-    const signResult = await sign(prepared.xdr, { networkPassphrase, address: walletAddress });
-    if ('error' in signResult) {
-      // Handle network mismatch or other signing errors
-      throw new ContractCallError(signResult.error, 'awaiting-signature');
+  // The closure is retained only for a rejected signing prompt. It never
+  // retries submission, which could otherwise spend twice after an RPC error.
+  let signed = false;
+  const retry = async (): Promise<SubmitResult> => {
+    if (signed || (prepared.expiresAt !== undefined && Date.now() >= prepared.expiresAt)) {
+      throw new ContractCallError(t('soroban.prepareAgain'), 'building');
     }
-    signedTxXdr = signResult.signedTxXdr;
-  } catch (err) {
-    // The overwhelmingly common case here is the user closing the wallet
-    // prompt, which is not an error worth a red banner full of stack trace.
-    throw new ContractCallError(messageOf(err, t('soroban.signatureDeclined')), 'awaiting-signature');
-  }
-
-  phase('submitting');
-  let hash: string;
-  try {
-    hash = await driver.send(signedTxXdr);
-  } catch (err) {
-    throw new ContractCallError(messageOf(err, t('soroban.networkRejected')), 'submitting');
-  }
-
-  phase('confirming');
-  let status = 'PENDING';
-  for (let i = 0; i < maxPolls; i++) {
-    await wait(pollIntervalMs);
+    phase('awaiting-signature');
+    let signedTxXdr: string;
     try {
-      status = await driver.status(hash);
-    } catch {
-      // A single failed poll is not a failed transaction — the submission
-      // already succeeded. Keep polling; only the loop running out is fatal.
-      continue;
+      const signResult = await sign(prepared.xdr, { networkPassphrase, address: walletAddress });
+      if ('error' in signResult) {
+        // Handle network mismatch or other signing errors
+        throw new Error(signResult.error);
+      }
+      signedTxXdr = signResult.signedTxXdr;
+      signed = true;
+    } catch (err) {
+      if (isWalletRejection(err)) throw new WalletRejectedError(retry);
+      throw new ContractCallError(messageOf(err, t('soroban.couldNotSign')), 'awaiting-signature');
     }
-    if (status !== 'PENDING' && status !== 'NOT_FOUND') break;
-  }
 
-  if (status !== 'SUCCESS') {
-    throw new ContractCallError(
-      status === 'PENDING' || status === 'NOT_FOUND'
-        ? t('soroban.pendingConfirmation')
-        : t('soroban.transactionFailed', { status }),
-      'confirming'
-    );
-  }
+    phase('submitting');
+    let hash: string;
+    try {
+      hash = await driver.send(signedTxXdr);
+    } catch (err) {
+      throw new ContractCallError(messageOf(err, t('soroban.networkRejected')), 'submitting');
+    }
 
-  phase('success');
-  return { hash };
+    phase('confirming');
+    let status = 'PENDING';
+    for (let i = 0; i < maxPolls; i++) {
+      await wait(pollIntervalMs);
+      try {
+        status = await driver.status(hash);
+      } catch {
+        // A single failed poll is not a failed transaction — the submission
+        // already succeeded. Keep polling; only the loop running out is fatal.
+        continue;
+      }
+      if (status !== 'PENDING' && status !== 'NOT_FOUND') break;
+    }
+
+    if (status !== 'SUCCESS') {
+      throw new ContractCallError(
+        status === 'PENDING' || status === 'NOT_FOUND'
+          ? t('soroban.pendingConfirmation')
+          : t('soroban.transactionFailed', { status }),
+        'confirming'
+      );
+    }
+
+    phase('success');
+    return { hash };
+  };
+  return retry();
 }
 
 function messageOf(err: unknown, fallback: string): string {
   if (err instanceof Error && err.message) return err.message;
+  if (typeof err === 'object' && err !== null && 'message' in err && typeof err.message === 'string' && err.message) return err.message;
   if (typeof err === 'string' && err) return err;
   return fallback;
 }
@@ -230,7 +256,7 @@ export function createStellarDriver({
         .setSorobanData(sorobanData)
         .build();
 
-      return { xdr: finalTx.toXDR(), estimatedFee };
+      return { xdr: finalTx.toXDR(), estimatedFee, expiresAt: Number(finalTx.timeBounds!.maxTime) * 1000 };
     },
 
     async send(signedXdr) {

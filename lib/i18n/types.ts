@@ -165,6 +165,10 @@ export interface MessageCatalogue {
   // ── Soroban transaction pipeline ──────────────────────────────────────
   "soroban.couldNotPrepare": string;
   "soroban.signatureDeclined": string;
+  "soroban.couldNotSign": string;
+  "soroban.retrySignature": string;
+  "soroban.prepareAgain": string;
+  "soroban.rejectionPreserved": string;
   "soroban.networkRejected": string;
   "soroban.pendingConfirmation": string;
   "soroban.transactionFailed": string;

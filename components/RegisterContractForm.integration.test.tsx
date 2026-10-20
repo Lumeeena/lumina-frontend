@@ -56,7 +56,7 @@ function deferred<T>() {
 function fillAndSubmit() {
   fireEvent.change(screen.getByLabelText(/contract id/i), { target: { value: TARGET } });
   fireEvent.change(screen.getByLabelText(/project name/i), { target: { value: 'My Protocol' } });
-  fireEvent.click(screen.getByRole('button', { name: 'DeFi', exact: true }));
+  fireEvent.click(screen.getByRole('button', { name: 'DeFi' }));
   fireEvent.click(screen.getByRole('button', { name: /register contract/i }));
 }
 
@@ -81,7 +81,7 @@ afterEach(cleanup);
 
 describe('wallet transaction flow integration', () => {
   it('drives approval from the UI through the wallet boundary and every transaction phase', async () => {
-    const prepared = deferred<string>();
+    const prepared = deferred<{ xdr: string; estimatedFee: string }>();
     const signed = deferred<{ signedTxXdr: string }>();
     const sent = deferred<string>();
     const confirmed = deferred<string>();
@@ -114,7 +114,7 @@ describe('wallet transaction flow integration', () => {
   });
 
   it('shows a preparation failure after the building state', async () => {
-    const prepared = deferred<string>();
+    const prepared = deferred<{ xdr: string; estimatedFee: string }>();
     flow.driver.prepare.mockReturnValue(prepared.promise);
     renderFlow();
     fillAndSubmit();
@@ -135,8 +135,26 @@ describe('wallet transaction flow integration', () => {
     expect((await screen.findByRole('button', { name: /approve in your wallet/i })).hasAttribute('disabled')).toBe(true);
     await act(async () => signed.reject(new Error('User rejected the request.')));
 
-    expect((await screen.findByRole('alert')).textContent).toContain('User rejected the request.');
+    expect((await screen.findByRole('status')).textContent).toContain('Signature declined');
+    expect((screen.getByLabelText(/contract id/i) as HTMLInputElement).value).toBe(TARGET);
+    expect((screen.getByLabelText(/project name/i) as HTMLInputElement).value).toBe('My Protocol');
     expect(flow.driver.send).not.toHaveBeenCalled();
+    flow.kit.signTransaction.mockResolvedValue({ signedTxXdr: 'SIGNED_XDR' });
+    fireEvent.click(screen.getByRole('button', { name: /retry signature/i }));
+    expect((await screen.findByText(/my protocol registered/i)).textContent).toBeTruthy();
+    expect(flow.driver.prepare).toHaveBeenCalledTimes(1);
+    expect(flow.kit.signTransaction).toHaveBeenCalledTimes(2);
+  });
+
+  it('prepares a new transaction when input changes after rejection', async () => {
+    flow.kit.signTransaction.mockRejectedValueOnce(new Error('User rejected the request.'));
+    renderFlow();
+    fillAndSubmit();
+    await screen.findByRole('button', { name: /retry signature/i });
+    fireEvent.change(screen.getByLabelText(/project name/i), { target: { value: 'Updated Protocol' } });
+    fireEvent.click(screen.getByRole('button', { name: /register contract/i }));
+    await screen.findByText(/updated protocol registered/i);
+    expect(flow.driver.prepare).toHaveBeenCalledTimes(2);
   });
 
   it('shows a submission failure after the wallet approves', async () => {

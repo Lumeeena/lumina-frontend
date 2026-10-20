@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 import type { RegistryEntry } from '@/lib/registry';
 import { parseRegistryEvents } from '@/lib/registryHistory';
 import type { ContractEvent } from '@/lib/types';
-import { ContractCallError } from '@/lib/sorobanTx';
+import { ContractCallError, WalletRejectedError } from '@/lib/sorobanTx';
 import OwnerContracts from './OwnerContracts';
 
 // The error branch renders `BackendUnavailable`, which reads the app router.
@@ -71,6 +71,21 @@ function renderDashboard(
 afterEach(cleanup);
 
 describe("OwnerContracts", () => {
+  it('preserves the stake amount and retries a rejected signature without calling stake again', async () => {
+    const retry = vi.fn(async () => ({ hash: 'HASH' }));
+    const stake = vi.fn(async () => { throw new WalletRejectedError(retry); });
+    const user = userEvent.setup();
+    renderDashboard({ stake });
+    const input = await screen.findByRole('textbox', { name: /stake amount/i });
+    await user.type(input, '123');
+    await user.click(screen.getByRole('button', { name: 'Stake' }));
+    await screen.findByRole('button', { name: /retry signature/i });
+    expect((input as HTMLInputElement).value).toBe('123');
+    await user.click(screen.getByRole('button', { name: /retry signature/i }));
+    await waitFor(() => expect((input as HTMLInputElement).value).toBe(''));
+    expect(stake).toHaveBeenCalledTimes(1);
+    expect(retry).toHaveBeenCalledTimes(1);
+  });
   it("shows a loading state before the registry read resolves", async () => {
     let release: (v: RegistryEntry[]) => void = () => {};
     renderDashboard({
@@ -95,7 +110,7 @@ describe("OwnerContracts", () => {
     renderDashboard({ loadContracts: async () => [] });
 
     expect(
-      await screen.findByText(/haven't registered any contracts yet/i),
+      await screen.findByText(/no contracts registered yet/i),
     ).toBeTruthy();
   });
 

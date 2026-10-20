@@ -180,6 +180,10 @@ const de: MessageCatalogue = {
   // ── Soroban transaction pipeline ──────────────────────────────────────
   "soroban.couldNotPrepare": "Die Transaktion konnte nicht vorbereitet werden.",
   "soroban.signatureDeclined": "Die Signatur wurde in Ihrem Wallet abgelehnt.",
+  "soroban.couldNotSign": "Die Transaktion konnte nicht signiert werden. Prüfen Sie Ihr Wallet und versuchen Sie es erneut.",
+  "soroban.retrySignature": "Signatur erneut anfordern",
+  "soroban.prepareAgain": "Die gespeicherte Transaktion ist nicht mehr gültig. Senden Sie erneut, um eine neue Transaktion vorzubereiten; Ihre Eingaben bleiben erhalten.",
+  "soroban.rejectionPreserved": "Signatur abgelehnt. Ihre Eingaben und die vorbereitete Transaktion bleiben gespeichert. Sie können es erneut versuchen, sobald Sie bereit sind.",
   "soroban.networkRejected": "Das Netzwerk hat die Transaktion abgelehnt.",
   "soroban.pendingConfirmation":
     "Die Transaktion wurde gesendet, aber noch nicht bestätigt. Versuchen Sie es in einem Moment erneut.",
