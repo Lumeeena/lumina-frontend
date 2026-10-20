@@ -8,12 +8,12 @@ afterEach(cleanup);
 
 describe("CodeSnippet accessibility", () => {
   it("gives the copy control an accessible name and supports keyboard activation", async () => {
+    const user = userEvent.setup();
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, "clipboard", {
       configurable: true,
       value: { writeText },
     });
-    const user = userEvent.setup();
     render(<CodeSnippet code="console.log('hello')" title="Example" />);
 
     const copy = screen.getByRole("button", { name: "Copy" });
