@@ -63,7 +63,12 @@ import HomePage from "./page";
 import EventsPage from "./events/page";
 import StatsPage from "./stats/page";
 import AccountPage from "./accounts/[address]/page";
-import RegistryPage from "./registry/page";
+import RegistryWorkspace from "@/components/RegistryWorkspace";
+import RegistryListing from "@/components/RegistryListing";
+import RegistryLoading from "./registry/loading";
+
+vi.mock("next/cache", () => ({ unstable_cache: (read: () => unknown) => read }));
+vi.mock("@/app/registry/actions", () => ({ refreshRegistry: vi.fn() }));
 import HomeLoading from "./loading";
 import EventsLoading from "./events/loading";
 import StatsLoading from "./stats/loading";
@@ -417,19 +422,15 @@ describe("routes that fetch on the client", () => {
     getActiveProfiles.mockReturnValue(promise);
     nav.query = "";
 
-    render(<RegistryPage />);
+    const pending = RegistryListing({ category: null });
+    const view = render(<RegistryLoading />);
+    expect(screen.getByRole('status').getAttribute('aria-label')).toBe('Loading registry');
 
-    // An empty registry during a slow Soroban read is indistinguishable from a
-    // registry nobody has registered in — which reads as a working, empty site.
-    await waitFor(() => expect(screen.getAllByText(/loading/i).length).toBeGreaterThan(0));
-
-    await act(async () => {
-      resolve([registryProfile("Late Protocol")]);
-      await promise;
-    });
-
-    await waitFor(() => expect(screen.getByText("Late Protocol")).toBeTruthy());
-    await waitFor(() => expect(screen.queryAllByText(/loading/i)).toHaveLength(0));
+    resolve([registryProfile("Late Protocol")]);
+    const listing = await pending;
+    view.rerender(<RegistryWorkspace listing={listing} />);
+    expect(await screen.findByText('Late Protocol')).toBeTruthy();
+    expect(screen.queryByLabelText('Loading registry')).toBeNull();
   });
 
   it("registry: keeps the rows it can when one entry is malformed", async () => {
@@ -443,7 +444,7 @@ describe("routes that fetch on the client", () => {
     ] satisfies RegistryProfile[]);
     nav.query = "";
 
-    render(<RegistryPage />);
+    render(<RegistryWorkspace listing={await RegistryListing({ category: null })} />);
 
     await waitFor(() => expect(screen.getByText("Good Protocol")).toBeTruthy());
     // The page survived the bad entry, and is still showing what did come back

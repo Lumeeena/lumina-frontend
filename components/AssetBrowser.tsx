@@ -34,6 +34,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import LoadMoreFooter from "./LoadMoreFooter";
 import BackendUnavailable from "./BackendUnavailable";
 import { t } from "@/lib/i18n";
+import { formatSupply } from "@/lib/formatters";
 
 export const PAGE_SIZE = 20;
 
@@ -56,20 +57,6 @@ const SORTS: readonly { value: AssetSort; label: string }[] = [
 const th =
   "text-start text-[11px] tracking-[0.06em] uppercase text-[var(--color-text-muted)] px-3 py-2.5 border-b border-[var(--color-border-default)] bg-[var(--color-bg-subtle)]";
 
-/**
- * Group a decimal string's integer part without going through a float.
- *
- * `supply` arrives as a string precisely because it does not survive one — a
- * token with a large supply and 7 decimals loses digits to `parseFloat`, and
- * the last digits of someone's balance is not a rounding difference. So the
- * digits are grouped as characters and only the fractional tail is trimmed.
- */
-export function formatSupply(supply: string): string {
-  const [whole = "0", frac] = supply.split(".");
-  const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  const trimmed = frac?.replace(/0+$/, "") ?? "";
-  return trimmed ? `${grouped}.${trimmed}` : grouped;
-}
 
 function assetLabel(asset: AssetSummary): string {
   return asset.native ? (asset.code ?? "XLM") : (asset.code ?? asset.asset);

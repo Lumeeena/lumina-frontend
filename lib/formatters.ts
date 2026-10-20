@@ -85,3 +85,18 @@ const opColors: Record<string, string> = {
 export function getOperationColor(type: string): string {
   return opColors[type] ?? "text-slate-400";
 }
+
+/**
+ * Group a decimal string's integer part without going through a float.
+ *
+ * `supply` arrives as a string precisely because it does not survive one — a
+ * token with a large supply and 7 decimals loses digits to `parseFloat`, and
+ * the last digits of someone's balance is not a rounding difference. So the
+ * digits are grouped as characters and only the fractional tail is trimmed.
+ */
+export function formatSupply(supply: string): string {
+  const [whole = "0", frac] = supply.split(".");
+  const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  const trimmed = frac?.replace(/0+$/, "") ?? "";
+  return trimmed ? `${grouped}.${trimmed}` : grouped;
+}

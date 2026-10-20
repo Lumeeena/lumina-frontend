@@ -3,12 +3,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import BackendUnavailable from "@/components/BackendUnavailable";
 import { AreaChart } from "@/components/charts/AreaChart";
-import { formatSupply } from "@/components/AssetBrowser";
+import { formatSupply } from "@/lib/formatters";
 import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
 import { truncateAddress } from "@/lib/formatters";
 import { routeMetadata } from "@/lib/metadata";
 import { SITE_NAME } from "@/lib/site";
-import type { TypedDocumentString } from "@/lib/generated/graphql";
+import { TypedDocumentString } from "@/lib/generated/graphql";
 
 const BUCKET_SECONDS = 86_400;
 
