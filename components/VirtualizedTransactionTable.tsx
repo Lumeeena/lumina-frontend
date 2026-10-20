@@ -17,7 +17,6 @@ export default function VirtualizedTransactionTable({
   emptyMessage,
   children,
   initialScrollTop = 0,
-  onScrollTopChange,
 }: {
   transactions: Transaction[];
   emptyMessage: string | null;
@@ -96,7 +95,6 @@ export default function VirtualizedTransactionTable({
             <div className="flex justify-between items-start mb-2">
               <span className="text-xs font-semibold text-[var(--color-text-muted)]">{t("table.source")}</span>
               <span className="mono text-xs text-[var(--color-text-primary)] truncate ms-2">{tx.sourceAccount.slice(0, 12)}…</span>
-            </div>
             </div>
             <div className="flex justify-between items-start mb-2">
               <span className="text-xs font-semibold text-[var(--color-text-muted)]">{t("table.operations")}</span>

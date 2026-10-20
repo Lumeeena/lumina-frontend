@@ -63,12 +63,10 @@ function RegistryContent() {
   const rawCategory = searchParams?.get("category");
   const category = isCategory(rawCategory) ? rawCategory : null;
 
-  // "resolving" prevents a flash of disconnected state on reload: we seed from
-  // localStorage synchronously so the UI knows a session likely exists before
-  // the async getConnectedWallet() call confirms it (#86).
-  const persisted = typeof window !== "undefined" ? readPersistedSession() : null;
+  // Both server and first browser render resolve the wallet. Storage is read
+  // only after hydration, avoiding a mismatch for returning wallet users.
   const [wallet, setWallet] = useState<WalletSession | null>(null);
-  const [walletResolving, setWalletResolving] = useState(persisted !== null);
+  const [walletResolving, setWalletResolving] = useState(true);
   const [connecting, setConnecting] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
   const [connectError, setConnectError] = useState<string | null>(null);
@@ -130,11 +128,10 @@ function RegistryContent() {
     // No persisted session means there is nothing to confirm — and confirming
     // is what would pull the wallet kit in. Skipping it keeps the kit out of
     // the browser entirely for a visitor who never connects.
-    if (!readPersistedSession()) return;
-
     let cancelled = false;
 
-    getConnectedWallet().then((session) => {
+    const session = readPersistedSession() ? getConnectedWallet() : Promise.resolve(null);
+    session.then((session) => {
       if (cancelled) return;
       setWallet(session);
       if (session) setTab("mine");

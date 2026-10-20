@@ -10,6 +10,22 @@ npm run test:e2e      # Playwright, against a production build
 CI runs both suites on every PR and uploads the coverage and Playwright reports
 as artifacts.
 
+## Hydration regressions
+
+The Vitest setup fails any test that emits a React hydration warning or error.
+Production React hydration error codes are included in the guard. SSR/hydration
+tests use populated timestamps with different server and client clocks; the
+Playwright hydration suite visits the route inventory in a different browser
+locale and time zone and exercises a client control before checking diagnostics.
+
+`TimeAgo` renders the supplied ISO timestamp on the server and during initial
+hydration, then shows local relative time and a local-time tooltip in the browser.
+Do not compute a fresh timestamp or read browser storage during an initial render.
+A current storage value has no known timestamp and is labelled accordingly.
+
+Run `npx vitest run components/TimeAgo.hydration.test.tsx` and
+`npx playwright test e2e/hydration.spec.ts` for the focused checks.
+
 ## Where a test goes
 
 | What you changed | Where the test goes | Environment |

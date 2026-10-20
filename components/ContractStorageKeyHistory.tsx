@@ -7,7 +7,7 @@ import SorobanValue from "./SorobanValue";
 interface StorageKeyHistoryEntry {
   value: unknown;
   ledger: number;
-  createdAt: string;
+  createdAt: string | null;
 }
 
 interface ContractStorageKeyHistoryProps {
@@ -29,8 +29,6 @@ interface ContractStorageKeyHistoryProps {
  * - Each value's ledger and timestamp
  */
 export default function ContractStorageKeyHistory({
-  contractId,
-  storageKey,
   history,
   currentValue,
   currentLedger,
@@ -41,8 +39,8 @@ export default function ContractStorageKeyHistory({
   );
   const panelIdPrefix = useId();
 
-  const allEntries = [
-    { value: currentValue, ledger: currentLedger, createdAt: new Date().toISOString(), isCurrent: true },
+  const allEntries: Array<StorageKeyHistoryEntry & { isCurrent?: boolean }> = [
+    { value: currentValue, ledger: currentLedger, createdAt: null, isCurrent: true },
     ...history,
   ];
 
@@ -89,7 +87,7 @@ export default function ContractStorageKeyHistory({
                     )}
                   </div>
                   <span className="text-xs text-[var(--color-text-muted)]">
-                    <TimeAgo isoString={entry.createdAt} />
+                    {entry.createdAt ? <TimeAgo isoString={entry.createdAt} /> : 'Current value'}
                   </span>
                 </div>
               </div>
@@ -111,7 +109,7 @@ export default function ContractStorageKeyHistory({
                   value={entry.value}
                   initialExpandedDepth={3}
                   showRawToggle
-                  rawValue={entry.value}
+                  rawValue={typeof entry.value === 'string' ? entry.value : JSON.stringify(entry.value)}
                 />
               </div>
             </div>
