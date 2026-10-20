@@ -28,20 +28,6 @@ export default function CodeSnippet({
     }
   };
 
-  const getBgColor = () => {
-    switch (language) {
-      case 'python':
-        return 'bg-[#2e3440]';
-      case 'javascript':
-      case 'typescript':
-        return 'bg-[#1e1e1e]';
-      case 'curl':
-        return 'bg-[#2e2e2e]';
-      default:
-        return 'bg-[var(--color-bg-raised)]';
-    }
-  };
-
   return (
     <div className="rounded-lg border border-[var(--color-border-default)] overflow-hidden bg-[var(--color-bg-raised)]">
       {title && (
@@ -57,16 +43,21 @@ export default function CodeSnippet({
       <div className="relative">
         <pre
           ref={codeRef}
-          className={`${getBgColor()} p-4 overflow-x-auto text-sm leading-relaxed mono text-[#e8e8e8]`}
+          className="bg-[var(--color-inverse-bg)] p-4 overflow-x-auto text-sm leading-relaxed mono text-[var(--color-text-inverse)]"
         >
           <code>{code}</code>
         </pre>
         <button
+          type="button"
           onClick={handleCopy}
-          className="absolute top-2 right-2 px-3 py-1.5 rounded text-xs font-semibold bg-[var(--color-accent-fill)] text-white hover:opacity-90 transition-opacity"
+          aria-label={copied ? 'Code copied' : copyLabel}
+          className="absolute top-2 right-2 px-3 py-1.5 rounded text-xs font-semibold bg-[var(--color-accent-fill)] text-[var(--color-text-inverse)] hover:bg-[var(--color-accent-fill-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-fill)] transition-opacity motion-reduce:transition-none"
         >
           {copied ? '✓ Copied' : copyLabel}
         </button>
+        <span className="sr-only" role="status" aria-live="polite">
+          {copied ? 'Code copied to clipboard' : ''}
+        </span>
       </div>
     </div>
   );
