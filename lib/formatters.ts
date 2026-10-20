@@ -20,7 +20,7 @@ export function timeAgo(isoString: string): string {
   return rtf.format(-days, "day");
 }
 
-export function absoluteTime(isoString: string): string {
+export function absoluteTime(isoString: string, timezone?: string): string {
   return new Intl.DateTimeFormat(getLocale(), {
     year: "numeric",
     month: "short",
@@ -29,6 +29,7 @@ export function absoluteTime(isoString: string): string {
     minute: "2-digit",
     second: "2-digit",
     timeZoneName: "short",
+    ...(timezone && { timeZone: timezone }),
   }).format(new Date(isoString));
 }
 

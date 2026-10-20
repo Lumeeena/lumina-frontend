@@ -9,6 +9,7 @@ import { useNetwork } from "@/lib/useNetwork";
 import NetworkSwitcher from "./NetworkSwitcher";
 import LocaleSwitcher from "./LocaleSwitcher";
 import ThemeToggle from "@/components/ThemeToggle";
+import TimezoneToggle from "@/components/TimezoneToggle";
 
 /**
  * The nav for one network: the wordmark, the section links, and optionally the
@@ -93,6 +94,7 @@ export default function Navbar() {
       {/* Push the toggle and switcher to the far right */}
       <div className="ms-auto shrink-0 flex items-center gap-2">
         <LocaleSwitcher />
+        <TimezoneToggle />
         <ThemeToggle />
       </div>
     </nav>
