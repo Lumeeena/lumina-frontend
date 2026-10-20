@@ -264,3 +264,46 @@ textarea::placeholder {
   background: var(--color-border-default);
   border-radius: 8px;
 }
+
+/* ─── Print Styles ──────────────────────────────────────────────────────── */
+
+@media print {
+  nav,
+  footer,
+  [role="navigation"],
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    margin: 0;
+    padding: 1in;
+    background: white;
+    color: black;
+  }
+
+  main {
+    max-width: 100%;
+    margin: 0;
+  }
+
+  table {
+    page-break-inside: avoid;
+  }
+
+  h1,
+  h2,
+  h3 {
+    page-break-after: avoid;
+  }
+
+  a {
+    text-decoration: underline;
+  }
+
+  /* Ensure monospace text (addresses, hashes) is readable at full width */
+  .mono {
+    word-break: break-all;
+    white-space: normal;
+  }
+}
