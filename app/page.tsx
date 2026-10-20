@@ -9,6 +9,7 @@ import StatCard from "@/components/StatCard";
 import SearchBar from "@/components/SearchBar";
 import LiveFeed from "@/components/LiveFeed";
 import BackendUnavailable from "@/components/BackendUnavailable";
+import OnboardingTour from "@/components/OnboardingTour";
 
 export const metadata: Metadata = {
   // `absolute` because this is the route the title template's own default
@@ -74,6 +75,7 @@ export default async function Home() {
 
   return (
     <div>
+      <OnboardingTour />
       <section className="px-4 sm:px-7 pt-14 sm:pt-20 pb-10 sm:pb-14 border-b border-[var(--color-border-default)]">
         <div className="max-w-[1160px] mx-auto grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-10 lg:gap-14 items-start">
           <div>
