@@ -1,9 +1,15 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { QUERY_EXAMPLES } from '@/lib/queries';
 
+export const metadata: Metadata = {
+  title: 'API Documentation — Lumina',
+  description: 'Explore the Lumina GraphQL schema with live interactive query examples and pagination guides.',
+};
+
 export default function InteractiveDocsPage() {
   return (
-    <div>
+    <div className="w-full max-w-full overflow-hidden sm:overflow-visible">
       <div className="mb-12">
         <h1 className="text-4xl font-bold text-[var(--color-text-primary)] mb-4">
           API Documentation

@@ -18,6 +18,10 @@
 import type { Operation } from "./types";
 import { matchesOperationFilters, type OperationFilters } from "./operationFilters";
 
+/**
+ * Key used to persist watched address activity notifications in localStorage.
+ * Shared across tabs under the same origin.
+ */
 export const NOTIFICATIONS_STORAGE_KEY = "lumina.activityNotifications";
 
 /**
@@ -30,20 +34,37 @@ export const NOTIFICATIONS_STORAGE_KEY = "lumina.activityNotifications";
  */
 export const MAX_NOTIFICATIONS = 50;
 
+/**
+ * Represents an individual notification item displayed in the navigation activity bell.
+ * Each notification corresponds to a unique operation detected on a watched address.
+ */
 export interface ActivityNotification {
   /** `${address}:${operationId}` — the dedupe key, stable across re-renders. */
   id: string;
+  /** Stellar address that was watched and produced this activity. */
   address: string;
+  /** Protocol operation type (e.g., PAYMENT, INVOKE_HOST_FUNCTION). */
   operationType: string;
+  /** 64-character hexadecimal transaction hash containing the operation. */
   transactionHash: string;
+  /** Formatted transfer amount, if applicable to the operation type. */
   amount: string | null;
+  /** Asset code or symbol transferred, if applicable. */
   asset: string | null;
+  /** ISO 8601 timestamp when the ledger containing this operation closed. */
   createdAt: string;
+  /** Whether the notification has been acknowledged by the user. */
   read: boolean;
 }
 
+/**
+ * Storage interface contract required by the notification store.
+ * Compatible with the browser's `localStorage` and custom test memory stores.
+ */
 export interface StorageLike {
+  /** Retrieve a string value by key, returning null if missing. */
   getItem(key: string): string | null;
+  /** Persist a string value under the specified key. */
   setItem(key: string, value: string): void;
 }
 
@@ -55,6 +76,14 @@ function getStorage(): StorageLike | null {
   }
 }
 
+/**
+ * Computes the deterministic, unique identifier for an address activity event.
+ * Combines the address and operation ID into a stable deduplication key.
+ *
+ * @param address - The watched Stellar address.
+ * @param operationId - The unique operation ID emitted by the ledger/GraphQL subscription.
+ * @returns Formatted `${address}:${operationId}` identifier.
+ */
 export function notificationId(address: string, operationId: string): string {
   return `${address}:${operationId}`;
 }
@@ -75,6 +104,13 @@ function toNotification(value: unknown): ActivityNotification | null {
   };
 }
 
+/**
+ * Reads notifications from the provided or default localStorage storage.
+ * Safely parses the stored JSON, discards malformed entries, and caps at MAX_NOTIFICATIONS.
+ *
+ * @param storage - Optional custom storage backing (defaults to browser localStorage).
+ * @returns Array of validated ActivityNotification items, sorted newest to oldest.
+ */
 export function loadNotifications(
   storage: StorageLike | null = getStorage(),
 ): ActivityNotification[] {
@@ -186,6 +222,13 @@ function snapshot(
   return current();
 }
 
+/**
+ * Marks every notification currently in the store as read.
+ * If all notifications are already read, performs a no-op and returns the cached snapshot.
+ *
+ * @param storage - Optional custom storage backing.
+ * @returns Updated array of notifications with all items marked `read: true`.
+ */
 export function markAllRead(storage?: StorageLike | null): ActivityNotification[] {
   const current = read(storage);
   if (current.every((item) => item.read)) return snapshot(storage, current);
@@ -195,6 +238,13 @@ export function markAllRead(storage?: StorageLike | null): ActivityNotification[
   );
 }
 
+/**
+ * Removes all notifications from storage and in-memory cache.
+ * Broadcasts an update to all external store listeners.
+ *
+ * @param storage - Optional custom storage backing.
+ * @returns An empty array.
+ */
 export function clearNotifications(
   storage?: StorageLike | null,
 ): ActivityNotification[] {
@@ -203,6 +253,12 @@ export function clearNotifications(
   return write([], storage ?? getStorage());
 }
 
+/**
+ * Computes the number of unacknowledged (unread) notifications.
+ *
+ * @param notifications - Notification list to count (defaults to loading from storage).
+ * @returns Count of notifications where `read === false`.
+ */
 export function unreadCount(
   notifications: readonly ActivityNotification[] = loadNotifications(),
 ): number {
@@ -229,15 +285,33 @@ function current(): ActivityNotification[] {
   return cache;
 }
 
+/**
+ * External store client snapshot getter designed for React's `useSyncExternalStore`.
+ * Returns the memoized cache reference to ensure referential stability and prevent render loops.
+ *
+ * @returns Stable reference to the current notification list.
+ */
 export function getSnapshot(): ActivityNotification[] {
   return current();
 }
 
-/** A server render has no localStorage, so it must not claim there are alerts. */
+/**
+ * External store server snapshot getter for React SSR / Server Components.
+ * Always returns an empty frozen array since server environments have no localStorage.
+ *
+ * @returns An empty array reference.
+ */
 export function getServerSnapshot(): ActivityNotification[] {
   return EMPTY;
 }
 
+/**
+ * Subscribes a listener callback to notification store mutations.
+ * When new notifications arrive, are marked read, or cleared, all subscribers are notified.
+ *
+ * @param listener - Callback invoked synchronously after store writes.
+ * @returns Unsubscribe function to cleanly remove the listener.
+ */
 export function subscribeToNotifications(listener: () => void): () => void {
   listeners.add(listener);
   // Reading the cache here is what makes a late subscriber see the alerts that
@@ -248,7 +322,10 @@ export function subscribeToNotifications(listener: () => void): () => void {
   };
 }
 
-/** Test seam: drop the cache so a later read comes from storage again. */
+/**
+ * Test seam: resets the in-memory cache and drops subscriber state so subsequent reads
+ * are forced to reload fresh data from storage.
+ */
 export function __resetNotificationStore(): void {
   cache = null;
 }
