@@ -210,7 +210,7 @@ export default function AssetBrowser({
         role="region"
         aria-label="Assets"
         tabIndex={0}
-        className="rounded-xl border border-[var(--color-border-default)] overflow-x-auto"
+        className="rounded-xl border border-[var(--color-border-default)] overflow-x-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-fill)]"
       >
         <table className="w-full text-sm border-collapse">
           <caption className="sr-only">Assets</caption>
