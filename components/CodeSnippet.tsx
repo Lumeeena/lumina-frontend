@@ -50,7 +50,7 @@ export default function CodeSnippet({
         <button
           type="button"
           onClick={handleCopy}
-          aria-label={copied ? 'Code copied' : copyLabel}
+          aria-label={copied ? 'Code copied' : (copyLabel || 'Copy code')}
           className="absolute top-2 right-2 px-3 py-1.5 rounded text-xs font-semibold bg-[var(--color-accent-fill)] text-[var(--color-text-inverse)] hover:bg-[var(--color-accent-fill-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-fill)] transition-opacity motion-reduce:transition-none"
         >
           {copied ? '✓ Copied' : copyLabel}
