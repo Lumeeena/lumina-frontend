@@ -20,7 +20,10 @@
     "bundle:update": "npm run build:bundle && node scripts/bundle-report.mjs --update",
     "prepare": "node scripts/prepare.mjs",
     "lint:staged": "lint-staged",
-    "measure:compiler": "node scripts/measure-compiler.mjs"
+    "measure:compiler": "node scripts/measure-compiler.mjs",
+    "test:vitals": "node scripts/vitals-run.mjs",
+    "vitals:update": "node scripts/vitals-run.mjs --update",
+    "build:vitals": "npm run codegen && next build --experimental-build-mode compile && next build --experimental-build-mode generate"
   },
   "dependencies": {
     "@creit.tech/stellar-wallets-kit": "^2.5.0",
@@ -61,7 +64,8 @@
     "prettier": "^3.9.9",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^3.0.0"
+    "vitest": "^3.0.0",
+    "web-vitals": "^5.1.0"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs,cjs}": [

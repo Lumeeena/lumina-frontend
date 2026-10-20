@@ -56,6 +56,17 @@ async function getAccount(
   }
 }
 
+// Keep the optional timeline independent of the account read so a failed
+// history request does not prevent the account route from rendering.
+async function getTrustlineOps(address: string): Promise<TrustlineOp[]> {
+  try {
+    const data = await gqlFetch(GRAPHQL_URL, TRUSTLINE_QUERY, { address, limit: 50 });
+    return data.operations.items;
+  } catch {
+    return [];
+  }
+}
+
 const th =
   "text-left text-[11px] tracking-[0.06em] uppercase text-[var(--color-text-muted)] px-3 py-2.5 border-b border-[var(--color-border-default)] bg-[var(--color-bg-subtle)]";
 const stat =

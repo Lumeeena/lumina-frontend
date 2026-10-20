@@ -14,7 +14,7 @@ export default defineConfig({
     setupFiles: ["./vitest.setup.ts"],
     // Playwright specs live in e2e/ and are run by `npm run test:e2e`; without
     // this vitest tries to collect them and fails on the Playwright imports.
-    exclude: ["node_modules/**", "e2e/**", ".next/**"],
+    exclude: ["node_modules/**", "e2e/**", "performance/**", ".next/**"],
     coverage: {
       provider: "v8",
       // `text` for the CI log, `html` + `lcov` as uploadable artifacts.
