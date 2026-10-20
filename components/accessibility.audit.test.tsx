@@ -16,7 +16,7 @@ afterEach(cleanup);
 
 const asset = {
   asset: "USD:GA...",
-  native: false,
+  native: true,
   code: "USD",
   issuer: "GA...",
   supply: "1000.000",
