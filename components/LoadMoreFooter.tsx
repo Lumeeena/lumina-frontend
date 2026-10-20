@@ -26,7 +26,7 @@ export default function LoadMoreFooter({
   if (error) {
     return (
       <div className="flex items-center justify-center gap-3 mt-4">
-        <span className="text-[13px] text-[var(--color-error-text)]">{error}</span>
+        <span className="text-[13px] text-[var(--color-error-text)]" role="alert">{error}</span>
         <Button variant="secondary" size="sm" onClick={onLoadMore}>
           {t("loadMore.retry")}
         </Button>
@@ -36,7 +36,8 @@ export default function LoadMoreFooter({
 
   if (hasMore) {
     return (
-      <div className="flex items-center justify-center mt-4">
+      <div className="flex items-center justify-center mt-4" aria-busy={loading}>
+        {loading && <span className="sr-only" role="status" aria-live="polite">{t("loadMore.loading")}</span>}
         <Button
           variant="secondary"
           size="sm"
