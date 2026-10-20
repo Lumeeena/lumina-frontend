@@ -5,13 +5,6 @@ import { Info } from "lucide-react";
 import type { ConnectionState, FailureReason } from "@/lib/subscriptions";
 import { t } from "@/lib/i18n";
 
-/**
- * What each state means to someone looking at a feed that has stopped moving.
- *
- * The distinction that matters is "quiet because nothing is happening" versus
- * "quiet because we lost the server" — a live panel that silently stalls while
- * still showing a green dot is worse than one that never claimed to be live.
- */
 const LABEL_KEYS: Record<ConnectionState, Parameters<typeof t>[0]> = {
   idle: "connection.idle",
   connecting: "connection.connecting",
@@ -22,12 +15,12 @@ const LABEL_KEYS: Record<ConnectionState, Parameters<typeof t>[0]> = {
 };
 
 const DOT_STYLE: Record<ConnectionState, { dot: string; ring: string; pulse: boolean }> = {
-  idle: { dot: "bg-[var(--color-text-faint)]", ring: "rgba(111,107,124,0.15)", pulse: false },
-  connecting: { dot: "bg-[var(--color-warning-text)]", ring: "rgba(146,64,14,0.15)", pulse: true },
-  connected: { dot: "bg-[var(--color-success-text)]", ring: "rgba(21,128,61,0.15)", pulse: false },
-  reconnecting: { dot: "bg-[var(--color-warning-text)]", ring: "rgba(146,64,14,0.15)", pulse: true },
-  disconnected: { dot: "bg-[var(--color-text-muted)]", ring: "rgba(109,106,120,0.15)", pulse: false },
-  unsupported: { dot: "bg-[var(--color-text-muted)]", ring: "rgba(109,106,120,0.15)", pulse: false },
+  idle: { dot: "bg-[var(--color-text-faint)]", ring: "var(--color-text-faint)", pulse: false },
+  connecting: { dot: "bg-[var(--color-warning-text)]", ring: "var(--color-warning-text)", pulse: true },
+  connected: { dot: "bg-[var(--color-success-text)]", ring: "var(--color-success-text)", pulse: false },
+  reconnecting: { dot: "bg-[var(--color-warning-text)]", ring: "var(--color-warning-text)", pulse: true },
+  disconnected: { dot: "bg-[var(--color-text-muted)]", ring: "var(--color-text-muted)", pulse: false },
+  unsupported: { dot: "bg-[var(--color-text-muted)]", ring: "var(--color-text-muted)", pulse: false },
 };
 
 const EXPLANATION_KEYS: Record<ConnectionState, Parameters<typeof t>[0]> = {
@@ -65,23 +58,17 @@ export default function ConnectionIndicator({ state, failureReason = null, onRet
 
   return (
     <div
-      // `relative` so the expanded explanation is positioned against this
-      // status line rather than against whatever ancestor happens to be laid out.
       className="relative flex items-center gap-2 text-xs font-bold tracking-wide text-[var(--color-text-primary)]"
-      // Announced politely so a reconnect is heard without interrupting, and
-      // exposed as status text rather than only as a coloured dot.
       role="status"
       aria-live="polite"
       data-testid="connection-indicator"
       data-state={state}
     >
       <span
-        className={`w-[7px] h-[7px] rounded-full ${dot} ${pulse ? "animate-pulse" : ""}`}
-        style={{ boxShadow: `0 0 0 3px ${ring}` }}
+        aria-hidden="true"
+        className={`w-[7px] h-[7px] rounded-full ${dot} ${pulse ? "motion-safe:animate-pulse motion-reduce:animate-none" : ""}`}
+        style={{ boxShadow: `0 0 0 3px color-mix(in srgb, ${ring} 15%, transparent)` }}
       />
-      {/* The reason sits inside the label rather than beside it: the two are one
-          statement ("POLLING, server unreachable") and reading them as
-          separate fragments loses that. */}
       <span data-testid="connection-label">
         {label}
         {reason && (
@@ -93,16 +80,13 @@ export default function ConnectionIndicator({ state, failureReason = null, onRet
           </span>
         )}
       </span>
-      {/* Available in every state. A green LIVE dot that has quietly stalled is
-          the exact thing this component exists to rule out, so the way to ask
-          "is this actually current?" cannot depend on already suspecting it. */}
       <button
         type="button"
         aria-expanded={expanded}
         aria-controls={explanationId}
         aria-label={t("connection.whatDoesMean", { label })}
         onClick={() => setExpanded((open) => !open)}
-        className="relative inline-flex size-7 shrink-0 select-none items-center justify-center rounded-md text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-primary)]"
+        className="relative inline-flex size-7 shrink-0 select-none items-center justify-center rounded-md text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-fill)]"
       >
         <Info aria-hidden="true" className="size-4 shrink-0" strokeWidth={2} />
         <span
@@ -110,14 +94,11 @@ export default function ConnectionIndicator({ state, failureReason = null, onRet
           aria-hidden="true"
         />
       </button>
-
-      {/* Only offered once the client has actually given up. A retry while it is
-          still backing off would just queue a second attempt behind the first. */}
       {state === "disconnected" && onRetry && (
         <button
           type="button"
           onClick={onRetry}
-          className="relative select-none font-medium text-[0.6875rem] text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline"
+          className="relative select-none font-medium text-[0.6875rem] text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-fill)]"
         >
           {t("error.retry")}
           <span
@@ -126,7 +107,6 @@ export default function ConnectionIndicator({ state, failureReason = null, onRet
           />
         </button>
       )}
-
       {expanded && (
         <p
           id={explanationId}
