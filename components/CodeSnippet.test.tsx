@@ -7,6 +7,17 @@ import CodeSnippet from "./CodeSnippet";
 afterEach(cleanup);
 
 describe("CodeSnippet accessibility", () => {
+  it("offers manual copying when clipboard access fails", async () => {
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText: vi.fn().mockRejectedValue(new Error("NotAllowedError")) },
+    });
+    render(<CodeSnippet code="query { ledger }" />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Copy" }));
+    expect((await screen.findByRole("alert")).textContent).toMatch(/select the code and copy it manually/i);
+  });
+
   it("gives the copy control an accessible name and supports keyboard activation", async () => {
     const user = userEvent.setup();
     const writeText = vi.fn().mockResolvedValue(undefined);

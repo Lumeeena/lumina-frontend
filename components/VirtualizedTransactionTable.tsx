@@ -122,6 +122,7 @@ export default function VirtualizedTransactionTable({
       columnCount={COLUMNS}
       stickyHeader
       containerClassName="rounded-xl border border-[var(--color-border-default)] overflow-auto max-h-[70vh]"
+      onScroll={event => onScrollTopChange?.(event.currentTarget.scrollTop)}
       data-testid="transaction-scroll"
       emptyMessage={
         transactions.length === 0 && emptyMessage ? emptyMessage : undefined

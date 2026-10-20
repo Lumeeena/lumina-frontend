@@ -218,7 +218,8 @@ button:focus-visible,
 a:focus-visible,
 summary:focus-visible,
 [role="tab"]:focus-visible,
-[role="button"]:focus-visible {
+[role="button"]:focus-visible,
+[role="region"][tabindex="0"]:focus-visible {
   outline: 2px solid var(--color-accent-fill);
   outline-offset: 2px;
 }

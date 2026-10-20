@@ -10,7 +10,11 @@ import ThemeScript from "@/components/ThemeScript";
 import WatchActivityWatcher from "@/components/WatchActivityWatcher";
 import ErrorReporter from "@/components/ErrorReporter";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
+import PendingTransactions from "@/components/PendingTransactions";
 import { shareCard } from "@/lib/metadata";
+import { PUBLIC_GRAPHQL_URL } from "@/lib/graphql";
+import { preconnectOrigins } from "@/lib/preconnect";
+import { SOROBAN_RPC_URL } from "@/lib/registry";
 import {
   DEFAULT_DESCRIPTION,
   SITE_NAME,
@@ -67,6 +71,12 @@ export default function RootLayout({
     >
       <head>
         <ThemeScript />
+        {/* The fetches these origins serve send no credentials, so the browser
+            only reuses a preconnected socket when it was opened the same way.
+            Without `crossOrigin` the hint warms a pool the requests never use. */}
+        {preconnectOrigins([PUBLIC_GRAPHQL_URL, SOROBAN_RPC_URL]).map((origin) => (
+          <link key={origin} rel="preconnect" href={origin} crossOrigin="anonymous" />
+        ))}
       </head>
       <body className="min-h-full flex flex-col bg-[var(--color-bg-base)] text-[var(--color-text-primary)]">
         <DirectionSync />
@@ -82,6 +92,9 @@ export default function RootLayout({
         <main id="main" className="flex-1">
           {children}
         </main>
+        {/* After the page in tab order, and fixed to the viewport, so it shows
+            on every route and does not interrupt the page's own focus order. */}
+        <PendingTransactions />
         <Footer />
       </body>
     </html>

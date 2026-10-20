@@ -29,6 +29,13 @@ import {
 } from "@/lib/generated/graphql";
 import { gqlFetch, PUBLIC_GRAPHQL_URL } from "@/lib/graphql";
 import { useAbortScope } from "@/lib/useAbortScope";
+import {
+  isFresh,
+  queryGeneration,
+  queryKey,
+  readQuery,
+  writeQuery,
+} from "@/lib/queryCache";
 import type { Balance } from "@/lib/types";
 import { AreaChart } from "@/components/charts/AreaChart";
 import type { AreaChartPoint } from "@/components/charts/AreaChart";
@@ -43,6 +50,9 @@ const MAX_VISIBLE = 8;
 /** Daily buckets, 30 days back. The `from` param is omitted so the server
  *  defaults to "30 days before now", keeping the query stateless. */
 const BUCKET_SECONDS = 86_400;
+
+/** The chart is daily buckets, so an answer a minute old is as useful as a fresh one. */
+const VOLUME_FRESH_MS = 60_000;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -118,19 +128,38 @@ export default function AccountPortfolio({ balances }: AccountPortfolioProps) {
 
   const fetchVolume = useCallback(
     async (balance: Balance) => {
-      setFetchState({ status: "loading" });
+      const variables = { asset: assetKey(balance), bucketSeconds: BUCKET_SECONDS };
+      const key = queryKey(PUBLIC_GRAPHQL_URL, AssetVolumeDocument.toString(), variables);
+      const cached = readQuery<AssetVolumeQuery>(key);
+
+      // Taken before the freshness check: a fresh answer for this asset must
+      // still supersede a request for the previous one that is in flight, or
+      // that slower answer would overwrite the chart.
+      const generation = queryGeneration();
       const req = scope.next();
+
+      // A repeat visit paints from the last answer at once. Only an answer past
+      // the freshness window goes back to the network, and it stays on screen
+      // while that refresh runs.
+      setFetchState(
+        cached ? { status: "done", data: cached.data.asset } : { status: "loading" },
+      );
+      if (cached && isFresh(cached, VOLUME_FRESH_MS)) return;
+
       try {
         const data = await gqlFetch(
           PUBLIC_GRAPHQL_URL,
           AssetVolumeDocument,
-          { asset: assetKey(balance), bucketSeconds: BUCKET_SECONDS },
+          variables,
           { signal: req.signal },
         );
+        writeQuery(key, data, { generation });
         if (!req.isCurrent()) return;
         setFetchState({ status: "done", data: data.asset });
       } catch (err) {
-        if (!req.isCurrent()) return;
+        // A failed refresh keeps the answer already shown. Only a read with
+        // nothing to fall back on replaces the chart with an error.
+        if (!req.isCurrent() || cached) return;
         const message =
           err instanceof Error ? err.message : "Could not load activity data.";
         setFetchState({ status: "error", message });

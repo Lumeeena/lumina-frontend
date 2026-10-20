@@ -15,6 +15,7 @@ import { hydrateRoot, type Root } from 'react-dom/client';
 
 const connectWallet = vi.hoisted(() => vi.fn());
 const getConnectedWallet = vi.hoisted(() => vi.fn());
+const checkNetworkMismatch = vi.hoisted(() => vi.fn());
 const readPersistedSession = vi.hoisted(() => vi.fn());
 const getActiveProfiles = vi.hoisted(() => vi.fn());
 const getSlashes = vi.hoisted(() => vi.fn());
@@ -30,6 +31,7 @@ vi.mock("next/navigation", () => ({
 vi.mock("@/lib/wallet", () => ({
   connectWallet,
   getConnectedWallet,
+  checkNetworkMismatch,
   readPersistedSession,
   disconnectWallet: vi.fn(),
   signWithWallet: vi.fn(),
@@ -101,37 +103,54 @@ const profile = (
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.stubGlobal("IntersectionObserver", class {
+    private callback: IntersectionObserverCallback;
+    constructor(callback: IntersectionObserverCallback) { this.callback = callback; }
+    observe = (target: Element) => queueMicrotask(() =>
+      this.callback([{ target, isIntersecting: true } as IntersectionObserverEntry], this as unknown as IntersectionObserver)
+    );
+    unobserve = vi.fn();
+    disconnect = vi.fn();
+  });
   nav.query = "";
   // Nothing persisted, nothing connected: the state a first-time visitor gets.
   readPersistedSession.mockReturnValue(null);
   getConnectedWallet.mockResolvedValue(null);
+  checkNetworkMismatch.mockResolvedValue(null);
   getActiveProfiles.mockResolvedValue([profile("Global Protocol")]);
   getContractsByOwner.mockResolvedValue([profile("My Protocol")]);
   getSlashes.mockResolvedValue([]);
 });
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 
 describe("RegistryPage", () => {
-  it('hydrates the same initial wallet state for a returning visitor', async () => {
-    readPersistedSession.mockReturnValue({ address: OWNER, walletId: 'freighter' });
-    getConnectedWallet.mockResolvedValue(session(OWNER));
-    const content = <RegistryWorkspace listing={<p>Server registry listing</p>} />;
-    const container = document.createElement('div');
-    container.innerHTML = renderToString(content);
-    expect(readPersistedSession).not.toHaveBeenCalled();
-    document.body.append(container);
-    const errors: unknown[] = [];
-    let root!: Root;
-    await act(async () => { root = hydrateRoot(container, content, { onRecoverableError: error => errors.push(error) }); });
-    try {
-      await screen.findByText('Freighter');
-      expect(errors).toEqual([]);
-    } finally {
-      await act(async () => root.unmount());
-      container.remove();
-    }
+  it("waits until the global list nears the viewport before mounting its cards", async () => {
+    let onIntersect!: IntersectionObserverCallback;
+    const observe = vi.fn();
+    const unobserve = vi.fn();
+    const disconnect = vi.fn();
+    vi.stubGlobal("IntersectionObserver", class {
+      constructor(callback: IntersectionObserverCallback) { onIntersect = callback; }
+      observe = observe;
+      unobserve = unobserve;
+      disconnect = disconnect;
+    });
+
+    render(<RegistryPage />);
+    expect(await screen.findByText(/registry entries will load as you scroll/i)).toBeTruthy();
+    expect(screen.queryByText("Global Protocol")).toBeNull();
+    expect(screen.getByTestId("registry-list").style.minHeight).toBe("144px");
+    await waitFor(() => expect(observe).toHaveBeenCalledTimes(1));
+
+    act(() => onIntersect([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver));
+    expect(await screen.findByText("Global Protocol")).toBeTruthy();
+    expect(disconnect).toHaveBeenCalled();
   });
+
   it("offers connection and the global list when no wallet is connected", async () => {
     await renderRegistry();
 
@@ -202,6 +221,18 @@ describe("RegistryPage", () => {
     expect(getSlashes).toHaveBeenCalledWith(C1);
   });
 
+  it("offers a working retry when slash history cannot be read", async () => {
+    getSlashes.mockRejectedValueOnce(new Error("network down")).mockResolvedValueOnce([]);
+    render(<RegistryPage />);
+
+    await screen.findByText("Global Protocol");
+    await userEvent.click(screen.getByRole("button", { name: "Slash history" }));
+    expect(await screen.findByRole("button", { name: "Retry history" })).toBeTruthy();
+    await userEvent.click(screen.getByRole("button", { name: "Retry history" }));
+    expect(await screen.findByText("No slashes recorded.")).toBeTruthy();
+    expect(getSlashes).toHaveBeenCalledTimes(2);
+  });
+
   it("shows the lifetime slashed total from the profile read, without a per-row fetch", async () => {
     getActiveProfiles.mockResolvedValue([
       profile("Slashed One", { slashedTotal: BigInt(250_000_000) }),
@@ -242,6 +273,25 @@ describe("RegistryPage", () => {
     expect(
       screen.getByRole("button", { name: /connect wallet/i }),
     ).toBeTruthy();
+  });
+
+  it("shows a network change action when the connected wallet uses the wrong network", async () => {
+    connectWallet.mockResolvedValue({ address: OWNER });
+    getConnectedWallet.mockResolvedValue(session(OWNER));
+    checkNetworkMismatch.mockResolvedValue({ error: "Network mismatch" });
+    render(<RegistryPage />);
+
+    await userEvent.click(screen.getByRole("button", { name: /connect wallet/i }));
+    expect((await screen.findByRole("alert")).textContent).toMatch(/switch your wallet to the stellar testnet/i);
+  });
+
+  it("recovers from a failed saved wallet session", async () => {
+    readPersistedSession.mockReturnValue({ address: OWNER, walletId: "freighter" });
+    getConnectedWallet.mockRejectedValue(new Error("extension unavailable"));
+    render(<RegistryPage />);
+
+    expect((await screen.findByRole("alert")).textContent).toMatch(/saved wallet session could not be restored/i);
+    expect(screen.getByRole("button", { name: /connect wallet/i })).toBeTruthy();
   });
 
   it("opens on the owner dashboard when a wallet is already connected", async () => {

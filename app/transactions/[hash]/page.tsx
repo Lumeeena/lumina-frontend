@@ -91,6 +91,7 @@ export default async function TransactionPage({
             </span>{" "}
             is not in the index — it may be too new, or it may never have been
             included in a ledger.
+            Check the hash and network, then look it up again after the transaction has confirmed.
           </p>
         </div>
       ) : (

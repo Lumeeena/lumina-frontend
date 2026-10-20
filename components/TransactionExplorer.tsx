@@ -374,7 +374,7 @@ export default function TransactionExplorer({
         ) : error ? (
           <>
             <span className="text-[13px] text-[var(--color-error-text)]">
-              {error}
+              {error} Check your connection, then retry.
             </span>
             <button
               type="button"

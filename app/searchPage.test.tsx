@@ -79,6 +79,26 @@ describe("SearchPage", () => {
     // Two result rows, one per matching transaction.
     expect(screen.getAllByTitle("a".repeat(64))).toBeTruthy();
     expect(screen.getAllByTitle("b".repeat(64))).toBeTruthy();
+
+    const results = screen.getByRole("region", { name: "Search results" });
+    expect(results).toHaveAttribute("tabindex", "0");
+    expect(results.className).toContain("overflow-x-auto");
+  });
+
+  it("keeps an unbroken query inside the page and gives the table room to scroll", async () => {
+    gqlFetch.mockResolvedValue({
+      search: { items: [tx("a".repeat(64), null)] },
+    });
+
+    await renderPage(
+      SearchPage({
+        searchParams: Promise.resolve({ q: "x".repeat(180) }),
+      }),
+    );
+
+    expect(screen.getByText(`“${"x".repeat(180)}”`)).toHaveClass("break-all");
+    expect(screen.getByRole("region", { name: "Search results" })).toBeTruthy();
+    expect(screen.getByRole("table")).toHaveClass("min-w-[720px]");
   });
 
   it("shows an empty state when nothing matches", async () => {

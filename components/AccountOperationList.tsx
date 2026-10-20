@@ -103,7 +103,7 @@ export default function AccountOperationList({
         aria-label="Account operations"
         aria-busy={loading || undefined}
         tabIndex={0}
-        className="rounded-xl border border-[var(--color-border-default)] overflow-x-auto"
+        className="rounded-xl border border-[var(--color-border-default)] overflow-x-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-fill)]"
       >
         <table className="w-full text-sm border-collapse">
           <caption className="sr-only">Account operations</caption>
@@ -131,7 +131,8 @@ export default function AccountOperationList({
                     href={`https://stellar.expert/explorer/public/tx/${op.transactionHash}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mono text-xs text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline transition-colors"
+                    aria-label={`View transaction ${op.transactionHash} on Stellar Expert (opens in a new tab)`}
+                    className="mono text-xs text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline transition-colors motion-reduce:transition-none"
                   >
                     {truncateAddress(op.transactionHash, 6)}
                   </a>

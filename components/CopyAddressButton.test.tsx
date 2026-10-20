@@ -18,6 +18,13 @@ function defineClipboard(impl: { writeText: ReturnType<typeof vi.fn> } | null) {
 beforeEach(() => {
   writeText = vi.fn(() => Promise.resolve());
   defineClipboard({ writeText });
+  // jsdom does not provide this deprecated browser fallback itself.
+  if (!document.execCommand) {
+    Object.defineProperty(document, "execCommand", {
+      configurable: true,
+      value: () => false,
+    });
+  }
 });
 
 afterEach(() => {

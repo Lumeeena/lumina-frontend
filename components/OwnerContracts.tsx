@@ -50,7 +50,8 @@ import {
   type ActivityState,
 } from '@/lib/contractActivity';
 import type { ContractEvent } from '@/lib/types';
-import { formatStroops } from '@/lib/formatters';
+import { formatStroops, truncateAddress } from '@/lib/formatters';
+import { trackTransaction } from '@/lib/pendingTransactions';
 import {
   checkReserve,
   WORST_CASE_FEE_STROOPS,
@@ -61,8 +62,13 @@ import { LifetimeSlashedBadge, StakeBadge, VerifiedBadge } from './RegistryBadge
 import BackendUnavailable from './BackendUnavailable';
 import ContractLink from './ContractLink';
 import { t } from '@/lib/i18n';
+import { transactionRecovery } from '@/lib/errorRecovery';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { InlineLoading } from '@/components/ui/InlineLoading';
+
+function rememberTransaction(hash: string) {
+  sessionStorage.setItem(`tx-${Date.now()}`, hash);
+}
 
 async function fetchEvents(
   contractId: string,
@@ -120,7 +126,8 @@ async function callRegistry(
   owner: string,
   method: string,
   args: xdr.ScVal[],
-  onFeeEstimated?: (fee: string) => void
+  onFeeEstimated?: (fee: string) => void,
+  onPhase?: (phase: TxPhase) => void,
 ): Promise<{ hash: string }> {
   // Imported lazily rather than at module scope: the wallet kit pulls in
   // browser-only CommonJS (Freighter et al) that cannot be loaded outside a
@@ -146,28 +153,37 @@ async function callRegistry(
     walletAddress: owner,
     networkPassphrase: NETWORK_PASSPHRASE,
     onFeeEstimated,
+    onPhase,
   });
   return { hash: result.hash };
 }
 
+// Each write is tracked so its progress survives navigating away from this
+// page. See `lib/pendingTransactions.ts`.
 const defaultDeactivate = (contractId: string, owner: string, onFeeEstimated?: (fee: string) => void) =>
-  callRegistry(owner, "deactivate", [
-    nativeToScVal(owner, { type: "address" }),
-    nativeToScVal(contractId, { type: "address" }),
-  ], onFeeEstimated);
+  trackTransaction(t("pending.deactivate", { contract: truncateAddress(contractId, 5) }), (report) =>
+    callRegistry(owner, "deactivate", [
+      nativeToScVal(owner, { type: "address" }),
+      nativeToScVal(contractId, { type: "address" }),
+    ], onFeeEstimated, report),
+  );
 
 const defaultStake = (contractId: string, owner: string, amount: bigint, onFeeEstimated?: (fee: string) => void) =>
-  callRegistry(owner, "stake", [
-    nativeToScVal(owner, { type: "address" }),
-    nativeToScVal(contractId, { type: "address" }),
-    nativeToScVal(amount, { type: "i128" }),
-  ], onFeeEstimated);
+  trackTransaction(t("pending.stake", { contract: truncateAddress(contractId, 5) }), (report) =>
+    callRegistry(owner, "stake", [
+      nativeToScVal(owner, { type: "address" }),
+      nativeToScVal(contractId, { type: "address" }),
+      nativeToScVal(amount, { type: "i128" }),
+    ], onFeeEstimated, report),
+  );
 
 const defaultWithdraw = (contractId: string, owner: string, onFeeEstimated?: (fee: string) => void) =>
-  callRegistry(owner, "withdraw_stake", [
-    nativeToScVal(owner, { type: "address" }),
-    nativeToScVal(contractId, { type: "address" }),
-  ], onFeeEstimated);
+  trackTransaction(t("pending.withdraw", { contract: truncateAddress(contractId, 5) }), (report) =>
+    callRegistry(owner, "withdraw_stake", [
+      nativeToScVal(owner, { type: "address" }),
+      nativeToScVal(contractId, { type: "address" }),
+    ], onFeeEstimated, report),
+  );
 
 /**
  * The unmet good-standing conditions for `withdraw_stake`, worked out up front
@@ -329,9 +345,9 @@ export default function OwnerContracts({
       .catch(() => {});
   }, [scope, loadHistory]);
 
-  async function toggleHistory(entry: RegistryEntry) {
+  async function toggleHistory(entry: RegistryEntry, retry = false) {
     const id = entry.contractId;
-    const opening = expanded !== id;
+    const opening = retry || expanded !== id;
     setExpanded(opening ? id : null);
     if (!opening || slashes[id] || slashesLoading[id]) return;
     setSlashesLoading((prev) => ({ ...prev, [id]: true }));
@@ -339,13 +355,10 @@ export default function OwnerContracts({
     try {
       const records = await getSlashes(id);
       setSlashes((prev) => ({ ...prev, [id]: records }));
-    } catch (error) {
+    } catch {
       setSlashErrors((prev) => ({
         ...prev,
-        [id]:
-          error instanceof Error
-            ? error.message
-            : t("owner.couldNotLoadSlashHistory"),
+        [id]: t("owner.couldNotLoadSlashHistory"),
       }));
     } finally {
       setSlashesLoading((prev) => ({ ...prev, [id]: false }));
@@ -379,7 +392,7 @@ export default function OwnerContracts({
       const result = await work();
       if (result?.hash) {
         setPendingTxHash(result.hash);
-        sessionStorage.setItem(`tx-${Date.now()}`, result.hash);
+        rememberTransaction(result.hash);
       }
       refreshStake(entry.contractId);
       refreshHistory();
@@ -398,7 +411,7 @@ export default function OwnerContracts({
         err instanceof Error && err.message ? err.message : fallback;
       setRowError((prev) => ({ ...prev, [entry.contractId]: message }));
       if (pendingTxHash) {
-        sessionStorage.setItem(`tx-${Date.now()}`, pendingTxHash);
+        rememberTransaction(pendingTxHash);
       }
     } finally {
       setPendingId(null);
@@ -466,7 +479,7 @@ export default function OwnerContracts({
       setRejected(prev => { const next = { ...prev }; delete next[entry.contractId]; return next; });
       if (result?.hash) {
         setPendingTxHash(result.hash);
-        sessionStorage.setItem(`tx-${Date.now()}`, result.hash);
+        rememberTransaction(result.hash);
       }
       // Reflect the new state without a page reload, as the issue requires —
       // the registry read is eventually consistent behind the ledger, so
@@ -497,7 +510,7 @@ export default function OwnerContracts({
             : t("owner.deactivationFailed");
       setRowError((prev) => ({ ...prev, [entry.contractId]: message }));
       if (pendingTxHash) {
-        sessionStorage.setItem(`tx-${Date.now()}`, pendingTxHash);
+        rememberTransaction(pendingTxHash);
       }
     } finally {
       setPendingId(null);
@@ -687,7 +700,8 @@ export default function OwnerContracts({
                 role="alert"
                 className="mt-3 text-xs text-[var(--color-error-text)] bg-[var(--color-error-bg)] rounded-lg px-3 py-2"
               >
-                {rowError[entry.contractId]}
+                <p>{rowError[entry.contractId]}</p>
+                <p className="mt-1">{transactionRecovery(rowError[entry.contractId])}</p>
               </div>
             )}
 
@@ -746,9 +760,10 @@ export default function OwnerContracts({
                       {t("owner.loadingSlashHistory")}
                     </p>
                   ) : slashErrors[entry.contractId] ? (
-                    <p role="alert" className="text-xs text-[var(--color-error-text)]">
-                      {slashErrors[entry.contractId]}
-                    </p>
+                    <div role="alert" className="text-xs text-[var(--color-error-text)]">
+                      <p>{slashErrors[entry.contractId]} Check your connection, then retry.</p>
+                      <button type="button" onClick={() => void toggleHistory(entry, true)} className="mt-1 font-semibold underline underline-offset-2">Retry slash history</button>
+                    </div>
                   ) : slashes[entry.contractId] &&
                     slashes[entry.contractId].length === 0 ? (
                     <p className="text-xs text-[var(--color-text-muted)]">

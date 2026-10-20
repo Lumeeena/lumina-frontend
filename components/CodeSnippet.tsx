@@ -16,15 +16,17 @@ export default function CodeSnippet({
   copyLabel = 'Copy',
 }: CodeSnippetProps) {
   const [copied, setCopied] = useState(false);
+  const [copyError, setCopyError] = useState(false);
   const codeRef = useRef<HTMLPreElement>(null);
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(code);
+      setCopyError(false);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
+    } catch {
+      setCopyError(true);
     }
   };
 
@@ -59,6 +61,11 @@ export default function CodeSnippet({
           {copied ? 'Code copied to clipboard' : ''}
         </span>
       </div>
+      {copyError && (
+        <p role="alert" className="px-4 py-2 text-xs text-[var(--color-error-text)]">
+          Clipboard access failed. Select the code and copy it manually.
+        </p>
+      )}
     </div>
   );
 }

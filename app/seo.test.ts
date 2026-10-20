@@ -10,21 +10,52 @@
 import { describe, expect, it } from "vitest";
 import sitemap from "@/app/sitemap";
 import robots from "@/app/robots";
-import { CRAWL_EXCLUDED, HOME, INDEXABLE_ROUTES, NAV_ROUTES } from "@/lib/routes";
-import { SITE_URL } from "@/lib/site";
+import { generateMetadata as searchMetadata } from "@/app/search/page";
+import {
+  CRAWL_EXCLUDED,
+  HOME,
+  INDEXABLE_ROUTES,
+  NAV_ROUTES,
+  SEARCH,
+} from "@/lib/routes";
+import { SITE_TITLE, SITE_URL } from "@/lib/site";
+
+describe("search metadata", () => {
+  it("generates route-specific metadata without losing the shared card contract", () => {
+    const metadata = searchMetadata();
+
+    expect(metadata.title).toBe(SEARCH.label);
+    expect(metadata.title).not.toBe(SITE_TITLE);
+    expect(metadata.description).toBe(SEARCH.description);
+    expect(metadata.alternates?.canonical).toBe(SEARCH.path);
+    expect(metadata.openGraph).toMatchObject({
+      title: SEARCH.label,
+      description: SEARCH.description,
+      url: SEARCH.path,
+    });
+    expect(metadata.twitter).toMatchObject({
+      title: SEARCH.label,
+      description: SEARCH.description,
+    });
+  });
+});
 
 describe("sitemap", () => {
   it("lists every indexable route exactly once, at an absolute URL", () => {
-    const urls = sitemap().map(entry => entry.url);
+    const urls = sitemap().map((entry) => entry.url);
 
-    expect(urls).toEqual(INDEXABLE_ROUTES.map(route => `${SITE_URL}${route.path === "/" ? "" : route.path}`));
+    expect(urls).toEqual(
+      INDEXABLE_ROUTES.map(
+        (route) => `${SITE_URL}${route.path === "/" ? "" : route.path}`,
+      ),
+    );
     expect(new Set(urls).size).toBe(urls.length);
     // A relative or schemeless URL is silently dropped by every crawler.
     for (const url of urls) expect(url).toMatch(/^https?:\/\//);
   });
 
   it("includes the nav routes, so the two cannot drift", () => {
-    const paths = sitemap().map(entry => new URL(entry.url).pathname || "/");
+    const paths = sitemap().map((entry) => new URL(entry.url).pathname || "/");
 
     for (const route of INDEXABLE_ROUTES) expect(paths).toContain(route.path);
     // A nav route only has to be in the sitemap if it has anything to crawl, so
@@ -39,10 +70,10 @@ describe("sitemap", () => {
   it("keeps a page that renders from localStorage out of the sitemap", () => {
     // `/watch` is built entirely from the visitor's own watch list, so a
     // crawler would only ever index the empty state.
-    const paths = sitemap().map(entry => new URL(entry.url).pathname || "/");
+    const paths = sitemap().map((entry) => new URL(entry.url).pathname || "/");
 
     expect(paths).not.toContain("/watch");
-    expect(NAV_ROUTES.map(route => route.path)).toContain("/watch");
+    expect(NAV_ROUTES.map((route) => route.path)).toContain("/watch");
   });
 
   it("omits the per-address pages, which are unbounded", () => {
@@ -99,6 +130,6 @@ describe("robots.txt", () => {
     // exclude `/accounts` itself, which is where the address search lives.
     const patterns = robots().rules[0].disallow ?? [];
     expect(patterns).not.toContain("/");
-    expect(patterns.some(p => p === HOME.path)).toBe(false);
+    expect(patterns.some((p) => p === HOME.path)).toBe(false);
   });
 });

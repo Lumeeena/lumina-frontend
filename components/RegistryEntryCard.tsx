@@ -21,8 +21,30 @@ export interface RegistryEntryCardProps {
 export default function RegistryEntryCard({ profile }: RegistryEntryCardProps) {
   const { reputation } = profile;
 
+  async function loadHistory() {
+      setLoading(true);
+      setError(null);
+      try {
+        setSlashes(await loadSlashes(profile.contractId));
+      } catch {
+        setError("Couldn't read the slash history. Check your connection, then try again.");
+      } finally {
+        setLoading(false);
+      }
+  }
+
+  function toggle() {
+    const next = !open;
+    setOpen(next);
+    // Fetch once, on first expand: the section is the only place the history
+    // is shown, so paying the read for a collapsed row would be waste.
+    if (next && slashes === null) {
+      void loadHistory();
+    }
+  }
+
   return (
-    <div className="border border-[var(--color-border-default)] rounded-[10px] p-3.5 px-4">
+    <div className="min-h-36 border border-[var(--color-border-default)] rounded-[10px] p-3.5 px-4">
       <div className="flex items-center justify-between gap-2 mb-1">
         <span className="font-bold text-sm text-[var(--color-text-primary)]">{profile.name}</span>
         <ContractLink contractId={profile.contractId} truncate={5} className="text-[11px]" />
@@ -46,7 +68,44 @@ export default function RegistryEntryCard({ profile }: RegistryEntryCardProps) {
         <LifetimeSlashedBadge slashedTotal={reputation.slashedTotal} />
       </div>
 
-      <RegistrySlashHistory contractId={profile.contractId} />
+      <button
+        onClick={toggle}
+        aria-expanded={open}
+        className="mt-2.5 text-[11px] font-bold text-[var(--color-accent-text)] hover:underline underline-offset-2"
+      >
+        {open ? 'Hide slash history' : 'Slash history'}
+      </button>
+
+      {open && (
+        <div className="mt-2 border-t border-[var(--color-bg-overlay)] pt-2.5">
+          {loading ? (
+            <p className="text-xs text-[var(--color-text-muted)]">Loading slash history…</p>
+          ) : error ? (
+            <div role="alert" className="text-xs text-[var(--color-error-text)]">
+              <p>{error}</p>
+              <button type="button" onClick={() => void loadHistory()} className="mt-1 font-semibold underline underline-offset-2">Retry history</button>
+            </div>
+          ) : slashes !== null && slashes.length === 0 ? (
+            <p className="text-xs text-[var(--color-text-muted)]">No slashes recorded.</p>
+          ) : (
+            slashes !== null && (
+              <ul className="flex flex-col gap-1.5">
+                {slashes.map((slash, i) => (
+                  <li key={`${slash.slashedAt}-${i}`} className="flex items-baseline justify-between gap-3">
+                    <span className="text-xs text-[var(--color-text-primary)] min-w-0">
+                      <span className="mono">−{formatStroops(slash.amount)} XLM</span>
+                      <span className="text-[var(--color-text-secondary)]"> · {slash.reason}</span>
+                    </span>
+                    <span className="mono text-[11px] text-[var(--color-text-muted)] shrink-0">
+                      ledger {slash.slashedAt.toLocaleString()}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )
+          )}
+        </div>
+      )}
     </div>
   );
 }

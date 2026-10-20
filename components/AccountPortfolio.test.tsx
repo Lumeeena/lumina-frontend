@@ -4,6 +4,7 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { Balance } from "@/lib/types";
 import { wcagViolations } from "@/lib/axeScan";
+import { invalidateQueryCache } from "@/lib/queryCache";
 
 const gqlFetch = vi.hoisted(() => vi.fn());
 
@@ -47,11 +48,62 @@ const SERIES = {
 beforeEach(() => {
   gqlFetch.mockReset();
   gqlFetch.mockResolvedValue(SERIES);
+  // The volume cache is module state, so one case's answer would otherwise
+  // satisfy the next case's read and skip the fetch it asserts on.
+  invalidateQueryCache();
 });
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
 
 describe("AccountPortfolio", () => {
+  it("serves a repeat visit from the cache without refetching", async () => {
+    const first = render(<AccountPortfolio balances={[NATIVE]} />);
+    await waitFor(() => expect(gqlFetch).toHaveBeenCalledTimes(1));
+    first.unmount();
+
+    render(<AccountPortfolio balances={[NATIVE]} />);
+
+    expect(gqlFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("refetches once the cached answer is past its freshness window", async () => {
+    const now = vi.spyOn(Date, "now").mockReturnValue(1_000_000);
+    const first = render(<AccountPortfolio balances={[NATIVE]} />);
+    await waitFor(() => expect(gqlFetch).toHaveBeenCalledTimes(1));
+    first.unmount();
+
+    now.mockReturnValue(1_000_000 + 60_000);
+    render(<AccountPortfolio balances={[NATIVE]} />);
+
+    expect(gqlFetch).toHaveBeenCalledTimes(2);
+  });
+
+  it("keeps showing a cached answer when its background refresh fails", async () => {
+    const now = vi.spyOn(Date, "now").mockReturnValue(1_000_000);
+    const first = render(<AccountPortfolio balances={[NATIVE]} />);
+    await waitFor(() => expect(gqlFetch).toHaveBeenCalledTimes(1));
+    first.unmount();
+
+    now.mockReturnValue(1_000_000 + 60_000);
+    gqlFetch.mockRejectedValueOnce(new Error("backend is down"));
+    render(<AccountPortfolio balances={[NATIVE]} />);
+    await waitFor(() => expect(gqlFetch).toHaveBeenCalledTimes(2));
+    // The failure is handled in a promise continuation; let it settle first.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(screen.queryByText("backend is down")).toBeNull();
+  });
+
+  it("shows the error when a cold read fails with nothing cached to fall back on", async () => {
+    gqlFetch.mockRejectedValueOnce(new Error("backend is down"));
+    render(<AccountPortfolio balances={[NATIVE]} />);
+
+    expect(await screen.findByText("backend is down")).toBeTruthy();
+  });
+
   it("has no WCAG A/AA violations once the chart has loaded", async () => {
     const { container } = render(
       <AccountPortfolio balances={[NATIVE, credit("USDC", "7")]} />,
