@@ -5,11 +5,10 @@
  * has to be: it is fetched by the browser at the origin root, outside the
  * module graph, so anything the bundler produces would not be there to load.
  *
- * It handles two things and nothing else. A `push` event carrying an alert
- * payload, and a click on one of those alerts. There is no cache and no
- * fetch handler on purpose — a stale cache served by a worker that is supposed
- * to be about alerting is a confusing thing to debug, and this app is better
- * offline by simply not being a PWA.
+ * It handles push alerts and an offline-first application shell. Navigation
+ * and API data stay network-first, while immutable build assets are
+ * cache-first. Bumping CACHE_VERSION gives deployments a deterministic update
+ * path: install the new cache, activate immediately, then remove old caches.
  *
  * Delivery: a payload shaped like
  *   { "title": string, "body": string, "address": string,
@@ -24,14 +23,98 @@
 
 /* global self */
 
-self.addEventListener("install", () => {
+const CACHE_VERSION = "lumina-v1";
+const SHELL_CACHE = `${CACHE_VERSION}-shell`;
+const ASSET_CACHE = `${CACHE_VERSION}-assets`;
+const DATA_CACHE = `${CACHE_VERSION}-data`;
+const APP_SHELL = [
+  "/",
+  "/manifest.webmanifest",
+  "/icons/icon-192.svg",
+  "/icons/icon-512.svg",
+];
+
+self.addEventListener("install", (event) => {
   // Take over straight away: a watch that has just been opted into should not
   // need a second reload before its worker can receive a push.
   self.skipWaiting();
+  event.waitUntil(
+    caches.open(SHELL_CACHE).then((cache) => cache.addAll(APP_SHELL)),
+  );
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    Promise.all([
+      caches
+        .keys()
+        .then((names) =>
+          Promise.all(
+            names
+              .filter(
+                (name) =>
+                  name.startsWith("lumina-") && !name.startsWith(CACHE_VERSION),
+              )
+              .map((name) => caches.delete(name)),
+          ),
+        ),
+      self.clients.claim(),
+    ]),
+  );
+});
+
+function isAsset(request) {
+  const url = new URL(request.url);
+  return (
+    url.origin === self.location.origin &&
+    (url.pathname.startsWith("/_next/static/") ||
+      url.pathname.startsWith("/icons/") ||
+      ["style", "script", "font", "image"].includes(request.destination))
+  );
+}
+
+async function cacheFirst(request) {
+  const cached = await caches.match(request);
+  if (cached) return cached;
+  const response = await fetch(request);
+  if (response.ok)
+    (await caches.open(ASSET_CACHE)).put(request, response.clone());
+  return response;
+}
+
+async function networkFirst(request) {
+  const cache = await caches.open(DATA_CACHE);
+  try {
+    const response = await fetch(request);
+    if (response.ok && request.method === "GET")
+      await cache.put(request, response.clone());
+    return response;
+  } catch (error) {
+    const cached =
+      request.method === "GET" ? await cache.match(request) : undefined;
+    if (cached) return cached;
+    if (request.mode === "navigate") {
+      const shell = await caches.match("/");
+      if (shell) return shell;
+    }
+    throw error;
+  }
+}
+
+self.addEventListener("fetch", (event) => {
+  const { request } = event;
+  if (
+    request.method !== "GET" ||
+    new URL(request.url).protocol === "chrome-extension:"
+  )
+    return;
+  event.respondWith(
+    isAsset(request) ? cacheFirst(request) : networkFirst(request),
+  );
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "SKIP_WAITING") self.skipWaiting();
 });
 
 /** Pull a display string out of a payload that may be anything at all. */
@@ -84,19 +167,21 @@ self.addEventListener("push", (event) => {
     },
   };
 
-  event.waitUntil(self.registration.showNotification(title, { body, ...options }));
+  event.waitUntil(
+    self.registration.showNotification(title, { body, ...options }),
+  );
 });
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
   const data = event.notification.data || {};
-  const target =
-    typeof data.url === "string" && data.url ? data.url : "/watch";
+  const target = typeof data.url === "string" && data.url ? data.url : "/watch";
 
   event.waitUntil(
-    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(
-      (clientList) => {
+    self.clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((clientList) => {
         // Prefer an existing window: opening a second tab for an alert the
         // person can already see is the most common complaint about push.
         for (const client of clientList) {
@@ -111,7 +196,6 @@ self.addEventListener("notificationclick", (event) => {
           }
         }
         return self.clients.openWindow(target);
-      },
-    ),
+      }),
   );
 });

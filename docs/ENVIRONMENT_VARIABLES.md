@@ -56,7 +56,7 @@ Variables prefixed with `NEXT_PUBLIC_` are **baked into the JavaScript bundle at
   - Mainnet: `Public Global Stellar Network ; September 2015`
 - **Effect**: Used in `lib/registry.ts` to construct and sign transactions for Soroban RPC calls.
 - **Not the same thing as the network in the URL**: this variable is baked in
-  at build time and says which network a *deployment* serves. The network a
+  at build time and says which network a _deployment_ serves. The network a
   reader selects lives in the page URL (`?network=testnet`) and is per-page —
   see [NETWORKS.md](./NETWORKS.md).
 
@@ -66,6 +66,13 @@ Variables prefixed with `NEXT_PUBLIC_` are **baked into the JavaScript bundle at
 - **Purpose**: A Stellar account address used for read-only contract simulation. Does not sign or spend anything.
 - **Must match backend**: No, any funded account on the target network works.
 - **Effect**: Used in `lib/registry.ts` as the source for read-only Soroban RPC transactions.
+
+### NEXT_PUBLIC_ERROR_REPORTING_URL
+
+- **Default**: Unset. Client error reporting is off by default.
+- **Purpose**: Receives privacy-scrubbed boundary errors, uncaught errors, and unhandled promise rejections as JSON.
+- **Privacy**: Stellar addresses, email addresses, IP addresses, and URL query/hash data are removed before transmission.
+- **Effect**: When set, the root reporter and route error boundaries send best-effort reports without affecting recovery UI.
 
 ## Server-Side Variables (Runtime)
 
@@ -78,9 +85,21 @@ Variables without the `NEXT_PUBLIC_` prefix are server-side only — they are re
 - **Must match backend**: Yes — this must point to a running GraphQL server.
 - **Effect**: Server-side operations like API routes and server-side rendering use this URL. Unlike `NEXT_PUBLIC_GRAPHQL_URL`, this URL does not need to be reachable from the browser — only from the server.
 
+### ERROR_REPORTING_URL
+
+- **Default**: Unset. Production browser source maps are not generated or uploaded.
+- **Purpose**: Receives source-map JSON from `scripts/upload-source-maps.mjs` after a successful production build.
+- **Effect**: Enabling it turns on Next.js production browser source maps and uploads each generated map with the application release.
+
+### ERROR_REPORTING_TOKEN
+
+- **Default**: Unset.
+- **Purpose**: Optional bearer credential sent only by the source-map upload script. It is never included in the client bundle.
+
 ## Summary by Network
 
 ### Development (Localhost)
+
 ```
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 NEXT_PUBLIC_GRAPHQL_URL=http://localhost:4000/graphql
@@ -92,6 +111,7 @@ NEXT_PUBLIC_REGISTRY_READ_ACCOUNT=GBWKFFXZ5CJESIHP2EOID5IOXMF472RO5XOJ36X475D5LJ
 ```
 
 ### Testnet Deployment
+
 ```
 NEXT_PUBLIC_SITE_URL=https://testnet.lumina.example.com
 NEXT_PUBLIC_GRAPHQL_URL=https://graphql-testnet.example.com/graphql
@@ -103,6 +123,7 @@ NEXT_PUBLIC_REGISTRY_READ_ACCOUNT=GBWKFFXZ5CJESIHP2EOID5IOXMF472RO5XOJ36X475D5LJ
 ```
 
 ### Mainnet Deployment
+
 ```
 NEXT_PUBLIC_SITE_URL=https://lumina.example.com
 NEXT_PUBLIC_GRAPHQL_URL=https://graphql.example.com/graphql

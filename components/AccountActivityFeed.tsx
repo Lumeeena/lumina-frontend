@@ -62,9 +62,16 @@ export default function AccountActivityFeed({ address }: { address: string }) {
   }
 
   return (
-    <div className="mb-9" data-testid="account-activity">
+    <section
+      className="mb-9"
+      data-testid="account-activity"
+      aria-labelledby="live-activity-heading"
+    >
       <div className="flex items-center justify-between mb-3">
-        <h2 className="font-extrabold text-base text-[var(--color-text-primary)]">
+        <h2
+          id="live-activity-heading"
+          className="font-extrabold text-base text-[var(--color-text-primary)]"
+        >
           Live Activity
         </h2>
         <ConnectionIndicator
@@ -76,36 +83,44 @@ export default function AccountActivityFeed({ address }: { address: string }) {
 
       <div className="rounded-xl border border-[var(--color-border-default)] overflow-hidden">
         {operations.length === 0 ? (
-          <div className="p-6 text-center text-[var(--color-text-muted)] text-sm">
+          <div
+            role="status"
+            className="p-6 text-center text-[var(--color-text-muted)] text-sm"
+          >
             Waiting for new activity on this account&hellip;
           </div>
         ) : (
-          operations.map((operation) => (
-            <div
-              key={operation.id}
-              className="flex items-center gap-3 px-4 py-2.5 border-b border-[var(--color-bg-overlay)] last:border-0"
-            >
-              <span className="text-[11px] font-semibold rounded-full bg-[var(--color-accent-surface)] text-[var(--color-accent-text)] px-2.5 py-0.5 shrink-0">
-                {operation.type}
-              </span>
-              <a
-                href={`https://stellar.expert/explorer/public/tx/${operation.transactionHash}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mono text-xs text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline transition-colors"
+          <ul aria-live="polite" aria-label="Latest account activity">
+            {operations.map((operation) => (
+              <li
+                key={operation.id}
+                className="flex items-center gap-3 px-4 py-2.5 border-b border-[var(--color-bg-overlay)] last:border-0"
               >
-                {truncateAddress(operation.transactionHash, 5)}
-              </a>
-              {operation.amount && (
-                <span className="mono text-xs text-[var(--color-text-primary)]">
-                  {operation.amount} {operation.asset ?? "XLM"}
+                <span className="text-[11px] font-semibold rounded-full bg-[var(--color-accent-surface)] text-[var(--color-accent-text)] px-2.5 py-0.5 shrink-0">
+                  {operation.type}
                 </span>
-              )}
-              <span className="ms-auto text-[11px] text-[var(--color-text-faint)]"><TimeAgo isoString={operation.createdAt} /></span>
-            </div>
-          ))
+                <a
+                  href={`https://stellar.expert/explorer/public/tx/${operation.transactionHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`View ${operation.type.toLowerCase()} transaction ${operation.transactionHash} on Stellar Expert (opens in a new tab)`}
+                  className="mono text-xs text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-fill)]"
+                >
+                  {truncateAddress(operation.transactionHash, 5)}
+                </a>
+                {operation.amount && (
+                  <span className="mono text-xs text-[var(--color-text-primary)]">
+                    {operation.amount} {operation.asset ?? "XLM"}
+                  </span>
+                )}
+                <span className="ms-auto text-[11px] text-[var(--color-text-faint)]">
+                  <TimeAgo isoString={operation.createdAt} />
+                </span>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
-    </div>
+    </section>
   );
 }

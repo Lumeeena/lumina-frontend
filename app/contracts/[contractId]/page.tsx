@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
+import { GRAPHQL_URL } from "@/lib/graphql";
+import { getContractInterface } from "@/lib/contractInterface";
 import { routeMetadata } from "@/lib/metadata";
 import { truncateAddress } from "@/lib/formatters";
 import BackendUnavailable from "@/components/BackendUnavailable";
 import CopyAddressButton from "@/components/CopyAddressButton";
 import WatchIndicator from "@/components/WatchIndicator";
 import SorobanValue from "@/components/SorobanValue";
-import TimeAgo from "@/components/TimeAgo";
 
 export const dynamic = "force-dynamic";
 
@@ -66,13 +66,26 @@ const stat =
 const statLabel =
   "text-[11px] text-[var(--color-text-muted)] uppercase tracking-[0.05em]";
 
+function signature(
+  name: string,
+  inputs: Array<{ name: string; type: string }>,
+  outputs: string[],
+) {
+  const args = inputs.map((input) => `${input.name}: ${input.type}`).join(", ");
+  return `${name}(${args})${outputs.length ? ` -> ${outputs.join(", ")}` : ""}`;
+}
+
 export default async function ContractPage({
   params,
 }: {
   params: Promise<{ contractId: string }>;
 }) {
   const { contractId } = await params;
-  const { entries, unavailable, noStorageQuery } = await getContractStorage();
+  const [{ entries, unavailable, noStorageQuery }, contractInterface] =
+    await Promise.all([
+      getContractStorage(),
+      getContractInterface(GRAPHQL_URL, contractId),
+    ]);
 
   return (
     <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
@@ -82,6 +95,79 @@ export default async function ContractPage({
       >
         &larr; Back to Contract Events
       </Link>
+
+      <div className="flex items-center gap-3 mb-1.5 flex-wrap">
+        <h1 className="mono font-bold text-[22px] break-all text-[var(--color-text-primary)]">
+          {contractId}
+        </h1>
+        <CopyAddressButton address={contractId} variant="hash" />
+        <WatchIndicator address={contractId} />
+      </div>
+      <p className="text-[var(--color-text-muted)] text-[13px] mb-6">
+        Soroban contract interface and storage
+      </p>
+
+      <section className="mb-8" aria-labelledby="contract-interface-heading">
+        <div className="flex items-baseline justify-between gap-4 mb-3 flex-wrap">
+          <h2
+            id="contract-interface-heading"
+            className="font-extrabold text-base text-[var(--color-text-primary)]"
+          >
+            Contract Interface
+          </h2>
+          {contractInterface.wasmHash && (
+            <span className="mono text-xs text-[var(--color-text-muted)] break-all">
+              WASM {contractInterface.wasmHash}
+            </span>
+          )}
+        </div>
+
+        {contractInterface.functions.length > 0 ? (
+          <ul className="rounded-xl border border-[var(--color-border-default)] divide-y divide-[var(--color-border-default)]">
+            {contractInterface.functions.map((fn) => (
+              <li
+                key={signature(fn.name, fn.inputs, fn.outputs)}
+                className="p-4"
+              >
+                <code className="mono text-sm text-[var(--color-text-primary)] break-words">
+                  {signature(fn.name, fn.inputs, fn.outputs)}
+                </code>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div
+            role="status"
+            className="rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-subtle)] p-5 text-sm text-[var(--color-text-muted)]"
+          >
+            {contractInterface.unavailable
+              ? "The contract interface service is temporarily unavailable."
+              : contractInterface.unreadable
+                ? "This contract’s WASM specification could not be read."
+                : "No readable function specification is indexed for this contract yet."}
+          </div>
+        )}
+
+        {contractInterface.sharedContractIds.length > 0 && (
+          <div className="mt-5">
+            <h3 className="text-sm font-semibold text-[var(--color-text-primary)] mb-2">
+              Contracts using the same WASM
+            </h3>
+            <ul className="space-y-1">
+              {contractInterface.sharedContractIds.map((sharedId) => (
+                <li key={sharedId}>
+                  <Link
+                    href={`/contracts/${sharedId}`}
+                    className="mono text-xs text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-fill)]"
+                  >
+                    {sharedId}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </section>
 
       {unavailable ? (
         <BackendUnavailable />
@@ -99,17 +185,6 @@ export default async function ContractPage({
         </div>
       ) : (
         <div>
-          <div className="flex items-center gap-3 mb-1.5 flex-wrap">
-            <h1 className="mono font-bold text-[22px] break-all text-[var(--color-text-primary)]">
-              {contractId}
-            </h1>
-            <CopyAddressButton address={contractId} variant="hash" />
-            <WatchIndicator address={contractId} />
-          </div>
-          <p className="text-[var(--color-text-muted)] text-[13px] mb-6">
-            Soroban contract storage
-          </p>
-
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
             <div className={stat}>
               <div className={statLabel}>Total Entries</div>
