@@ -32,12 +32,24 @@
  * find out what a network is called.
  */
 
-/** The query parameter that carries the selected network. */
+/**
+ * The query parameter that carries the selected network.
+ *
+ * Networks are passed as query parameters (e.g. `?network=testnet`) rather than
+ * path segments so canonical URLs remain stable and crawl rules stay simple.
+ */
 export const NETWORK_PARAM = "network";
 
+/**
+ * Supported Stellar network identifiers.
+ */
 export type NetworkId = "mainnet" | "testnet" | "futurenet";
 
+/**
+ * Metadata describing a supported network.
+ */
 export interface NetworkInfo {
+  /** Network identifier. */
   id: NetworkId;
   /** Shown in the switcher and used as the network's accessible name. */
   label: string;
@@ -80,12 +92,21 @@ export const NETWORKS: readonly NetworkInfo[] = [
  */
 export const DEFAULT_NETWORK: NetworkId = "mainnet";
 
-/** The ids, for iteration and validation. */
+/**
+ * The ids, for iteration and validation.
+ *
+ * Derived from {@link NETWORKS} to keep the list of valid ids in sync.
+ */
 export const NETWORK_IDS: readonly NetworkId[] = NETWORKS.map(
   (network) => network.id,
 );
 
-/** Is this exactly one of our network ids? */
+/**
+ * Type guard to check if a value is a valid {@link NetworkId}.
+ *
+ * @param value - Value to test.
+ * @returns `true` if `value` is one of the known network ids.
+ */
 export function isNetworkId(value: unknown): value is NetworkId {
   return (
     typeof value === "string" &&
@@ -101,6 +122,9 @@ export function isNetworkId(value: unknown): value is NetworkId {
  * unrecognised value is `null` rather than the default: the caller decides
  * whether an unknown network is "no selection" or an error worth correcting,
  * and `readNetwork` is the one that treats it as the former.
+ *
+ * @param value - Raw parameter value from query string.
+ * @returns Parsed network id or `null` if unrecognised/missing.
  */
 export function parseNetwork(value: string | null | undefined): NetworkId | null {
   if (typeof value !== "string") return null;
@@ -113,8 +137,11 @@ export function parseNetwork(value: string | null | undefined): NetworkId | null
  *
  * Accepts what `useSearchParams().toString()` and `window.location.search`
  * produce, with or without the leading `?`, and a `URLSearchParams` directly.
- * A missing or unrecognised value resolves to `DEFAULT_NETWORK` — a link that
- * names a network we do not know is not a link that should fail to render.
+ * A missing or unrecognised value resolves to {@link DEFAULT_NETWORK} — a link
+ * that names a network we do not know is not a link that should fail to render.
+ *
+ * @param search - Query string, `URLSearchParams`, or `null`/`undefined`.
+ * @returns Resolved network id (defaults to mainnet if missing/unknown).
  */
 export function readNetwork(
   search: string | URLSearchParams | null | undefined,
@@ -132,6 +159,9 @@ export function readNetwork(
  * Only same-origin paths qualify. `//host/path` is protocol-relative and
  * leaves this origin, and so does anything with a scheme — rewriting either
  * would either point the parameter at someone else's server or break the URL.
+ *
+ * @param href - Href to test.
+ * @returns `true` if the href is an internal path we can rewrite.
  */
 export function isInternalHref(href: string): boolean {
   return href.startsWith("/") && !href.startsWith("//");
@@ -142,8 +172,12 @@ export function isInternalHref(href: string): boolean {
  *
  * Preserves the path, every other query parameter and the fragment; replaces
  * an existing `network` rather than adding a second one; and drops the
- * parameter entirely for `DEFAULT_NETWORK`, which is what keeps canonical URLs
- * canonical. Hrefs that are not ours are returned untouched.
+ * parameter entirely for {@link DEFAULT_NETWORK}, which is what keeps canonical
+ * URLs canonical. Hrefs that are not ours are returned untouched.
+ *
+ * @param href - Original href/path.
+ * @param network - Network to encode.
+ * @returns Modified href with network parameter applied as appropriate.
  */
 export function withNetwork(href: string, network: NetworkId): string {
   if (!isInternalHref(href)) return href;
