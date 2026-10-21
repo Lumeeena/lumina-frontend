@@ -12,7 +12,7 @@ import { useEffect, useState } from 'react';
 import { nativeToScVal } from '@stellar/stellar-sdk/base';
 import { REGISTRY_CATEGORIES, type RegistryCategory } from '@/lib/categories';
 import { NETWORK_PASSPHRASE, REGISTRY_CONTRACT_ID, SOROBAN_RPC_URL } from '@/lib/registry';
-import { createStellarDriver, submitContractCall, type TxPhase } from '@/lib/sorobanTx';
+import { createStellarDriver, submitContractCall, WalletRejectedError, type TxPhase } from '@/lib/sorobanTx';
 import { trackTransaction } from '@/lib/pendingTransactions';
 import { formatStroops } from '@/lib/formatters';
 import { Button } from '@/components/ui/Button';
