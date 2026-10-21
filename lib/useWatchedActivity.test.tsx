@@ -253,7 +253,7 @@ describe("useWatchedActivity", () => {
 
     // And tightening it again is honoured as well.
     act(() => watch(["GA"], DEFAULT_OPERATION_FILTERS));
-    act(() => deliverFor("GA", op({ id: "contract", type: "CREATE_CONTRACT" })));
+    act(() => deliverFor("GA", op({ id: "contract", type: "INVOKE_HOST_FUNCTION" })));
     expect(onAlert).toHaveBeenCalledTimes(1);
     expect(subscribes()).toBe(before);
   });

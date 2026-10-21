@@ -1,4 +1,3 @@
-'use client';
 
 /**
  * One entry in the public "Recently Registered" list.
@@ -9,51 +8,46 @@
  * per-contract read, so it is fetched the first time the section is expanded
  * rather than for every row up front.
  */
-import { useState } from 'react';
-import { getSlashes, type RegistryProfile, type SlashRecord } from '@/lib/registry';
+import type { RegistryProfile } from '@/lib/registry';
+import RegistrySlashHistory from './RegistrySlashHistory';
 import { CATEGORY_LABELS } from '@/lib/registry';
-import { formatStroops, truncateAddress } from '@/lib/formatters';
 import { LifetimeSlashedBadge, StakeBadge, VerifiedBadge } from './RegistryBadges';
+import ContractLink from './ContractLink';
 
 export interface RegistryEntryCardProps {
   profile: RegistryProfile;
-  loadSlashes?: (contractId: string) => Promise<SlashRecord[]>;
 }
 
-const defaultLoadSlashes = (contractId: string) => getSlashes(contractId);
-
-export default function RegistryEntryCard({ profile, loadSlashes = defaultLoadSlashes }: RegistryEntryCardProps) {
-  const [open, setOpen] = useState(false);
-  const [slashes, setSlashes] = useState<SlashRecord[] | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
+export default function RegistryEntryCard({ profile }: RegistryEntryCardProps) {
   const { reputation } = profile;
 
-  async function toggle() {
-    const next = !open;
-    setOpen(next);
-    // Fetch once, on first expand: the section is the only place the history
-    // is shown, so paying the read for a collapsed row would be waste.
-    if (next && slashes === null) {
+  async function loadHistory() {
       setLoading(true);
       setError(null);
       try {
         setSlashes(await loadSlashes(profile.contractId));
       } catch {
-        setSlashes([]);
-        setError("Couldn't read the slash history.");
+        setError("Couldn't read the slash history. Check your connection, then try again.");
       } finally {
         setLoading(false);
       }
+  }
+
+  function toggle() {
+    const next = !open;
+    setOpen(next);
+    // Fetch once, on first expand: the section is the only place the history
+    // is shown, so paying the read for a collapsed row would be waste.
+    if (next && slashes === null) {
+      void loadHistory();
     }
   }
 
   return (
-    <div className="border border-[var(--color-border-default)] rounded-[10px] p-3.5 px-4">
+    <div className="min-h-36 border border-[var(--color-border-default)] rounded-[10px] p-3.5 px-4">
       <div className="flex items-center justify-between gap-2 mb-1">
         <span className="font-bold text-sm text-[var(--color-text-primary)]">{profile.name}</span>
-        <span className="mono text-[11px] text-[var(--color-text-muted)]">{truncateAddress(profile.contractId, 5)}</span>
+        <ContractLink contractId={profile.contractId} truncate={5} className="text-[11px]" />
       </div>
       <p className="text-xs text-[var(--color-text-secondary)] m-0">{profile.description}</p>
       {profile.categories && profile.categories.length > 0 && (
@@ -87,7 +81,10 @@ export default function RegistryEntryCard({ profile, loadSlashes = defaultLoadSl
           {loading ? (
             <p className="text-xs text-[var(--color-text-muted)]">Loading slash history…</p>
           ) : error ? (
-            <p role="alert" className="text-xs text-[var(--color-error-text)]">{error}</p>
+            <div role="alert" className="text-xs text-[var(--color-error-text)]">
+              <p>{error}</p>
+              <button type="button" onClick={() => void loadHistory()} className="mt-1 font-semibold underline underline-offset-2">Retry history</button>
+            </div>
           ) : slashes !== null && slashes.length === 0 ? (
             <p className="text-xs text-[var(--color-text-muted)]">No slashes recorded.</p>
           ) : (

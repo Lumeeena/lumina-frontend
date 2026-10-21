@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import {
   getDirection,
   getLocale,
+  setLocale,
   subscribeLocale,
 } from "@/lib/i18n";
 
@@ -23,6 +24,16 @@ export default function DirectionSync() {
       root.lang = locale;
       root.dir = getDirection(locale);
     };
+
+    const params = new URLSearchParams(window.location.search);
+    const urlLoc = params.get("locale") || params.get("lang");
+    const storedLoc = localStorage.getItem("lumina-locale");
+    
+    if (urlLoc) {
+      setLocale(urlLoc);
+    } else if (storedLoc) {
+      setLocale(storedLoc);
+    }
 
     apply(getLocale());
     return subscribeLocale(apply);

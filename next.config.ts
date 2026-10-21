@@ -2,6 +2,10 @@ import type { NextConfig } from "next";
 import path from "path";
 
 const nextConfig: NextConfig = {
+  // Maps support error uploads and the CI-only bundle contents inventory.
+  productionBrowserSourceMaps: Boolean(
+    process.env.ERROR_REPORTING_URL || process.env.BUNDLE_CONTENTS,
+  ),
   // Opt in only annotated components; keep this change scoped to the explorer.
   reactCompiler: { compilationMode: "annotation" },
   // Inlined into the client bundle so the footer can show which build is running.

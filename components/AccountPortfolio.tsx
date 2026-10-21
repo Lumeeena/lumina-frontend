@@ -29,10 +29,18 @@ import {
 } from "@/lib/generated/graphql";
 import { gqlFetch, PUBLIC_GRAPHQL_URL } from "@/lib/graphql";
 import { useAbortScope } from "@/lib/useAbortScope";
+import {
+  isFresh,
+  queryGeneration,
+  queryKey,
+  readQuery,
+  writeQuery,
+} from "@/lib/queryCache";
 import type { Balance } from "@/lib/types";
 import { AreaChart } from "@/components/charts/AreaChart";
 import type { AreaChartPoint } from "@/components/charts/AreaChart";
-import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { InlineError } from "@/components/ui/InlineError";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -42,6 +50,9 @@ const MAX_VISIBLE = 8;
 /** Daily buckets, 30 days back. The `from` param is omitted so the server
  *  defaults to "30 days before now", keeping the query stateless. */
 const BUCKET_SECONDS = 86_400;
+
+/** The chart is daily buckets, so an answer a minute old is as useful as a fresh one. */
+const VOLUME_FRESH_MS = 60_000;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -78,7 +89,7 @@ function isAllZero(series: AssetVolumeQuery["asset"]["series"]): boolean {
 function ChartSkeleton({ height = 280 }: { height?: number }) {
   return (
     <div
-      className="rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-subtle)] animate-pulse"
+      className="rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-subtle)] animate-pulse motion-reduce:animate-none"
       style={{ height }}
       aria-hidden="true"
     />
@@ -117,19 +128,38 @@ export default function AccountPortfolio({ balances }: AccountPortfolioProps) {
 
   const fetchVolume = useCallback(
     async (balance: Balance) => {
-      setFetchState({ status: "loading" });
+      const variables = { asset: assetKey(balance), bucketSeconds: BUCKET_SECONDS };
+      const key = queryKey(PUBLIC_GRAPHQL_URL, AssetVolumeDocument.toString(), variables);
+      const cached = readQuery<AssetVolumeQuery>(key);
+
+      // Taken before the freshness check: a fresh answer for this asset must
+      // still supersede a request for the previous one that is in flight, or
+      // that slower answer would overwrite the chart.
+      const generation = queryGeneration();
       const req = scope.next();
+
+      // A repeat visit paints from the last answer at once. Only an answer past
+      // the freshness window goes back to the network, and it stays on screen
+      // while that refresh runs.
+      setFetchState(
+        cached ? { status: "done", data: cached.data.asset } : { status: "loading" },
+      );
+      if (cached && isFresh(cached, VOLUME_FRESH_MS)) return;
+
       try {
         const data = await gqlFetch(
           PUBLIC_GRAPHQL_URL,
           AssetVolumeDocument,
-          { asset: assetKey(balance), bucketSeconds: BUCKET_SECONDS },
+          variables,
           { signal: req.signal },
         );
+        writeQuery(key, data, { generation });
         if (!req.isCurrent()) return;
         setFetchState({ status: "done", data: data.asset });
       } catch (err) {
-        if (!req.isCurrent()) return;
+        // A failed refresh keeps the answer already shown. Only a read with
+        // nothing to fall back on replaces the chart with an error.
+        if (!req.isCurrent() || cached) return;
         const message =
           err instanceof Error ? err.message : "Could not load activity data.";
         setFetchState({ status: "error", message });
@@ -146,6 +176,7 @@ export default function AccountPortfolio({ balances }: AccountPortfolioProps) {
 
   // ── Pill tab list ────────────────────────────────────────────────────────
 
+  const assetGroupId = "portfolio-asset-group";
   const visible = showAll ? sorted : sorted.slice(0, MAX_VISIBLE);
   const overflowCount = sorted.length - MAX_VISIBLE;
   const hasOverflow = sorted.length > MAX_VISIBLE;
@@ -158,21 +189,11 @@ export default function AccountPortfolio({ balances }: AccountPortfolioProps) {
     chartContent = <ChartSkeleton />;
   } else if (fetchState.status === "error") {
     chartContent = (
-      <div className="rounded-xl border border-[var(--color-error-outline)] bg-[var(--color-bg-subtle)] flex flex-col items-center justify-center gap-3 p-8 text-center" style={{ minHeight: 280 }}>
-        <p className="text-[var(--color-error-text)] text-sm font-semibold">
-          Could not load activity data
-        </p>
-        <p className="text-[var(--color-text-muted)] text-xs max-w-xs">
-          {fetchState.message}
-        </p>
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={() => void fetchVolume(selected)}
-        >
-          Retry
-        </Button>
-      </div>
+      <InlineError
+        message={fetchState.message}
+        onRetry={() => void fetchVolume(selected)}
+        minHeight={280}
+      />
     );
   } else {
     // status === "done"
@@ -181,19 +202,11 @@ export default function AccountPortfolio({ balances }: AccountPortfolioProps) {
 
     if (allZero) {
       chartContent = (
-        <div
-          className="rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-subtle)] flex flex-col items-center justify-center gap-2 p-8 text-center"
-          style={{ minHeight: 280 }}
-        >
-          <p className="text-[var(--color-text-secondary)] text-sm font-semibold">
-            No activity in the last 30 days
-          </p>
-          <p className="text-[var(--color-text-muted)] text-xs max-w-xs">
-            Transfer volume for{" "}
-            <span className="font-semibold">{assetLabel(selected)}</span> will
-            appear here once this account sends or receives a payment.
-          </p>
-        </div>
+        <EmptyState
+          title="No activity in the last 30 days"
+          description={`Transfer volume for ${assetLabel(selected)} will appear here once this account sends or receives a payment.`}
+          className="min-h-[280px] flex flex-col items-center justify-center"
+        />
       );
     } else {
       const points: AreaChartPoint[] = series.map((b) => ({
@@ -228,24 +241,31 @@ export default function AccountPortfolio({ balances }: AccountPortfolioProps) {
         Portfolio Activity
       </h2>
 
-      {/* Asset selector pill row */}
-      <div className="flex flex-wrap items-center gap-2 mb-4" role="tablist" aria-label="Select asset to view">
+      {/* Asset selector pill row. These are toggle buttons, not ARIA tabs: they
+          switch the chart below, with no tabpanel and no arrow-key model, so
+          Tab + Enter/Space is the whole keyboard interaction. */}
+      <div
+        id={assetGroupId}
+        className="flex flex-wrap items-center gap-2 mb-4"
+        role="group"
+        aria-label="Select asset to view"
+      >
         {visible.map((b) => {
           const key = assetKey(b);
           const isActive = assetKey(selected) === key;
           return (
             <button
               key={key}
-              role="tab"
-              aria-selected={isActive}
+              type="button"
+              aria-pressed={isActive}
               onClick={() => {
                 setSelected(b);
                 setFetchState({ status: "idle" });
               }}
               className={[
-                "text-[12px] font-semibold rounded-full px-3 py-1 border transition-colors",
+                "text-[12px] font-semibold rounded-full px-3 py-1 border transition-colors motion-reduce:transition-none",
                 isActive
-                  ? "bg-[var(--color-accent-surface)] text-[var(--color-accent-text)] border-[var(--color-accent-9)]"
+                  ? "bg-[var(--color-accent-surface)] text-[var(--color-accent-text)] border-[var(--color-accent-fill)]"
                   : "bg-transparent text-[var(--color-text-secondary)] border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-text-primary)]",
               ].join(" ")}
             >
@@ -256,13 +276,21 @@ export default function AccountPortfolio({ balances }: AccountPortfolioProps) {
 
         {hasOverflow && (
           <button
+            type="button"
+            aria-expanded={showAll}
+            aria-controls={assetGroupId}
             onClick={() => setShowAll((v) => !v)}
-            className="text-[12px] font-semibold rounded-full px-3 py-1 border border-[var(--color-border-default)] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)] transition-colors"
+            className="text-[12px] font-semibold rounded-full px-3 py-1 border border-[var(--color-border-default)] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)] transition-colors motion-reduce:transition-none"
           >
             {showAll ? "Show less" : `+${overflowCount} more`}
           </button>
         )}
       </div>
+
+      {/* Loading is silent on screen without this; the skeleton is aria-hidden. */}
+      <p role="status" className="sr-only">
+        {fetchState.status === "loading" ? "Loading transfer volume" : ""}
+      </p>
 
       {/* Chart panel */}
       {chartContent}

@@ -221,6 +221,23 @@ describe("LiveFeed", () => {
     expect(screen.getByText(/2 updates arrived while paused/i)).toBeTruthy();
   });
 
+  it("supports keyboard control with an exposed pressed state", async () => {
+    mocks.gqlFetch.mockResolvedValue({ transactions: { items: [transaction("keyboard1")] } });
+    await act(async () => {
+      render(<LiveFeed />);
+    });
+    await connect();
+
+    const pause = screen.getByRole("button", { name: "Pause feed" });
+    pause.focus();
+    await userEvent.keyboard("{Enter}");
+
+    expect(screen.getByRole("button", { name: "Resume feed" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+  });
+
   it("pauses automatically when a transaction row receives focus", async () => {
     mocks.gqlFetch.mockResolvedValue({ transactions: { items: [transaction("focus000")] } });
     await act(async () => {

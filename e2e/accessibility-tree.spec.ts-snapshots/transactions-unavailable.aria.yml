@@ -1,0 +1,39 @@
+- main:
+    - heading "Transactions" [level=1]
+    - toolbar "Transaction status filter":
+        - button "all" [pressed]
+        - button "successful"
+        - button "failed"
+    - text: From
+    - textbox "From"
+    - text: To
+    - textbox "To"
+    - text: Source account
+    - textbox "Source account":
+        - /placeholder: G...
+    - text: Min operations
+    - spinbutton "Min operations"
+    - text: Max fee (XLM)
+    - spinbutton "Max fee (XLM)"
+    - textbox "Preset name":
+        - /placeholder: Name this filter
+    - button "Save preset" [disabled]
+    - text: 0 loaded
+    - status
+    - region "Transactions":
+        - table "Transactions":
+            - caption: Transactions
+            - rowgroup:
+                - row "Hash Ledger Source Ops Fee Time":
+                    - columnheader
+                    - columnheader "Hash"
+                    - columnheader "Ledger"
+                    - columnheader "Source"
+                    - columnheader "Ops"
+                    - columnheader "Fee"
+                    - columnheader "Time"
+            - rowgroup
+    - alert "Lumina data is temporarily unavailable":
+        - paragraph: Lumina data is temporarily unavailable
+        - paragraph: We couldn't reach the indexer. Check your connection or try again in a moment; your request has not been lost.
+        - button "Retry"

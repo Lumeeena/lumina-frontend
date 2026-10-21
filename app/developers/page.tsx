@@ -101,6 +101,28 @@ export default function DevelopersPage() {
             </div>
           </div>
         </Link>
+
+        {/* Webhooks Card */}
+        <Link
+          href="/developers/webhooks"
+          className="group p-6 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-raised)] hover:bg-[var(--color-bg-subtle)] transition-colors"
+        >
+          <div className="flex items-start gap-4">
+            <div className="text-3xl">🔔</div>
+            <div className="flex-1">
+              <h2 className="text-xl font-bold text-[var(--color-text-primary)] group-hover:text-[var(--color-accent-fill)]">
+                Webhooks
+              </h2>
+              <p className="text-sm text-[var(--color-text-secondary)] mt-2">
+                Register webhooks for real-time event notifications.
+                Monitor delivery attempts and test your endpoints.
+              </p>
+              <div className="mt-4 text-sm font-semibold text-[var(--color-accent-fill)]">
+                Manage webhooks →
+              </div>
+            </div>
+          </div>
+        </Link>
       </div>
 
       {/* Quick Start Section */}

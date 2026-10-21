@@ -28,7 +28,7 @@ vi.mock("@/lib/graphql", () => ({
 }));
 
 import AssetsPage from "./assets/page";
-import { formatSupply } from "@/components/AssetBrowser";
+import { formatSupply } from "@/lib/formatters";
 
 const XLM = {
   asset: "XLM",

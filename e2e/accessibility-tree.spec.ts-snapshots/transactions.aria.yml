@@ -1,0 +1,64 @@
+- main:
+    - heading "Transactions" [level=1]
+    - toolbar "Transaction status filter":
+        - button "all" [pressed]
+        - button "successful"
+        - button "failed"
+    - text: From
+    - textbox "From"
+    - text: To
+    - textbox "To"
+    - text: Source account
+    - textbox "Source account":
+        - /placeholder: G...
+    - text: Min operations
+    - spinbutton "Min operations"
+    - text: Max fee (XLM)
+    - spinbutton "Max fee (XLM)"
+    - textbox "Preset name":
+        - /placeholder: Name this filter
+    - button "Save preset" [disabled]
+    - text: 2 loaded
+    - status
+    - region "Transactions":
+        - table "Transactions":
+            - caption: Transactions
+            - rowgroup:
+                - row "Hash Ledger Source Ops Fee Time":
+                    - columnheader
+                    - columnheader "Hash"
+                    - columnheader "Ledger"
+                    - columnheader "Source"
+                    - columnheader "Ops"
+                    - columnheader "Fee"
+                    - columnheader "Time"
+            - rowgroup:
+                - row /aaaaaaa\.\.\.aaaaaa \d+,\d+ GBXFW\.\.\.VXKJ Watch GBXFWZQ4DKIWTZ4XFYQV5JFBMXQX7LZXXRZ3NOLCZC3YJT4JX5ZVXKJ 1 \d+\.\d+ XLM 1 min\. ago; Jan 1, \d+, \d+:\d+:\d+ AM UTC \(your local timezone\)/:
+                    - cell
+                    - cell "aaaaaaa...aaaaaa":
+                        - link "aaaaaaa...aaaaaa":
+                            - /url: https://stellar.expert/explorer/public/tx/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    - cell /\d+,\d+/
+                    - cell "GBXFW...VXKJ Watch GBXFWZQ4DKIWTZ4XFYQV5JFBMXQX7LZXXRZ3NOLCZC3YJT4JX5ZVXKJ":
+                        - link "GBXFW...VXKJ":
+                            - /url: /accounts/GBXFWZQ4DKIWTZ4XFYQV5JFBMXQX7LZXXRZ3NOLCZC3YJT4JX5ZVXKJ
+                        - button "Watch GBXFWZQ4DKIWTZ4XFYQV5JFBMXQX7LZXXRZ3NOLCZC3YJT4JX5ZVXKJ"
+                    - cell "1"
+                    - cell /\d+\.\d+ XLM/
+                    - cell /1 min\. ago; Jan 1, \d+, \d+:\d+:\d+ AM UTC \(your local timezone\)/:
+                        - time: 1 min. ago
+                - row /bbbbbbb[\d,.]+[bkmBKM]+ \d+,\d+ GBXFW\.\.\.VXKJ Watch GBXFWZQ4DKIWTZ4XFYQV5JFBMXQX7LZXXRZ3NOLCZC3YJT4JX5ZVXKJ 2 \d+\.\d+ XLM 1 min\. ago; Jan 1, \d+, \d+:\d+:\d+ AM UTC \(your local timezone\)/:
+                    - cell
+                    - cell /bbbbbbb[\d,.]+[bkmBKM]+/:
+                        - link /bbbbbbb[\d,.]+[bkmBKM]+/:
+                            - /url: https://stellar.expert/explorer/public/tx/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+                    - cell /\d+,\d+/
+                    - cell "GBXFW...VXKJ Watch GBXFWZQ4DKIWTZ4XFYQV5JFBMXQX7LZXXRZ3NOLCZC3YJT4JX5ZVXKJ":
+                        - link "GBXFW...VXKJ":
+                            - /url: /accounts/GBXFWZQ4DKIWTZ4XFYQV5JFBMXQX7LZXXRZ3NOLCZC3YJT4JX5ZVXKJ
+                        - button "Watch GBXFWZQ4DKIWTZ4XFYQV5JFBMXQX7LZXXRZ3NOLCZC3YJT4JX5ZVXKJ"
+                    - cell "2"
+                    - cell /\d+\.\d+ XLM/
+                    - cell /1 min\. ago; Jan 1, \d+, \d+:\d+:\d+ AM UTC \(your local timezone\)/:
+                        - time: 1 min. ago
+    - text: End of results

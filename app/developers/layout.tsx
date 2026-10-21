@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { DEVELOPERS } from "@/lib/routes";
 
 export const metadata: Metadata = {
@@ -31,39 +30,6 @@ const DEVELOPER_PAGES = [
   },
 ];
 
-function SidebarNav({ pathname }: { pathname: string }) {
-  return (
-    <nav className="w-56 bg-[var(--color-bg-subtle)] border-r border-[var(--color-border-default)] flex flex-col">
-      <div className="p-6 border-b border-[var(--color-border-default)]">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-[var(--color-text-primary)]">
-          Developer Portal
-        </h2>
-      </div>
-      <div className="flex-1 overflow-y-auto">
-        {DEVELOPER_PAGES.map((page) => {
-          const isActive = pathname === page.path;
-          return (
-            <Link
-              key={page.path}
-              href={page.path}
-              className={`block px-6 py-3 text-sm border-l-2 transition-colors ${
-                isActive
-                  ? "border-[var(--color-accent-fill)] bg-[var(--color-bg-raised)] text-[var(--color-text-primary)] font-semibold"
-                  : "border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
-              }`}
-            >
-              <div className="font-medium">{page.label}</div>
-              <div className="text-xs text-[var(--color-text-muted)] mt-0.5">
-                {page.description}
-              </div>
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
-  );
-}
-
 export default function DevelopersLayout({
   children,
 }: {
@@ -77,9 +43,7 @@ export default function DevelopersLayout({
     <div className="flex min-h-[calc(100vh-60px)]">
       <DevelopersSidebar />
       <main className="flex-1 overflow-auto">
-        <div className="max-w-4xl mx-auto px-4 sm:px-7 py-12">
-          {children}
-        </div>
+        <div className="max-w-4xl mx-auto px-4 sm:px-7 py-12">{children}</div>
       </main>
     </div>
   );

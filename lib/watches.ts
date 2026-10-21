@@ -1,7 +1,17 @@
 /**
- * Watch list — a localStorage-backed set of Stellar addresses the user wants to
- * track, each with the filter that decides what counts as activity. Part of
- * #9 / #85, extended for #80 and #83.
+ * Watch list — a localStorage-backed set of Stellar addresses (accounts and contracts)
+ * the user wants to track, each with the filter that decides what counts as activity.
+ * Part of #9 / #79 / #85, extended for #80, #83, and #84.
+ *
+ * Server-side path (#79):
+ * Starting locally in browser storage avoids blocking on backend authentication services.
+ * When user auth & backend watch list endpoints arrive, local watches can be synced
+ * up to the server account on login, while continuing to fall back to browser storage
+ * when unauthenticated or offline.
+ *
+ * Graceful storage degradation (#79):
+ * Access to localStorage is wrapped in try/catch to handle sandboxed iFrames,
+ * disabled cookies, or private browsing restrictions without crashing the page.
  *
  * The storage format is a plain JSON array. Entries are objects, but the
  * original format was a bare array of address strings, so a list written by
@@ -239,3 +249,94 @@ export function setWatchFilters(
   persist(next, storage);
   return next;
 }
+
+/**
+ * Exports the watch list as a JSON string.
+ */
+export function exportWatches(
+  storage: StorageLike | null = getStorage(),
+): string {
+  const entries = loadWatches(storage);
+  return JSON.stringify(entries, null, 2);
+}
+
+export interface ImportWatchesResult {
+  success: boolean;
+  count: number;
+  error?: string;
+}
+
+/**
+ * Imports a watch list from a JSON string or parsed data structure.
+ * Supports 'merge' (default) or 'replace' mode.
+ */
+export function importWatches(
+  data: string | unknown,
+  mode: "merge" | "replace" = "merge",
+  storage: StorageLike | null = getStorage(),
+): ImportWatchesResult {
+  let parsed: unknown;
+  if (typeof data === "string") {
+    try {
+      parsed = JSON.parse(data);
+    } catch {
+      return {
+        success: false,
+        count: 0,
+        error: "Invalid JSON format in watch list file.",
+      };
+    }
+  } else {
+    parsed = data;
+  }
+
+  if (!Array.isArray(parsed)) {
+    return {
+      success: false,
+      count: 0,
+      error: "Invalid watch list file: expected a JSON array.",
+    };
+  }
+
+  const importedEntries: WatchEntry[] = [];
+  const seen = new Set<string>();
+  for (const item of parsed) {
+    const entry = toEntry(item);
+    if (entry && !seen.has(entry.address)) {
+      seen.add(entry.address);
+      importedEntries.push(entry);
+    }
+  }
+
+  if (parsed.length > 0 && importedEntries.length === 0) {
+    return {
+      success: false,
+      count: 0,
+      error: "Invalid watch list file: contains no valid Stellar address entries.",
+    };
+  }
+
+  let nextEntries: WatchEntry[];
+  if (mode === "replace") {
+    nextEntries = importedEntries.slice(0, MAX_WATCHES);
+  } else {
+    const current = load(storage);
+    const map = new Map<string, WatchEntry>();
+    for (const entry of current) {
+      map.set(entry.address, entry);
+    }
+    for (const entry of importedEntries) {
+      if (!map.has(entry.address)) {
+        map.set(entry.address, entry);
+      }
+    }
+    nextEntries = Array.from(map.values()).slice(0, MAX_WATCHES);
+  }
+
+  persist(nextEntries, storage);
+  return {
+    success: true,
+    count: nextEntries.length,
+  };
+}
+

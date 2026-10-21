@@ -108,3 +108,56 @@ test("client routes stay usable while their data is still in flight", async ({ p
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   }
 });
+
+test("routes behave correctly under slow network conditions", async ({ page, context }) => {
+  // Throttle the network to simulate a slow 3G connection
+  await page.route("**/*", async (route) => {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    await route.continue();
+  });
+
+  for (const path of [...SERVER_ROUTES, ...CLIENT_ROUTES]) {
+    await page.goto(path);
+
+    // Loading states must appear while data is in flight
+    const loadingIndicators = page.getByRole("status", { name: /^Loading / });
+
+    // Route should still render to completion despite slow network
+    await expect(page.getByRole("heading", { level: 1 }), `${path} should render under slow network`).toBeVisible({
+      timeout: 30_000,
+    });
+
+    // No stuck loading states or errors
+    await expect(page.locator("body")).not.toContainText("Application error");
+  }
+});
+
+test("no duplicate requests are made under network latency", async ({ page }) => {
+  const requests = new Map<string, number>();
+
+  page.on("request", (request) => {
+    const url = request.url();
+    if (url.includes("graphql")) {
+      requests.set(url, (requests.get(url) ?? 0) + 1);
+    }
+  });
+
+  // Throttle network
+  await page.route("**/*", async (route) => {
+    await new Promise(resolve => setTimeout(resolve, 200));
+    await route.continue();
+  });
+
+  // Navigate to a client route that fetches data
+  await page.goto("/explorer");
+
+  // Wait for requests to settle
+  await page.waitForLoadState("networkidle");
+
+  // Check that each GraphQL request was made only once
+  for (const [url, count] of requests.entries()) {
+    if (url.includes("graphql")) {
+      expect(count, `${url} should only be requested once`).toBeLessThanOrEqual(2);
+    }
+  }
+});

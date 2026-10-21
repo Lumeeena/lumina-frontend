@@ -39,7 +39,7 @@ export default function NetworkSwitcher() {
           const next = parseNetwork(event.target.value);
           if (next && next !== network) setNetwork(next);
         }}
-        className={`text-[12.5px] font-semibold rounded-lg border px-1.5 py-1.5 cursor-pointer outline-none focus:border-[var(--color-border-strong)] ${
+        className={`text-[12.5px] font-semibold rounded-lg border px-1.5 py-1.5 cursor-pointer focus:border-[var(--color-border-strong)] ${
           offDefault
             ? "border-[var(--color-warning-border)] bg-[var(--color-warning-bg)] text-[var(--color-warning-text)]"
             : "border-[var(--color-border-default)] bg-[var(--color-bg-subtle)] text-[var(--color-text-secondary)]"

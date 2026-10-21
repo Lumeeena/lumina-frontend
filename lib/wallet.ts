@@ -88,7 +88,7 @@ async function importKit(): Promise<WalletsKit> {
 
   if (!kitInitialized) {
     // Determine the correct network based on NETWORK_PASSPHRASE
-    let network: string;
+    let network = Networks.TESTNET;
     if (NETWORK_PASSPHRASE === NETWORKS[0].passphrase) {
       network = Networks.PUBLIC; // mainnet
     } else if (NETWORK_PASSPHRASE === NETWORKS[1].passphrase) {
@@ -197,9 +197,9 @@ async function getWalletNetwork(): Promise<NetworkId | null> {
   try {
     const kit = await loadKit();
     // Try to get network from the kit - this may not be available in all wallet implementations
-    // @ts-ignore - network property may not be in types
-    const network = kit.network || kit._network;
-    
+    const networkInfo = kit as unknown as { network?: string; _network?: string };
+    const network = networkInfo.network || networkInfo._network;
+
     // Map StellarWalletsKit network strings to our NetworkId
     if (network === 'PUBLIC') return 'mainnet';
     if (network === 'TESTNET') return 'testnet';

@@ -10,7 +10,9 @@ import TransactionRow from "@/components/TransactionRow";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = routeMetadata(SEARCH);
+export function generateMetadata(): Metadata {
+  return routeMetadata(SEARCH);
+}
 
 /**
  * The same selection set as the transactions table, so a result row is
@@ -107,7 +109,7 @@ export default async function SearchPage({
           : `${items.length} transaction${items.length === 1 ? "" : "s"} matching `}
         {!unavailable && (
           <>
-            <span className="mono text-[var(--color-text-primary)]">
+            <span className="mono break-all text-[var(--color-text-primary)]">
               “{query}”
             </span>
             , ranked by memo relevance.
@@ -125,8 +127,13 @@ export default async function SearchPage({
           </p>
         </div>
       ) : (
-        <div className="rounded-xl border border-[var(--color-border-default)] overflow-x-auto">
-          <table className="w-full text-sm border-collapse">
+        <div
+          role="region"
+          aria-label="Search results"
+          tabIndex={0}
+          className="max-w-full rounded-xl border border-[var(--color-border-default)] overflow-x-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-fill)]"
+        >
+          <table className="w-full min-w-[720px] text-sm border-collapse">
             <caption className="sr-only">Search results</caption>
             <thead>
               <tr>

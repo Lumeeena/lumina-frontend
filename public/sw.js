@@ -5,11 +5,11 @@
  * has to be: it is fetched by the browser at the origin root, outside the
  * module graph, so anything the bundler produces would not be there to load.
  *
- * It handles two things and nothing else. A `push` event carrying an alert
- * payload, and a click on one of those alerts. There is no cache and no
- * fetch handler on purpose — a stale cache served by a worker that is supposed
- * to be about alerting is a confusing thing to debug, and this app is better
- * offline by simply not being a PWA.
+ * It handles push alerts and a cached static application shell. Navigation
+ * and API data stay network-first, while immutable build assets are
+ * cache-first. Data expires after five minutes offline. Bumping CACHE_VERSION
+ * gives deployments a deterministic update path: install the new cache,
+ * activate immediately, then remove old caches.
  *
  * Delivery: a payload shaped like
  *   { "title": string, "body": string, "address": string,
@@ -24,14 +24,132 @@
 
 /* global self */
 
-self.addEventListener("install", () => {
+const CACHE_VERSION = "lumina-v2";
+const SHELL_CACHE = `${CACHE_VERSION}-shell`;
+const ASSET_CACHE = `${CACHE_VERSION}-assets`;
+const DATA_CACHE = `${CACHE_VERSION}-data`;
+// Explorer data must never silently survive an indefinite offline session.
+const DATA_MAX_AGE_MS = 5 * 60 * 1000;
+const CACHED_AT = "X-Lumina-Cached-At";
+const APP_SHELL = [
+  "/manifest.webmanifest",
+  "/icons/icon-192.svg",
+  "/icons/icon-512.svg",
+];
+
+self.addEventListener("install", (event) => {
   // Take over straight away: a watch that has just been opted into should not
   // need a second reload before its worker can receive a push.
   self.skipWaiting();
+  event.waitUntil(
+    caches.open(SHELL_CACHE).then((cache) => cache.addAll(APP_SHELL)),
+  );
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    Promise.all([
+      caches
+        .keys()
+        .then((names) =>
+          Promise.all(
+            names
+              .filter(
+                (name) =>
+                  name.startsWith("lumina-") &&
+                  ![SHELL_CACHE, ASSET_CACHE, DATA_CACHE].includes(name),
+              )
+              .map((name) => caches.delete(name)),
+          ),
+        ),
+      self.clients.claim(),
+    ]),
+  );
+});
+
+function isAsset(request) {
+  const url = new URL(request.url);
+  return (
+    url.origin === self.location.origin &&
+    (APP_SHELL.includes(url.pathname) ||
+      url.pathname.startsWith("/_next/static/") ||
+      url.pathname.startsWith("/icons/") ||
+      ["style", "script", "font", "image"].includes(request.destination))
+  );
+}
+
+async function cacheFirst(request) {
+  const cache = await caches.open(ASSET_CACHE);
+  const cached =
+    (await cache.match(request)) ??
+    (await (await caches.open(SHELL_CACHE)).match(request));
+  if (cached) return cached;
+  const response = await fetch(request);
+  if (response.ok) {
+    try {
+      await cache.put(request, response.clone());
+    } catch {
+      // A full cache must not prevent the browser from loading a live asset.
+    }
+  }
+  return response;
+}
+
+async function networkFirst(request) {
+  const cache = await caches.open(DATA_CACHE);
+  let response;
+  try {
+    response = await fetch(request);
+  } catch (error) {
+    const cached = await cache.match(request);
+    if (cached) {
+      const savedAt = Number(cached.headers.get(CACHED_AT));
+      const age = Date.now() - savedAt;
+      if (savedAt > 0 && age >= 0 && age < DATA_MAX_AGE_MS) return cached;
+      await cache.delete(request);
+    }
+    throw error;
+  }
+  try {
+    if (
+      response.ok &&
+      !/\bno-store\b/i.test(response.headers.get("Cache-Control") ?? "")
+    ) {
+      const copy = response.clone();
+      const headers = new Headers(copy.headers);
+      headers.set(CACHED_AT, String(Date.now()));
+      await cache.put(
+        request,
+        new Response(await copy.blob(), {
+          status: copy.status,
+          statusText: copy.statusText,
+          headers,
+        }),
+      );
+    } else {
+      // An authoritative failure or no-store response invalidates older success.
+      await cache.delete(request);
+    }
+  } catch {
+    // Cache quota/permission failures must not replace a successful live response.
+  }
+  return response;
+}
+
+self.addEventListener("fetch", (event) => {
+  const { request } = event;
+  if (
+    request.method !== "GET" ||
+    new URL(request.url).protocol === "chrome-extension:"
+  )
+    return;
+  event.respondWith(
+    isAsset(request) ? cacheFirst(request) : networkFirst(request),
+  );
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "SKIP_WAITING") self.skipWaiting();
 });
 
 /** Pull a display string out of a payload that may be anything at all. */
@@ -84,19 +202,21 @@ self.addEventListener("push", (event) => {
     },
   };
 
-  event.waitUntil(self.registration.showNotification(title, { body, ...options }));
+  event.waitUntil(
+    self.registration.showNotification(title, { body, ...options }),
+  );
 });
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
   const data = event.notification.data || {};
-  const target =
-    typeof data.url === "string" && data.url ? data.url : "/watch";
+  const target = typeof data.url === "string" && data.url ? data.url : "/watch";
 
   event.waitUntil(
-    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(
-      (clientList) => {
+    self.clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((clientList) => {
         // Prefer an existing window: opening a second tab for an alert the
         // person can already see is the most common complaint about push.
         for (const client of clientList) {
@@ -111,7 +231,6 @@ self.addEventListener("notificationclick", (event) => {
           }
         }
         return self.clients.openWindow(target);
-      },
-    ),
+      }),
   );
 });

@@ -48,7 +48,7 @@ export default function SearchBar({
           onChange={(e) => setValue(e.target.value)}
           placeholder={placeholder}
           aria-label="Search"
-          className={`w-full min-h-[46px] px-3.5 py-2.5 text-[13px] mono bg-[var(--color-bg-subtle)] border border-[var(--color-border-default)] rounded-[9px] outline-none focus:border-[var(--color-border-strong)] ${
+          className={`w-full min-h-[46px] px-3.5 py-2.5 text-[13px] mono bg-[var(--color-bg-subtle)] border border-[var(--color-border-default)] rounded-[9px] focus:border-[var(--color-border-strong)] ${
             classified ? "pr-[104px]" : ""
           }`}
         />

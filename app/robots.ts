@@ -20,7 +20,7 @@ import { SITE_URL } from "@/lib/site";
  *
  * The patterns and the reasoning behind each are in `lib/routes.ts`.
  */
-export default function robots(): MetadataRoute.Robots {
+export default function robots() {
   return {
     rules: [
       {
@@ -30,5 +30,5 @@ export default function robots(): MetadataRoute.Robots {
       },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,
-  };
+  } satisfies MetadataRoute.Robots;
 }

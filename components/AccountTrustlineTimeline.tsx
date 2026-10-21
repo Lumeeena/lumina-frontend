@@ -121,9 +121,9 @@ export default function AccountTrustlineTimeline({
               {/* Timeline dot */}
               <span
                 className={[
-                  "absolute -left-[9px] flex items-center justify-center w-[18px] h-[18px] rounded-full ring-2 ring-[var(--color-bg-default)]",
+                  "absolute -left-[9px] flex items-center justify-center w-[18px] h-[18px] rounded-full ring-2 ring-[var(--color-bg-base)]",
                   isRemoval
-                    ? "bg-[var(--color-error-surface,#3f1f1f)]"
+                    ? "bg-[var(--color-error-surface)]"
                     : "bg-[var(--color-accent-surface)]",
                 ].join(" ")}
                 aria-hidden="true"
@@ -136,7 +136,7 @@ export default function AccountTrustlineTimeline({
                     className={[
                       "text-[10px] font-bold rounded-full px-2 py-0.5",
                       isRemoval
-                        ? "bg-[var(--color-error-surface,#3f1f1f)] text-[var(--color-error-text)]"
+                        ? "bg-[var(--color-error-surface)] text-[var(--color-error-text)]"
                         : "bg-[var(--color-accent-surface)] text-[var(--color-accent-text)]",
                     ].join(" ")}
                   >
@@ -168,14 +168,16 @@ export default function AccountTrustlineTimeline({
                   )}
 
                   {/* Transaction link */}
+                  {/* The name keeps the visible hash (WCAG 2.5.3) and says where
+                      the link goes and that it opens a new tab. */}
                   <a
                     href={`https://stellar.expert/explorer/public/tx/${op.transactionHash}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mono text-xs text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline transition-colors"
-                    aria-label={`View transaction ${op.transactionHash} on stellar.expert`}
+                    className="mono text-xs text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-fill)]"
                   >
                     {truncateAddress(op.transactionHash, 6)}
+                    <span className="sr-only"> on stellar.expert (opens in new tab)</span>
                   </a>
 
                   {/* Relative time */}

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   ContractCallError,
+  WalletRejectedError,
   submitContractCall,
   type ContractCallDriver,
   type TxPhase,
@@ -36,6 +37,36 @@ function submit(d: ContractCallDriver, opts: Partial<Parameters<typeof submitCon
 }
 
 describe('submitContractCall', () => {
+  it('retries the identical unsigned transaction after repeated wallet rejection without preparing again', async () => {
+    const d = driver();
+    const sign = vi.fn().mockRejectedValueOnce({ code: 4001 }).mockResolvedValueOnce({ error: 'User rejected the request.' }).mockResolvedValue({ signedTxXdr: 'SIGNED_XDR' });
+    const first = (await submit(d, { sign }).catch(error => error)) as WalletRejectedError;
+    expect(first).toBeInstanceOf(WalletRejectedError);
+    const second = (await first.retry().catch((error: unknown) => error)) as WalletRejectedError;
+    expect(second).toBeInstanceOf(WalletRejectedError);
+    expect(d.send).not.toHaveBeenCalled();
+    await expect(second.retry()).resolves.toEqual({ hash: 'HASH' });
+    expect(d.prepare).toHaveBeenCalledTimes(1);
+    expect(sign.mock.calls.map(args => args[0])).toEqual(['PREPARED_XDR', 'PREPARED_XDR', 'PREPARED_XDR']);
+    await expect(second.retry()).rejects.toThrow(/Submit again/);
+    expect(d.send).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not offer a signature retry for wallet failures', async () => {
+    const error = await submit(driver(), { sign: async () => { throw new Error('Wallet disconnected'); } }).catch(error => error);
+    expect(error).toBeInstanceOf(ContractCallError);
+    expect(error).not.toBeInstanceOf(WalletRejectedError);
+  });
+
+  it('refuses an expired prepared transaction without rebuilding or sending', async () => {
+    const d = driver({ prepare: vi.fn(async () => ({ xdr: 'XDR', estimatedFee: '1', expiresAt: Date.now() + 1000 })) });
+    const rejected = (await submit(d, { sign: async () => { throw new Error('User declined'); } }).catch(error => error)) as WalletRejectedError;
+    const clock = vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 2000);
+    try { await expect(rejected.retry()).rejects.toThrow(/Submit again/); }
+    finally { clock.mockRestore(); }
+    expect(d.prepare).toHaveBeenCalledTimes(1);
+    expect(d.send).not.toHaveBeenCalled();
+  });
   it('runs the full pipeline and reports the transaction hash', async () => {
     const d = driver();
     const result = await submit(d);
@@ -101,12 +132,12 @@ describe('submitContractCall', () => {
     expect(d.send).not.toHaveBeenCalled();
   });
 
-  it('gives a declined signature a readable message when the wallet supplies none', async () => {
+  it('does not label an unknown signing error as a deliberate wallet rejection', async () => {
     const sign = vi.fn(async () => {
       throw new Error('');
     });
 
-    await expect(submit(driver(), { sign })).rejects.toThrow('Signature was declined in your wallet.');
+    await expect(submit(driver(), { sign })).rejects.toThrow('Could not sign the transaction.');
   });
 
   it('surfaces a rejected submission', async () => {

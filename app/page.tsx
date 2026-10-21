@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { LatestLedgerDocument as LATEST_LEDGER_QUERY } from "@/lib/generated/graphql";
 import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
 import { shareCard } from "@/lib/metadata";
@@ -8,6 +9,7 @@ import StatCard from "@/components/StatCard";
 import SearchBar from "@/components/SearchBar";
 import LiveFeed from "@/components/LiveFeed";
 import BackendUnavailable from "@/components/BackendUnavailable";
+import OnboardingTour from "@/components/OnboardingTour";
 
 export const metadata: Metadata = {
   // `absolute` because this is the route the title template's own default
@@ -73,6 +75,7 @@ export default async function Home() {
 
   return (
     <div>
+      <OnboardingTour />
       <section className="px-4 sm:px-7 pt-14 sm:pt-20 pb-10 sm:pb-14 border-b border-[var(--color-border-default)]">
         <div className="max-w-[1160px] mx-auto grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-10 lg:gap-14 items-start">
           <div>
@@ -92,7 +95,7 @@ export default async function Home() {
             <div className="flex gap-3 flex-wrap">
               <Link
                 href="/explorer"
-                className="bg-[var(--color-accent-fill)] hover:bg-[var(--color-accent-fill-hover)] text-white font-bold text-sm px-[22px] py-[13px] rounded-lg shadow-[0_1px_2px_rgba(139,92,246,0.3)] transition-colors"
+                className="bg-[var(--color-accent-fill)] hover:bg-[var(--color-accent-fill-hover)] text-white font-bold text-sm px-[22px] py-[13px] rounded-lg shadow-[0_1px_2px_rgba(124,58,237,0.3)] transition-colors"
               >
                 Open Explorer
               </Link>
@@ -156,23 +159,26 @@ export default async function Home() {
             </h2>
             <LiveFeed />
           </div>
-          <div>
-            <h2 className="font-extrabold text-[17px] mb-3.5 text-[var(--color-text-primary)]">
-              Quick Access
-            </h2>
-            <div className="flex flex-col gap-2.5">
-              {QUICK_LINKS.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="text-start bg-[var(--color-bg-base)] border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] rounded-xl p-4 flex flex-col gap-1 transition-colors"
-                >
-                  <span className="font-bold text-sm text-[var(--color-text-primary)]">
-                    {item.label}
-                  </span>
-                  <span className="text-xs text-[var(--color-text-muted)]">{item.desc}</span>
-                </Link>
-              ))}
+          <div className="space-y-8">
+            <RecentlyViewed limit={5} compact />
+            <div>
+              <h2 className="font-extrabold text-[17px] mb-3.5 text-[var(--color-text-primary)]">
+                Quick Access
+              </h2>
+              <div className="flex flex-col gap-2.5">
+                {QUICK_LINKS.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="text-start bg-[var(--color-bg-base)] border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] rounded-xl p-4 flex flex-col gap-1 transition-colors"
+                  >
+                    <span className="font-bold text-sm text-[var(--color-text-primary)]">
+                      {item.label}
+                    </span>
+                    <span className="text-xs text-[var(--color-text-muted)]">{item.desc}</span>
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
         </div>

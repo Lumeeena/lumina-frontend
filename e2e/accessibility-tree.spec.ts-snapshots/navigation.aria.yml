@@ -1,0 +1,39 @@
+- navigation "Main navigation":
+    - link "Lumina home":
+        - /url: /
+        - text: ""
+    - combobox "Stellar network":
+        - option "Mainnet" [selected]
+        - option "Testnet"
+        - option "Futurenet"
+    - link "Explorer":
+        - /url: /explorer
+    - link "Transactions":
+        - /url: /transactions
+    - link "Search":
+        - /url: /search
+    - link "Contract Events":
+        - /url: /events
+    - link "Assets":
+        - /url: /assets
+    - link "GraphQL":
+        - /url: /graphql
+    - link "Developers":
+        - /url: /developers
+    - link "Registry":
+        - /url: /registry
+    - link "Stats":
+        - /url: /stats
+    - link "Watch":
+        - /url: /watch
+    - combobox "Select language":
+        - option "🇺🇸 English (English)" [selected]
+        - option "🇨🇳 中文 (Chinese)"
+        - option "🇯🇵 日本語 (Japanese)"
+        - option "🇰🇷 한국어 (Korean)"
+        - option "🇷🇺 Русский (Russian)"
+        - option "🇦🇸 العربية (Arabic)"
+        - option "🇮🇱 עברית (Hebrew)"
+        - option "🇪🇸 Español (Spanish)"
+        - option "🇧🇷 Português (Portuguese)"
+    - 'button "Current: System theme. Click to switch."': 💻

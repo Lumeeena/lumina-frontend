@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "postbuild": "node scripts/upload-source-maps.mjs",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
@@ -14,12 +15,16 @@
     "codegen": "node scripts/gen-palette.mjs && graphql-codegen --config codegen.ts",
     "prebuild": "npm run codegen",
     "analyze": "node scripts/analyze.mjs",
-    "build:bundle": "next build --experimental-build-mode compile",
+    "build:bundle": "BUNDLE_CONTENTS=true next build --experimental-build-mode compile",
+    "bundle:contents": "node scripts/bundle-contents.mjs",
     "bundle:report": "node scripts/bundle-report.mjs",
     "bundle:update": "npm run build:bundle && node scripts/bundle-report.mjs --update",
     "prepare": "node scripts/prepare.mjs",
     "lint:staged": "lint-staged",
-    "measure:compiler": "node scripts/measure-compiler.mjs"
+    "measure:compiler": "node scripts/measure-compiler.mjs",
+    "test:vitals": "node scripts/vitals-run.mjs",
+    "vitals:update": "node scripts/vitals-run.mjs --update",
+    "build:vitals": "npm run codegen && next build --experimental-build-mode compile && next build --experimental-build-mode generate"
   },
   "dependencies": {
     "@creit.tech/stellar-wallets-kit": "^2.5.0",
@@ -33,6 +38,7 @@
     "recharts": "^2.15.4"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@babel/core": "^7.29.7",
     "@babel/preset-typescript": "^7.29.7",
     "@graphql-codegen/cli": "^6.3.1",
@@ -48,6 +54,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitest/coverage-v8": "^3.2.7",
+    "axe-core": "^4.14.0",
     "babel-plugin-react-compiler": "^1.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
@@ -58,7 +65,8 @@
     "prettier": "^3.9.9",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^3.0.0"
+    "vitest": "^3.0.0",
+    "web-vitals": "^5.1.0"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs,cjs}": [

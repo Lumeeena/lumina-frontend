@@ -160,6 +160,10 @@ const en: MessageCatalogue = {
   "owner.deactivated": "Deactivated",
   "owner.staking": "Staking\u2026",
   "owner.stake": "Stake",
+  "owner.stakeAnyway": "Stake anyway",
+  "owner.reserveWarningTitle": "This stake would take your account below its minimum balance.",
+  "owner.reserveExplanation":
+    "Stellar keeps a minimum amount of XLM in every account, called the reserve. It is 1 XLM for an account with nothing else in it, plus 0.5 XLM for each trustline, offer or other entry it owns, and that part cannot be spent. After this stake your account would hold {remaining} XLM, below the {minimum} XLM reserve. An account under its reserve can still receive XLM but cannot send transactions until it is topped up.",
   "owner.withdrawing": "Withdrawing\u2026",
   "owner.withdrawStake": "Withdraw stake",
   "owner.stakeAmountLabel": "Stake amount for {name}",
@@ -186,11 +190,30 @@ const en: MessageCatalogue = {
   // ── Soroban transaction pipeline ──────────────────────────────────────
   "soroban.couldNotPrepare": "Could not prepare the transaction.",
   "soroban.signatureDeclined": "Signature was declined in your wallet.",
+  "soroban.couldNotSign": "Could not sign the transaction. Check your wallet and try again.",
+  "soroban.retrySignature": "Retry signature",
+  "soroban.prepareAgain": "The saved transaction is no longer usable. Submit again to prepare a fresh transaction; your inputs are saved.",
+  "soroban.rejectionPreserved": "Signature declined. Your inputs and prepared transaction are saved. You can retry when ready.",
   "soroban.networkRejected": "The network rejected the transaction.",
   "soroban.pendingConfirmation":
     "The transaction was submitted but has not confirmed yet. Check again in a moment.",
   "soroban.transactionFailed":
     "The transaction did not succeed (status: {status}).",
+
+  // ── Pending transactions ──────────────────────────────────────────────
+  "pending.title": "Transactions",
+  "pending.register": "Register {name}",
+  "pending.deactivate": "Deactivate {contract}",
+  "pending.stake": "Stake on {contract}",
+  "pending.withdraw": "Withdraw stake from {contract}",
+  "pending.building": "Preparing",
+  "pending.awaitingSignature": "Waiting for your wallet",
+  "pending.submitting": "Submitting",
+  "pending.confirming": "Confirming on the network",
+  "pending.succeeded": "Confirmed",
+  "pending.failed": "Failed",
+  "pending.failedFallback": "The transaction did not complete.",
+  "pending.dismiss": "Dismiss",
 
   // ── Stats ─────────────────────────────────────────────────────────────
   "stats.noOperationsYet": "No operations indexed yet.",
@@ -207,6 +230,139 @@ const en: MessageCatalogue = {
   "activity.indexed": "Indexed activity",
   "activity.noEvents": "No events yet",
   "activity.unknown": "Activity unknown",
+
+  // ── Table headers ─────────────────────────────────────────────────────
+  "table.hash": "Hash",
+  "table.ledger": "Ledger",
+  "table.ops": "Ops",
+  "table.time": "Time",
+  "table.type": "Type",
+  "table.transaction": "Transaction",
+  "table.detail": "Detail",
+  "table.source": "Source",
+  "table.operations": "Operations",
+  "table.fee": "Fee",
+  "table.contract": "Contract",
+  "table.topic": "Topic",
+  "table.value": "Value",
+
+  // ── Common UI ─────────────────────────────────────────────────────────
+  "common.search": "Search",
+  "common.close": "Close",
+  "common.clear": "Clear",
+  "common.save": "Save",
+  "common.cancel": "Cancel",
+  "common.loading": "Loading\u2026",
+  "common.error": "Error",
+  "common.retry": "Retry",
+  "common.connect": "Connect Wallet",
+  "common.disconnect": "Disconnect",
+  "common.copy": "Copy",
+  "common.copied": "Copied!",
+  "common.xlm": "XLM",
+
+  // ── Skip link ─────────────────────────────────────────────────────────
+  "skipLink.skipToMain": "Skip to main content",
+
+  // ── Theme toggle ──────────────────────────────────────────────────────
+  "theme.system": "System theme",
+  "theme.light": "Light theme",
+  "theme.dark": "Dark theme",
+
+  // ── Keyboard shortcuts ────────────────────────────────────────────────
+  "shortcuts.title": "Keyboard shortcuts",
+  "shortcuts.search": "Search",
+  "shortcuts.showList": "Show this list",
+  "shortcuts.description": "Shortcuts never use Ctrl, Cmd or Alt and are ignored while you type in a field.",
+  "shortcuts.enable": "Enable keyboard shortcuts",
+
+  // ── Search page ───────────────────────────────────────────────────────
+  "search.heading": "Search",
+  "search.description": "One box for everything on the network. Type what you have \u2014 no need to say what it is.",
+  "search.accountAddress": "Account address",
+  "search.contractId": "Contract id \u2014 its events",
+  "search.transactionHash": "Transaction hash",
+  "search.memoSearch": "Memo search, ranked by the backend",
+  "search.searching": "Searching the index\u2026",
+  "search.resultsCount": "{count} transaction{count, plural, one {} other {s}} matching",
+  "search.rankedByMemo": ", ranked by memo relevance.",
+  "search.helpText": "Looking for an account or contract? Paste its full address \u2014 the explorer takes you straight there.",
+
+  // ── Transactions page ─────────────────────────────────────────────────
+  "transactions.heading": "Transactions",
+  "transactions.loading": "Loading transactions\u2026",
+
+  // ── Stats page ────────────────────────────────────────────────────────
+  "stats.heading": "Network Stats",
+  "stats.description": "Indexer health and Stellar network throughput at a glance.",
+  "stats.latestLedger": "Latest Ledger",
+  "stats.stellarMainnet": "Stellar Mainnet",
+  "stats.txsLastLedger": "Txs (last ledger)",
+  "stats.successfulFailed": "Successful + failed",
+  "stats.contractsRegistered": "Contracts Registered",
+  "stats.viaLumina": "Via Lumina Registry",
+  "stats.avgLedgerTime": "Avg Ledger Time",
+  "stats.protocolTarget": "~5s",
+  "stats.protocolTargetHint": "Protocol target, not a live average",
+  "stats.operationBreakdown": "Operation Type Breakdown",
+  "stats.basedOnRecent": "Based on the most recent {count} indexed operations.",
+
+  // ── Registry page ─────────────────────────────────────────────────────
+  "registry.heading": "Lumina Registry",
+  "registry.description": "An on-chain Soroban manifest of contracts Lumina indexes. Register your contract to opt into priority indexing \u2014 permissionless, on Stellar/Soroban testnet.",
+  "registry.registerContract": "Register a Contract",
+  "registry.connecting": "Connecting\u2026",
+  "registry.connectPrompt": "Connect a wallet to register and manage contracts.",
+  "registry.walletLocked": "Your wallet is locked",
+  "registry.unlockHint": "Unlock your wallet extension and try again.",
+  "registry.myContracts": "My Contracts",
+  "registry.recentlyRegistered": "Recently Registered",
+  "registry.all": "All",
+  "registry.filterByCategory": "Filter by category",
+  "registry.connectToSee": "Connect a wallet to see the contracts you registered.",
+  "registry.loadingEntries": "Loading registry entries\u2026",
+  "registry.noActiveContracts": "No active {category} contracts.",
+  "registry.noContractsYet": "No contracts registered yet.",
+  "registry.couldNotReach": "Couldn't reach the registry contract.",
+
+  // ── GraphQL page ──────────────────────────────────────────────────────
+  "graphql.heading": "GraphQL Playground",
+  "graphql.endpoint": "Lumina GraphQL endpoint:",
+  "graphql.queryExamples": "Query Examples",
+  "graphql.recentQueries": "Recent Queries",
+  "graphql.noHistory": "Edited queries will appear here.",
+  "graphql.queryEditor": "Query Editor",
+  "graphql.running": "Running\u2026",
+  "graphql.runQuery": "Run Query",
+  "graphql.response": "Response",
+  "graphql.clickToRun": "Click \u201cRun Query\u201d to see the response.",
+
+  // ── Explorer page ─────────────────────────────────────────────────────
+  "explorer.heading": "Explorer",
+  "explorer.description": "Search any Stellar account or browse recent transactions in real time.",
+  "explorer.searchPlaceholder": "Search an account, transaction, contract or memo\u2026",
+  "explorer.recentTransactions": "Recent Transactions",
+
+  // ── Events page ───────────────────────────────────────────────────────
+  "events.heading": "Contract Events",
+  "events.description": "Soroban contract events indexed via RPC, newest first.",
+  "events.contractIdPlaceholder": "Contract ID (C...)",
+  "events.filter": "Filter",
+
+  // ── Assets page ───────────────────────────────────────────────────────
+  "assets.heading": "Assets",
+  "assets.description": "Every asset Lumina indexes, with the supply and holder counts behind it.",
+
+  // ── Watch page ────────────────────────────────────────────────────────
+  "watch.backgroundNotifications": "Background notifications",
+  "watch.notificationDescription": "In-app alerts work everywhere in Lumina. This is the separate opt-in for an operating-system notification when the tab is not in front of you.",
+
+  // ── Footer ────────────────────────────────────────────────────────────
+  "footer.version": "Lumina frontend v{version}",
+  "footer.copyVersion": "Copy version for bug reports",
+
+  // ── SearchBar ─────────────────────────────────────────────────────────
+  "searchBar.placeholder": "Search an account, transaction, contract or memo\u2026",
 };
 
 export default en;

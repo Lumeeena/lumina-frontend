@@ -1,3 +1,5 @@
+import { getLocale } from "@/lib/i18n";
+
 export function truncateAddress(address: string, chars = 4): string {
   if (!address || address.length < chars * 2 + 3) return address;
   return `${address.slice(0, chars + 1)}...${address.slice(-chars)}`;
@@ -6,17 +8,20 @@ export function truncateAddress(address: string, chars = 4): string {
 export function timeAgo(isoString: string): string {
   const diff = Date.now() - new Date(isoString).getTime();
   const seconds = Math.floor(diff / 1000);
-  if (seconds < 60) return `${seconds}s ago`;
+  const locale = getLocale();
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto", style: "short" });
+
+  if (seconds < 60) return rtf.format(-seconds, "second");
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 60) return rtf.format(-minutes, "minute");
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return rtf.format(-hours, "hour");
   const days = Math.floor(hours / 24);
-  return `${days}d ago`;
+  return rtf.format(-days, "day");
 }
 
-export function absoluteTime(isoString: string): string {
-  return new Date(isoString).toLocaleString(undefined, {
+export function absoluteTime(isoString: string, timezone?: string): string {
+  return new Intl.DateTimeFormat(getLocale(), {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -24,16 +29,42 @@ export function absoluteTime(isoString: string): string {
     minute: "2-digit",
     second: "2-digit",
     timeZoneName: "short",
-  });
+    ...(timezone && { timeZone: timezone }),
+  }).format(new Date(isoString));
 }
 
-export function formatXLM(amount: string): string {
+/**
+ * Amount display preference (#230).
+ * Users can choose between stroops (raw) and decimal (XLM) display.
+ */
+export type AmountUnit = "stroops" | "decimal";
+
+const AMOUNT_UNIT_KEY = "lumina-amount-unit";
+
+export function getAmountUnit(): AmountUnit {
+  if (typeof window === "undefined") return "decimal";
+  return (localStorage.getItem(AMOUNT_UNIT_KEY) as AmountUnit) || "decimal";
+}
+
+export function setAmountUnit(unit: AmountUnit): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(AMOUNT_UNIT_KEY, unit);
+}
+
+export function formatXLM(amount: string, unit?: AmountUnit): string {
+  const resolvedUnit = unit || getAmountUnit();
+  if (resolvedUnit === "stroops") {
+    // Convert decimal XLM to stroops (1 XLM = 10^7 stroops) and show raw
+    const num = parseFloat(amount);
+    if (isNaN(num)) return amount;
+    return Math.round(num * 1e7).toString();
+  }
   const num = parseFloat(amount);
   if (isNaN(num)) return amount;
-  return num.toLocaleString(undefined, {
+  return new Intl.NumberFormat(getLocale(), {
     minimumFractionDigits: 2,
     maximumFractionDigits: 7,
-  });
+  }).format(num);
 }
 
 /**
@@ -54,8 +85,8 @@ export function formatStroops(stroops: bigint | number | string): string {
   const abs = negative ? -value : value;
   const whole = abs / one;
   const frac = (abs % one).toString().padStart(7, "0").replace(/0+$/, "");
-  const grouped = whole.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  return `${negative ? "-" : ""}${grouped}${frac ? `.${frac}` : ""}`;
+  const wholeFormatted = new Intl.NumberFormat(getLocale()).format(Number(whole));
+  return `${negative ? "-" : ""}${wholeFormatted}${frac ? `.${frac}` : ""}`;
 }
 
 export function formatOperationType(type: string): string {
@@ -79,4 +110,19 @@ const opColors: Record<string, string> = {
 
 export function getOperationColor(type: string): string {
   return opColors[type] ?? "text-slate-400";
+}
+
+/**
+ * Group a decimal string's integer part without going through a float.
+ *
+ * `supply` arrives as a string precisely because it does not survive one — a
+ * token with a large supply and 7 decimals loses digits to `parseFloat`, and
+ * the last digits of someone's balance is not a rounding difference. So the
+ * digits are grouped as characters and only the fractional tail is trimmed.
+ */
+export function formatSupply(supply: string): string {
+  const [whole = "0", frac] = supply.split(".");
+  const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  const trimmed = frac?.replace(/0+$/, "") ?? "";
+  return trimmed ? `${grouped}.${trimmed}` : grouped;
 }

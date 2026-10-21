@@ -9,7 +9,7 @@ export default function ThemeScript() {
   return (
     <script
       dangerouslySetInnerHTML={{
-        __html: `(function(){try{var t=localStorage.getItem('lumina-theme');if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();`,
+        __html: `(function(){try{var t=localStorage.getItem('lumina-theme');if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t)}var p=new URLSearchParams(window.location.search);var l=p.get('locale')||p.get('lang')||localStorage.getItem('lumina-locale');if(l&&['ar','he','fa','ur'].some(function(rtl){return l.startsWith(rtl)})){document.documentElement.dir='rtl';document.documentElement.lang=l}}catch(e){}})();`,
       }}
     />
   );

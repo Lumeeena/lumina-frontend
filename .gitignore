@@ -17,3 +17,6 @@ Thumbs.db
 /coverage
 /playwright-report
 /test-results
+/.vitals-base/
+/vitals-reference.json
+/vitals-reference-error.txt

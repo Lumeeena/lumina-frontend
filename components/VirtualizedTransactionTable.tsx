@@ -5,9 +5,11 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import type { Transaction } from "@/lib/types";
 import TransactionRow from "./TransactionRow";
 import { Table, TableBody, TableHead, TableHeaderCell } from "./Table";
+import { t } from "@/lib/i18n";
 
 const ROW_HEIGHT = 41;
 const OVERSCAN = 12;
+/** Number of columns in the desktop table: status dot + hash + ledger + source + ops + fee + time. */
 const COLUMNS = 7;
 
 export default function VirtualizedTransactionTable({
@@ -15,7 +17,6 @@ export default function VirtualizedTransactionTable({
   emptyMessage,
   children,
   initialScrollTop = 0,
-  onScrollTopChange,
 }: {
   transactions: Transaction[];
   emptyMessage: string | null;
@@ -84,27 +85,27 @@ export default function VirtualizedTransactionTable({
             className="rounded-lg border border-[var(--color-border-default)] p-4 bg-[var(--color-bg-subtle)]"
           >
             <div className="flex justify-between items-start mb-2">
-              <span className="text-xs font-semibold text-[var(--color-text-muted)]">Hash</span>
+              <span className="text-xs font-semibold text-[var(--color-text-muted)]">{t("table.hash")}</span>
               <span className="mono text-xs text-[var(--color-text-primary)] font-semibold truncate ms-2">{tx.hash.slice(0, 12)}…</span>
             </div>
             <div className="flex justify-between items-start mb-2">
-              <span className="text-xs font-semibold text-[var(--color-text-muted)]">Ledger</span>
+              <span className="text-xs font-semibold text-[var(--color-text-muted)]">{t("table.ledger")}</span>
               <span className="mono text-xs text-[var(--color-text-primary)]">{tx.ledger}</span>
             </div>
             <div className="flex justify-between items-start mb-2">
-              <span className="text-xs font-semibold text-[var(--color-text-muted)]">Source</span>
+              <span className="text-xs font-semibold text-[var(--color-text-muted)]">{t("table.source")}</span>
               <span className="mono text-xs text-[var(--color-text-primary)] truncate ms-2">{tx.sourceAccount.slice(0, 12)}…</span>
             </div>
             <div className="flex justify-between items-start mb-2">
-              <span className="text-xs font-semibold text-[var(--color-text-muted)]">Operations</span>
+              <span className="text-xs font-semibold text-[var(--color-text-muted)]">{t("table.operations")}</span>
               <span className="mono text-xs text-[var(--color-text-primary)]">{tx.operationCount}</span>
             </div>
             <div className="flex justify-between items-start mb-2">
-              <span className="text-xs font-semibold text-[var(--color-text-muted)]">Fee</span>
+              <span className="text-xs font-semibold text-[var(--color-text-muted)]">{t("table.fee")}</span>
               <span className="mono text-xs text-[var(--color-text-primary)]">{tx.feeCharged}</span>
             </div>
             <div className="flex justify-between items-start">
-              <span className="text-xs font-semibold text-[var(--color-text-muted)]">Time</span>
+              <span className="text-xs font-semibold text-[var(--color-text-muted)]">{t("table.time")}</span>
               <span className="text-xs text-[var(--color-text-primary)]">{new Date(tx.createdAt).toLocaleDateString()}</span>
             </div>
           </div>
@@ -121,28 +122,24 @@ export default function VirtualizedTransactionTable({
       columnCount={COLUMNS}
       stickyHeader
       containerClassName="rounded-xl border border-[var(--color-border-default)] overflow-auto max-h-[70vh]"
+      onScroll={event => onScrollTopChange?.(event.currentTarget.scrollTop)}
       data-testid="transaction-scroll"
       emptyMessage={
         transactions.length === 0 && emptyMessage ? emptyMessage : undefined
       }
       afterTable={children}
-      onScroll={
-        onScrollTopChange
-          ? (event) => onScrollTopChange(event.currentTarget.scrollTop)
-          : undefined
-      }
     >
       <TableHead>
         {/* A plain row: `TableRow`'s border belongs to body rows, and the
             header cells already draw their own. */}
         <tr>
           <TableHeaderCell className="w-6" />
-          <TableHeaderCell>Hash</TableHeaderCell>
-          <TableHeaderCell>Ledger</TableHeaderCell>
-          <TableHeaderCell>Source</TableHeaderCell>
-          <TableHeaderCell>Ops</TableHeaderCell>
-          <TableHeaderCell>Fee</TableHeaderCell>
-          <TableHeaderCell>Time</TableHeaderCell>
+          <TableHeaderCell>{t("table.hash")}</TableHeaderCell>
+          <TableHeaderCell>{t("table.ledger")}</TableHeaderCell>
+          <TableHeaderCell>{t("table.source")}</TableHeaderCell>
+          <TableHeaderCell>{t("table.ops")}</TableHeaderCell>
+          <TableHeaderCell>{t("table.fee")}</TableHeaderCell>
+          <TableHeaderCell>{t("table.time")}</TableHeaderCell>
         </tr>
       </TableHead>
       <TableBody>

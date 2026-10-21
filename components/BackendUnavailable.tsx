@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { t } from "@/lib/i18n";
 
 export default function BackendUnavailable({ onRetry }: { onRetry?: () => void }) {
   const router = useRouter();
+  const titleId = useId();
   const [retrying, setRetrying] = useState(false);
 
   function retry() {
@@ -19,15 +20,17 @@ export default function BackendUnavailable({ onRetry }: { onRetry?: () => void }
   return (
     <div
       role="alert"
+      aria-labelledby={titleId}
       className="p-8 rounded-xl border border-[var(--color-error-border)] bg-[var(--color-error-surface)] text-center"
     >
-      <p className="text-[var(--color-error-surface-text)] font-semibold mb-2">
+      <p id={titleId} className="text-[var(--color-error-surface-text)] font-semibold mb-2">
         {t("error.backendUnavailableTitle")}
       </p>
       <p className="text-[var(--color-text-secondary)] text-sm max-w-lg mx-auto mb-4">
         {t("error.backendUnavailableBody")}
       </p>
       <Button
+        type="button"
         variant="secondary"
         size="sm"
         loading={retrying}

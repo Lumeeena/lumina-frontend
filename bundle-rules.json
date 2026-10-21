@@ -1,0 +1,24 @@
+{
+  "rules": [
+    {
+      "package": "@creit.tech/stellar-wallets-kit",
+      "allowedRoutes": [],
+      "reason": "Wallet selection is loaded on interaction, never on first load."
+    },
+    {
+      "package": "@uiw/react-codemirror",
+      "allowedRoutes": ["/graphql"],
+      "reason": "Only the GraphQL playground needs a code editor."
+    },
+    {
+      "package": "recharts",
+      "allowedRoutes": [
+        "/stats",
+        "/developers/usage",
+        "/accounts/[address]",
+        "/assets/[code]/[issuer]"
+      ],
+      "reason": "Charts belong to statistics, usage, account portfolios and asset details."
+    }
+  ]
+}

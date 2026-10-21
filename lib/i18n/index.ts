@@ -17,9 +17,10 @@
  */
 import type { MessageCatalogue, MessageKey } from "./types";
 import en from "./en";
+import de from "./de";
 import { getDirection, isRtl, RTL_LANGUAGES, type Direction } from "./direction";
 
-const CATALOGUES: Record<string, MessageCatalogue> = { en };
+const CATALOGUES: Record<string, MessageCatalogue> = { en, de };
 
 let activeCatalogue: MessageCatalogue = en;
 let activeLocale = "en";
@@ -38,7 +39,9 @@ function baseLanguage(locale: string): string {
  * switches the app away from English.
  */
 export function isSupportedLocale(locale: string): boolean {
-  return locale in CATALOGUES || RTL_LANGUAGES.has(baseLanguage(locale));
+  return locale in CATALOGUES || RTL_LANGUAGES.has(baseLanguage(locale)) || [
+    "en", "zh", "ja", "ko", "ru", "ar", "he", "es", "pt"
+  ].includes(baseLanguage(locale));
 }
 
 /**

@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { TrustlineOp } from "@/lib/types";
+import { wcagViolations } from "@/lib/axeScan";
 
 const gqlFetch = vi.hoisted(() => vi.fn());
 
@@ -244,5 +245,38 @@ describe("AccountTrustlineTimeline", () => {
     expect(screen.getByTestId("trustline-count").textContent).toBe(
       "Showing 10 of recent trustline changes",
     );
+  });
+});
+
+describe("AccountTrustlineTimeline accessibility", () => {
+  it("has no WCAG A/AA violations", async () => {
+    const { container } = render(
+      <AccountTrustlineTimeline address={ADDRESS} initial={count(10)} />,
+    );
+
+    expect(await wcagViolations(container)).toEqual([]);
+  });
+
+  it("names each transaction link as opening on stellar.expert in a new tab", () => {
+    render(<AccountTrustlineTimeline address={ADDRESS} initial={count(1)} />);
+
+    const link = screen.getByRole("link", { name: /opens in new tab/ });
+    expect(link.getAttribute("target")).toBe("_blank");
+  });
+
+  it("reaches Load more by keyboard and activates it with Enter", async () => {
+    mockPage(count(3, "more"), false);
+    render(<AccountTrustlineTimeline address={ADDRESS} initial={count(10)} />);
+
+    const loadMore = screen.getByRole("button", { name: /load more/i });
+    // Tab past the ten transaction links to reach the footer button.
+    for (let i = 0; i < 20 && document.activeElement !== loadMore; i++) {
+      await userEvent.tab();
+    }
+    expect(document.activeElement).toBe(loadMore);
+
+    await userEvent.keyboard("{Enter}");
+
+    await waitFor(() => expect(gqlFetch).toHaveBeenCalledTimes(1));
   });
 });

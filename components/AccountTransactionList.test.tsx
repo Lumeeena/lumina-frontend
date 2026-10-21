@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { Transaction } from '@/lib/types';
+import { wcagViolations } from '@/lib/axeScan';
 
 const gqlFetch = vi.hoisted(() => vi.fn());
 
@@ -207,5 +208,33 @@ describe("AccountTransactionList", () => {
     expect(screen.getByTestId("transaction-count")).toHaveTextContent(
       "Showing the 10 most recent transactions",
     );
+  });
+});
+
+describe("AccountTransactionList accessibility", () => {
+  it("has no WCAG A/AA violations", async () => {
+    const { container } = render(
+      <AccountTransactionList address={ADDRESS} initial={count(10)} />,
+    );
+
+    expect(await wcagViolations(container)).toEqual([]);
+  });
+
+  it("reaches the scrollable table by keyboard before its links", async () => {
+    render(<AccountTransactionList address={ADDRESS} initial={count(3)} />);
+    const region = screen.getByRole("region", { name: "Account transactions" });
+
+    await userEvent.tab();
+    expect(document.activeElement).toBe(region);
+
+    await userEvent.tab();
+    expect(document.activeElement).toBe(screen.getAllByRole("link")[0]);
+  });
+
+  it("names each transaction link as opening in a new tab", () => {
+    render(<AccountTransactionList address={ADDRESS} initial={count(1)} />);
+
+    const link = screen.getByRole("link", { name: /opens in new tab/ });
+    expect(link.getAttribute("target")).toBe("_blank");
   });
 });

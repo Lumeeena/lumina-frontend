@@ -28,6 +28,9 @@ Runs against `http://localhost:4000/graphql` by default — start [lumina-backen
 | `NEXT_PUBLIC_SOROBAN_RPC_URL`       | Same                                                                                                  | `https://soroban-testnet.stellar.org`                                                      |
 | `NEXT_PUBLIC_NETWORK_PASSPHRASE`    | Same, and the Registry page's wallet-signed transactions                                              | testnet passphrase                                                                         |
 | `NEXT_PUBLIC_REGISTRY_READ_ACCOUNT` | Any funded account used only for read-only simulation (no secret key needed)                          | a funded testnet account                                                                   |
+| `NEXT_PUBLIC_ERROR_REPORTING_URL`   | Optional browser error ingestion endpoint — **build-time inlined**                                    | unset (reporting off)                                                                      |
+| `ERROR_REPORTING_URL`               | Optional source-map upload endpoint used after a production build                                     | unset (maps not generated or uploaded)                                                     |
+| `ERROR_REPORTING_TOKEN`             | Optional bearer token for source-map uploads; never exposed to the browser                            | unset                                                                                      |
 
 | `NEXT_PUBLIC_SITE_URL` | Canonical URLs, `og:image` and the sitemap — **build-time inlined** | `http://localhost:3000` |
 

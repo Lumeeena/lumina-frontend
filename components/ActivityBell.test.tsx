@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import ActivityBell from "./ActivityBell";
 import {
   NOTIFICATIONS_STORAGE_KEY,
@@ -8,6 +9,7 @@ import {
   getSnapshot,
   recordActivity,
 } from "@/lib/notifications";
+import { wcagViolations } from "@/lib/axeScan";
 import type { Operation } from "@/lib/types";
 
 function op(overrides: Partial<Operation> = {}): Operation {
@@ -148,6 +150,30 @@ describe("ActivityBell", () => {
     fireEvent.keyDown(document, { key: "Escape" });
 
     expect(screen.queryByTestId("activity-panel")).toBeNull();
+  });
+
+  it("has no WCAG A/AA violations, with the panel open", async () => {
+    seed(op({ id: "a" }));
+    const { container } = render(<ActivityBell />);
+    fireEvent.click(screen.getByTestId("activity-bell"));
+
+    expect(await wcagViolations(container)).toEqual([]);
+  });
+
+  it("is operable from the keyboard, and Escape returns focus to the bell", async () => {
+    seed(op({ id: "a" }));
+    render(<ActivityBell />);
+    const bell = screen.getByTestId("activity-bell");
+
+    await userEvent.tab();
+    expect(document.activeElement).toBe(bell);
+
+    await userEvent.keyboard("{Enter}");
+    expect(screen.getByTestId("activity-panel")).toBeTruthy();
+
+    await userEvent.keyboard("{Escape}");
+    expect(screen.queryByTestId("activity-panel")).toBeNull();
+    expect(document.activeElement).toBe(bell);
   });
 
   it("survives a corrupt stored value", () => {

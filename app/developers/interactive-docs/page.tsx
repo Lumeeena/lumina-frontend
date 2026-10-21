@@ -1,9 +1,15 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { QUERY_EXAMPLES } from '@/lib/queries';
 
+export const metadata: Metadata = {
+  title: 'API Documentation — Lumina',
+  description: 'Explore the Lumina GraphQL schema with live interactive query examples and pagination guides.',
+};
+
 export default function InteractiveDocsPage() {
   return (
-    <div>
+    <div className="w-full max-w-full overflow-hidden sm:overflow-visible">
       <div className="mb-12">
         <h1 className="text-4xl font-bold text-[var(--color-text-primary)] mb-4">
           API Documentation
@@ -137,7 +143,7 @@ items: [...]          # the actual results`}
               <div className="flex gap-3">
                 <Link
                   href={`/graphql?example=${encodeURIComponent(example.name)}`}
-                  className="px-4 py-2 rounded bg-[var(--color-accent-fill)] text-[var(--color-accent-text)] font-semibold hover:opacity-90 transition-opacity text-sm"
+                  className="px-4 py-2 rounded bg-[var(--color-accent-fill)] text-white font-semibold hover:opacity-90 transition-opacity text-sm"
                 >
                   Try in Playground
                 </Link>

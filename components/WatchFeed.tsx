@@ -7,6 +7,7 @@ import { truncateAddress } from "@/lib/formatters";
 import ConnectionIndicator from "./ConnectionIndicator";
 import TimeAgo from "./TimeAgo";
 import { t } from "@/lib/i18n";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 /**
  * The combined feed for every watched address. Part of #9 / #80.
@@ -43,7 +44,10 @@ export default function WatchFeed() {
       </div>
 
       {watching === 0 ? (
-        <EmptyState />
+        <EmptyState
+          title="You are not watching any addresses yet"
+          description="Use the bookmark next to any address to follow its activity here, and get an alert when something happens on it."
+        />
       ) : (
         <>
           <p className="text-[13px] text-[var(--color-text-secondary)] mb-3" data-testid="watch-summary">
@@ -57,9 +61,11 @@ export default function WatchFeed() {
             data-testid="watch-feed"
           >
             {activity.length === 0 ? (
-              <p className="p-6 text-center text-[var(--color-text-muted)] text-sm">
-                {t("watch.waiting")}
-              </p>
+              <EmptyState
+                variant="inline"
+                title="Waiting for activity on your watched addresses…"
+                className="p-6 text-center"
+              />
             ) : (
               activity.map((item) => {
                 const filters = filtersByAddress.get(item.address);
@@ -76,19 +82,6 @@ export default function WatchFeed() {
         </>
       )}
     </section>
-  );
-}
-
-function EmptyState() {
-  return (
-    <div className="rounded-xl border border-dashed border-[var(--color-border-default)] p-8 text-center">
-      <p className="text-sm font-semibold text-[var(--color-text-primary)]">
-        {t("watch.emptyTitle")}
-      </p>
-      <p className="mt-1 text-[13px] text-[var(--color-text-secondary)]">
-        {t("watch.emptyBody")}
-      </p>
-    </div>
   );
 }
 

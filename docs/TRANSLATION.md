@@ -35,7 +35,8 @@ import type { MessageCatalogue } from "./types";
 
 const es: MessageCatalogue = {
   "error.retry": "Reintentar",
-  "error.backendUnavailableTitle": "Los datos de Lumina no estan disponibles temporalmente",
+  "error.backendUnavailableTitle":
+    "Los datos de Lumina no estan disponibles temporalmente",
   // … every other key
 };
 
@@ -146,6 +147,21 @@ will extend the plural resolver.
   context.
 
 ## Checklist
+
+`lib/i18n/catalogue.test.ts` discovers catalogue files directly and compares
+each to English during `npm test` (and CI's coverage job). Missing, empty and
+unexpected keys fail with the locale and key. Interpolation arguments must
+match even inside plural branches; plural selectors are checked separately
+from simple values. Branch text is translated normally, and arguments may be
+reordered or repeated. Run the focused check with:
+
+```bash
+npx vitest run lib/i18n/catalogue.test.ts
+```
+
+The check verifies catalogue structure, not translation quality or every
+user-facing string's adoption of the catalogue. Manually review wording and
+layout with a fluent speaker.
 
 - [ ] Every key in `MessageCatalogue` has a translated value.
 - [ ] The file compiles (`npx tsc --noEmit`).

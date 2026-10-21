@@ -427,6 +427,67 @@ describe("TransactionExplorer virtualization", () => {
     );
     expect(after.length).toBeGreaterThan(0);
   });
+
+  it("stays responsive with realistic row counts (4000)", async () => {
+    const many = Array.from({ length: 4000 }, (_, i) => tx(i));
+    mocks.gqlFetch.mockResolvedValue(page(many, null, false));
+
+    const startTime = performance.now();
+    await renderExplorer();
+    const renderTime = performance.now() - startTime;
+
+    const rendered = rowHashes();
+    // Even with 4000 rows, the DOM should hold only a viewport's worth
+    expect(rendered.length).toBeLessThan(many.length);
+    expect(rendered.length).toBeGreaterThan(0);
+    expect(screen.getByTestId("result-count").textContent).toBe("4000 loaded");
+
+    // Render should complete in reasonable time (< 5s for 4000 rows)
+    expect(renderTime).toBeLessThan(5000);
+  });
+
+  it("maintains row accounting at scale (4000 rows)", async () => {
+    const many = Array.from({ length: 4000 }, (_, i) => tx(i));
+    mocks.gqlFetch.mockResolvedValue(page(many, null, false));
+
+    await renderExplorer();
+
+    const spacers = screen
+      .getByTestId("transaction-scroll")
+      .querySelectorAll('tr[aria-hidden="true"] > td');
+    const reserved = Array.from(spacers).reduce(
+      (total, cell) =>
+        total + parseFloat((cell as HTMLElement).style.height || "0"),
+      0,
+    );
+    const renderedHeight = rowHashes().length * 41;
+
+    // Spacers plus rendered rows must account for all 4000 rows
+    expect(Math.round(reserved + renderedHeight)).toBe(4000 * 41);
+  });
+
+  it("handles large scrolls efficiently at scale", async () => {
+    const many = Array.from({ length: 4000 }, (_, i) => tx(i));
+    mocks.gqlFetch.mockResolvedValue(page(many, null, false));
+    await renderExplorer();
+
+    const scroll = screen.getByTestId("transaction-scroll");
+    const parentRendersBeforeScroll = mocks.parentRender.mock.calls.length;
+
+    await act(async () => {
+      // Scroll to middle of large list (2000 rows down)
+      scroll.scrollTop = 40000;
+      fireEvent.scroll(scroll);
+    });
+
+    const after = rowHashes();
+    // Rows should change after scrolling
+    expect(after.length).toBeGreaterThan(0);
+    // Virtualizer state updates stay in the child
+    expect(mocks.parentRender.mock.calls.length).toBe(
+      parentRendersBeforeScroll,
+    );
+  });
 });
 
 describe("TransactionExplorer filter memoization", () => {

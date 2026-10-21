@@ -35,16 +35,16 @@ import {
  */
 
 const HEADER_CELL =
-  "text-start text-[11px] tracking-[0.06em] uppercase text-[#a6a3b0] px-3 py-2.5 border-b border-[#e5e3ea] bg-[#fafafa]";
+  "text-start text-[11px] tracking-[0.06em] uppercase text-[var(--color-text-muted)] px-3 py-2.5 border-b border-[var(--color-border-default)] bg-[var(--color-bg-subtle)]";
 
-const BODY_ROW = "border-b border-[#f0eff3] last:border-0";
+const BODY_ROW = "border-b border-[var(--color-bg-overlay)] last:border-0";
 
 const BODY_CELL = "py-2.5 px-3";
 
 const DEFAULT_CONTAINER =
-  "rounded-xl border border-[#e5e3ea] overflow-x-auto";
+  "rounded-xl border border-[var(--color-border-default)] overflow-x-auto";
 
-const STATUS_CELL = "p-8 text-center text-sm text-[#a6a3b0]";
+const STATUS_CELL = "p-8 text-center text-sm text-[var(--color-text-muted)]";
 
 /** Lets `TableHead` pick up the `stickyHeader` flag without a second prop. */
 const StickyHeader = createContext(false);
@@ -202,7 +202,7 @@ export function TableCell({
  * so a reader is given the reason rather than an empty grid.
  */
 export function TableEmptyState({ children }: { children: ReactNode }) {
-  return <p className="text-sm text-[#a6a3b0]">{children}</p>;
+  return <p className="text-sm text-[var(--color-text-muted)]">{children}</p>;
 }
 
 export default Table;

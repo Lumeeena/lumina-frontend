@@ -3,6 +3,7 @@ import { TransactionDetailDocument as TRANSACTION_QUERY } from "@/lib/generated/
 import Link from "next/link";
 import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
 import { routeMetadata } from "@/lib/metadata";
+import { SITE_NAME } from "@/lib/site";
 import {
   formatOperationType,
   formatXLM,
@@ -15,6 +16,7 @@ import type { TransactionDetailQuery } from "@/lib/generated/graphql";
 import BackendUnavailable from "@/components/BackendUnavailable";
 import CopyAddressButton from "@/components/CopyAddressButton";
 import TimeAgo from "@/components/TimeAgo";
+import ViewTracker from "@/components/ViewTracker";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +36,8 @@ export function generateMetadata({
       label: `Transaction ${short}`,
       description: `Stellar transaction ${hash}: status, fee, memo and operations, indexed on Lumina.`,
       path: `/transactions/${hash}`,
+      image: `/transactions/${hash}/opengraph-image`,
+      imageAlt: `Transaction ${short} on ${SITE_NAME}`,
     });
   });
 }
@@ -68,6 +72,14 @@ export default async function TransactionPage({
 
   return (
     <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
+      {transaction && (
+        <ViewTracker
+          id={transaction.hash}
+          type="transaction"
+          label={truncateAddress(transaction.hash, 6)}
+          path={`/transactions/${transaction.hash}`}
+        />
+      )}
       <Link
         href="/transactions"
         className="inline-block text-[13px] font-semibold text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] mb-[18px]"
@@ -88,6 +100,7 @@ export default async function TransactionPage({
             </span>{" "}
             is not in the index — it may be too new, or it may never have been
             included in a ledger.
+            Check the hash and network, then look it up again after the transaction has confirmed.
           </p>
         </div>
       ) : (

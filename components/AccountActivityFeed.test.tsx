@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { act, cleanup, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import axe from "axe-core";
 import { SubscriptionClient } from "@/lib/subscriptions";
 import { FakeSocket } from "@/lib/__fixtures__/fakeSocket";
 import { __setSubscriptionClient } from "@/lib/useSubscription";
@@ -77,6 +79,18 @@ afterEach(() => {
 });
 
 describe("AccountActivityFeed", () => {
+  it("has no automated accessibility violations", async () => {
+    let container!: HTMLElement;
+    await act(async () => {
+      ({ container } = render(<AccountActivityFeed address={ADDRESS} />));
+    });
+    await connect();
+    await push(operation("accessible"));
+
+    const results = await axe.run(container);
+    expect(results.violations).toEqual([]);
+  });
+
   it("subscribes with the account address as a variable", async () => {
     await act(async () => {
       render(<AccountActivityFeed address={ADDRESS} />);
@@ -108,6 +122,25 @@ describe("AccountActivityFeed", () => {
 
     expect(screen.getByText("PAYMENT")).toBeTruthy();
     expect(screen.getByText(/10\.0000000/)).toBeTruthy();
+  });
+
+  it("gives the transaction link an accessible name and keyboard focus", async () => {
+    const user = userEvent.setup();
+    await act(async () => {
+      render(<AccountActivityFeed address={ADDRESS} />);
+    });
+    await connect();
+    await push(operation("keyboard"));
+
+    const link = screen.getByRole("link", {
+      name: /view payment transaction txkeyboard on stellar expert/i,
+    });
+    await user.tab();
+    await user.tab();
+    expect(link).toHaveFocus();
+    expect(
+      screen.getByRole("list", { name: /latest account activity/i }),
+    ).toBeTruthy();
   });
 
   it("shows an operation the account received", async () => {

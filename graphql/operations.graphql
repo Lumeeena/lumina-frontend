@@ -307,3 +307,29 @@ query AccountTrustlineOps($address: String!, $limit: Int, $cursor: String) {
     }
   }
 }
+
+query ContractStorageEntries($contractId: String!, $keyPrefix: String, $durability: String, $limit: Int, $cursor: String) {
+  contractStorageEntries(contractId: $contractId, keyPrefix: $keyPrefix, durability: $durability, limit: $limit, cursor: $cursor) {
+    items {
+      key
+      durability
+      value
+      lastModifiedLedger
+      expiration
+    }
+    pageInfo {
+      hasNextPage
+      cursor
+    }
+  }
+}
+
+query ContractStorageKeyHistory($contractId: String!, $key: String!) {
+  contractStorageKeyHistory(contractId: $contractId, key: $key) {
+    items {
+      value
+      ledger
+      createdAt
+    }
+  }
+}

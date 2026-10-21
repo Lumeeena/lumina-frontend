@@ -1,12 +1,7 @@
-'use client';
-
-import { useState } from 'react';
 import CodeSnippet from '@/components/CodeSnippet';
-import LanguageSelector from '@/components/LanguageSelector';
-import { generateJavaScriptClient, generatePythonClient, generateCurlCommand } from '@/lib/codegen';
+import { ExampleLanguageProvider, ExampleLanguageSelector, QueryExample } from '@/components/GettingStartedExamples';
 
 export default function GettingStartedPage() {
-  const [language, setLanguage] = useState('javascript');
 
   const SIMPLE_QUERY = `
 query GetLatestLedger {
@@ -36,33 +31,8 @@ query GetTransactions {
 }
 `.trim();
 
-  const ACCOUNT_QUERY = `
-query GetAccount {
-  account(address: "GABC...EXAMPLE") {
-    address
-    sequence
-    balances {
-      assetType
-      assetCode
-      balance
-    }
-  }
-}
-`.trim();
-
-  const getCodeSnippet = (query: string, title: string) => {
-    switch (language) {
-      case 'python':
-        return generatePythonClient(query);
-      case 'curl':
-        return generateCurlCommand(query);
-      default:
-        return generateJavaScriptClient(query);
-    }
-  };
-
   return (
-    <div>
+    <ExampleLanguageProvider><div>
       <div className="mb-12">
         <h1 className="text-4xl font-bold text-[var(--color-text-primary)] mb-4">
           Getting Started with Lumina
@@ -89,12 +59,11 @@ query GetAccount {
         </p>
 
         <div className="mb-6">
-          <LanguageSelector selected={language} onChange={setLanguage} />
+          <ExampleLanguageSelector />
         </div>
 
-        <CodeSnippet
-          code={getCodeSnippet(SIMPLE_QUERY, 'First Request')}
-          language={language as any}
+        <QueryExample
+          query={SIMPLE_QUERY}
           title="First Request"
         />
 
@@ -128,9 +97,8 @@ query GetAccount {
           {" "}fields:
         </p>
 
-        <CodeSnippet
-          code={getCodeSnippet(PAGINATED_QUERY, 'Pagination')}
-          language={language as any}
+        <QueryExample
+          query={PAGINATED_QUERY}
           title="Query with Pagination"
         />
 
@@ -187,7 +155,7 @@ query GetAccount {
               <div>
                 <dt className="font-semibold text-[var(--color-text-primary)]">Not Found</dt>
                 <dd className="text-[var(--color-text-secondary)] text-xs mt-1">
-                  The resource doesn't exist (e.g., an account that hasn't been funded on Stellar).
+                  The resource doesn&apos;t exist (e.g., an account that hasn&apos;t been funded on Stellar).
                 </dd>
               </div>
               <div>
@@ -247,7 +215,7 @@ if (data.data) {
       {/* Next Steps */}
       <section className="mt-16 p-8 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-subtle)]">
         <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-4">
-          What's Next?
+          What&apos;s Next?
         </h2>
         <ul className="space-y-3 text-[var(--color-text-secondary)]">
           <li className="flex gap-3">
@@ -286,6 +254,6 @@ if (data.data) {
           </li>
         </ul>
       </section>
-    </div>
+    </div></ExampleLanguageProvider>
   );
 }

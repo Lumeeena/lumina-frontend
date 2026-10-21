@@ -7,11 +7,9 @@ import {
   type TransactionFilters as Filters,
 } from "@/lib/transactionFilters";
 import type { FilterPreset } from "@/lib/filterPresets";
+import { fieldInputClassName, Field } from "@/components/ui/FormField";
 
-const field =
-  "min-h-[38px] px-3 py-2 text-[13px] bg-[var(--color-bg-base)] border border-[var(--color-border-default)] rounded-[9px] focus:outline-none focus:border-[var(--color-border-strong)]";
-const label =
-  "block text-[11px] tracking-[0.06em] uppercase text-[var(--color-text-muted)] mb-1.5";
+const field = fieldInputClassName;
 
 export interface TransactionFiltersProps {
   filters: Filters;
@@ -170,10 +168,7 @@ export default function TransactionFilters({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
-        <div>
-          <label className={label} htmlFor="filter-from">
-            From
-          </label>
+        <Field id="filter-from" label="From">
           <input
             id="filter-from"
             type="date"
@@ -181,11 +176,8 @@ export default function TransactionFilters({
             value={filters.fromDate ?? ""}
             onChange={(e) => set("fromDate", e.target.value || null)}
           />
-        </div>
-        <div>
-          <label className={label} htmlFor="filter-to">
-            To
-          </label>
+        </Field>
+        <Field id="filter-to" label="To">
           <input
             id="filter-to"
             type="date"
@@ -193,22 +185,16 @@ export default function TransactionFilters({
             value={filters.toDate ?? ""}
             onChange={(e) => set("toDate", e.target.value || null)}
           />
-        </div>
-        <div>
-          <label className={label} htmlFor="filter-source">
-            Source account
-          </label>
+        </Field>
+        <Field id="filter-source" label="Source account">
           <SourceAccountInput
             key={filters.source}
             value={filters.source}
             onCommit={commitSource}
             className={`${field} w-full mono`}
           />
-        </div>
-        <div>
-          <label className={label} htmlFor="filter-min-ops">
-            Min operations
-          </label>
+        </Field>
+        <Field id="filter-min-ops" label="Min operations">
           <input
             id="filter-min-ops"
             type="number"
@@ -222,11 +208,8 @@ export default function TransactionFilters({
               )
             }
           />
-        </div>
-        <div>
-          <label className={label} htmlFor="filter-max-fee">
-            Max fee (XLM)
-          </label>
+        </Field>
+        <Field id="filter-max-fee" label="Max fee (XLM)">
           <input
             id="filter-max-fee"
             type="number"
@@ -241,7 +224,7 @@ export default function TransactionFilters({
               )
             }
           />
-        </div>
+        </Field>
       </div>
 
       <div className="flex items-center gap-2 flex-wrap">

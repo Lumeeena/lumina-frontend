@@ -20,6 +20,7 @@ const ROUTES = [
   { path: "/stats", title: "Stats — Lumina" },
   { path: "/graphql", title: "GraphQL — Lumina" },
   { path: "/registry", title: "Registry — Lumina" },
+  { path: "/search", title: "Search — Lumina" },
 ];
 
 /** The `content` of a `<meta>` tag, read from the served HTML rather than the DOM's parsed view. */
@@ -27,7 +28,9 @@ async function meta(page: import("@playwright/test").Page, selector: string) {
   return page.locator(selector).first().getAttribute("content");
 }
 
-test("robots.txt allows the site, blocks the unbounded routes, and points at the sitemap", async ({ page }) => {
+test("robots.txt allows the site, blocks the unbounded routes, and points at the sitemap", async ({
+  page,
+}) => {
   const response = await page.goto("/robots.txt");
 
   expect(response?.status()).toBe(200);
@@ -43,7 +46,9 @@ test("robots.txt allows the site, blocks the unbounded routes, and points at the
   expect(body).toContain("Sitemap: ");
 });
 
-test("sitemap.xml lists the stable routes and nothing unbounded", async ({ page }) => {
+test("sitemap.xml lists the stable routes and nothing unbounded", async ({
+  page,
+}) => {
   const response = await page.goto("/sitemap.xml");
 
   expect(response?.status()).toBe(200);
@@ -75,14 +80,19 @@ for (const { path, title } of ROUTES) {
 
     // The card has to be a large image to render as a card rather than a
     // thumbnail beside a link.
-    expect(await meta(page, 'meta[name="twitter:card"]')).toBe("summary_large_image");
+    expect(await meta(page, 'meta[name="twitter:card"]')).toBe(
+      "summary_large_image",
+    );
     expect(await meta(page, 'meta[name="twitter:image"]')).toBe(image);
 
     // One canonical URL per page, and it is the one that was requested. The
     // host is whatever `NEXT_PUBLIC_SITE_URL` was set to at build time, so only
     // the path is asserted — pinning the host would fail every run outside
     // production. Next emits home as the bare origin, without a trailing slash.
-    const canonical = await page.locator('link[rel="canonical"]').first().getAttribute("href");
+    const canonical = await page
+      .locator('link[rel="canonical"]')
+      .first()
+      .getAttribute("href");
     expect(canonical).toBeTruthy();
     const { pathname } = new URL(canonical as string);
     expect(pathname).toBe(path === "/" ? "/" : path);
@@ -92,7 +102,9 @@ for (const { path, title } of ROUTES) {
 /** Width and height, read from the IHDR chunk rather than from our own metadata. */
 function pngSize(bytes: Buffer) {
   // 8-byte signature, then an IHDR chunk whose payload starts with the size.
-  expect([...bytes.subarray(0, 8)]).toEqual([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+  expect([...bytes.subarray(0, 8)]).toEqual([
+    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+  ]);
   expect(bytes.subarray(12, 16).toString("ascii")).toBe("IHDR");
   return { width: bytes.readUInt32BE(16), height: bytes.readUInt32BE(20) };
 }
@@ -108,7 +120,9 @@ test("the default share image is a real 1200×630 PNG", async ({ request }) => {
   expect(pngSize(await response.body())).toEqual({ width: 1200, height: 630 });
 });
 
-test("an account page gets its own card, built without the backend", async ({ request }) => {
+test("an account page gets its own card, built without the backend", async ({
+  request,
+}) => {
   // The indexer is unreachable in this suite. The card still has to render —
   // preview bots do not retry, and a blank image is a lost share.
   const response = await request.get(`/accounts/${ADDRESS}/opengraph-image`);
@@ -118,9 +132,13 @@ test("an account page gets its own card, built without the backend", async ({ re
   expect(pngSize(await response.body())).toEqual({ width: 1200, height: 630 });
 });
 
-test("an account page's card points at that account's own image", async ({ page }) => {
+test("an account page's card points at that account's own image", async ({
+  page,
+}) => {
   await page.goto(`/accounts/${ADDRESS}`);
 
-  expect(await meta(page, 'meta[property="og:image"]')).toContain(`/accounts/${ADDRESS}/opengraph-image`);
+  expect(await meta(page, 'meta[property="og:image"]')).toContain(
+    `/accounts/${ADDRESS}/opengraph-image`,
+  );
   await expect(page).toHaveTitle(/^G/);
 });

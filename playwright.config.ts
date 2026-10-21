@@ -18,6 +18,9 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: process.env.CI ? [["html", { open: "never" }], ["list"]] : "list",
+  expect: {
+    toMatchAriaSnapshot: { children: "deep-equal" },
+  },
   use: {
     baseURL: "http://127.0.0.1:3100",
     trace: "on-first-retry",
@@ -29,8 +32,10 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
     env: {
-      GRAPHQL_URL: process.env.E2E_GRAPHQL_URL ?? "http://127.0.0.1:59999/graphql",
-      NEXT_PUBLIC_GRAPHQL_URL: process.env.E2E_GRAPHQL_URL ?? "http://127.0.0.1:59999/graphql",
+      GRAPHQL_URL:
+        process.env.E2E_GRAPHQL_URL ?? "http://127.0.0.1:59999/graphql",
+      NEXT_PUBLIC_GRAPHQL_URL:
+        process.env.E2E_GRAPHQL_URL ?? "http://127.0.0.1:59999/graphql",
     },
   },
 });

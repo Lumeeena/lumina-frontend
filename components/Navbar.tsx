@@ -7,7 +7,10 @@ import { NAV_ROUTES } from "@/lib/routes";
 import { DEFAULT_NETWORK, withNetwork, type NetworkId } from "@/lib/network";
 import { useNetwork } from "@/lib/useNetwork";
 import NetworkSwitcher from "./NetworkSwitcher";
+import LocaleSwitcher from "./LocaleSwitcher";
 import ThemeToggle from "@/components/ThemeToggle";
+import TimezoneToggle from "@/components/TimezoneToggle";
+import AddressLabelManager from "./AddressLabelManager";
 
 /**
  * The nav for one network: the wordmark, the section links, and optionally the
@@ -33,9 +36,10 @@ function NavContent({
     <>
       <Link
         href={withNetwork("/", network)}
-        className="flex items-center gap-2 me-4 sm:me-7 shrink-0"
+        aria-label="Lumina home"
+        className="flex items-center gap-2 me-4 sm:me-7 shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-fill)]"
       >
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <circle cx="12" cy="12" r="9" className="stroke-[var(--color-accent-text)]" strokeWidth="2" />
           <circle cx="17" cy="7" r="3.4" className="fill-[var(--color-accent-fill)]" />
         </svg>
@@ -53,7 +57,8 @@ function NavContent({
             key={route.path}
             href={withNetwork(route.path, network)}
             prefetch={route.prefetch ?? false}
-            className={`px-3.5 py-2 text-[13.5px] font-semibold rounded-lg whitespace-nowrap transition-colors ${
+            aria-current={active ? "page" : undefined}
+            className={`px-3.5 py-2 text-[13.5px] font-semibold rounded-lg whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-fill)] motion-reduce:transition-none ${
               active
                 ? "text-[var(--color-text-primary)] bg-[var(--color-bg-raised)]"
                 : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
@@ -77,7 +82,7 @@ export default function Navbar() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex items-center gap-1 px-4 sm:px-7 h-[60px] border-b border-[var(--color-border-default)] bg-[var(--color-bg-base)]/90 backdrop-blur sticky top-0 z-20 overflow-x-auto">
+    <nav aria-label="Main navigation" className="flex items-center gap-1 px-4 sm:px-7 h-[60px] border-b border-[var(--color-border-default)] bg-[var(--color-bg-base)]/90 backdrop-blur sticky top-0 z-20 overflow-x-auto">
       {/* The links and the switcher both read the network from the URL, and
           `useSearchParams` suspends while the URL is being read, so reading
           happens behind one boundary. The fallback is the same nav on the
@@ -87,8 +92,11 @@ export default function Navbar() {
         <RoutedNavContent pathname={pathname} />
       </Suspense>
 
-      {/* Push the toggle to the far right */}
-      <div className="ms-auto shrink-0">
+      {/* Push the toggle and switcher to the far right */}
+      <div className="ms-auto shrink-0 flex items-center gap-2">
+        <AddressLabelManager />
+        <LocaleSwitcher />
+        <TimezoneToggle />
         <ThemeToggle />
       </div>
     </nav>

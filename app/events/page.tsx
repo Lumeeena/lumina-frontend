@@ -4,9 +4,10 @@ import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
 import { routeMetadata } from "@/lib/metadata";
 import { EVENTS } from "@/lib/routes";
 import type { ContractEvent } from "@/lib/types";
-import { truncateAddress } from "@/lib/formatters";
 import TimeAgo from "@/components/TimeAgo";
 import BackendUnavailable from "@/components/BackendUnavailable";
+import SorobanValue from "@/components/SorobanValue";
+import ContractLink from "@/components/ContractLink";
 
 export const dynamic = "force-dynamic";
 
@@ -110,21 +111,36 @@ export default async function EventsPage({
                   key={ev.id}
                   className="border-b border-[var(--color-bg-overlay)] last:border-0"
                 >
-                  <td className="py-2.5 px-3 mono text-xs text-[var(--color-accent-text)]">
-                    {truncateAddress(ev.contractId, 6)}
+                  <td className="py-2.5 px-3 mono text-xs">
+                    <ContractLink contractId={ev.contractId} truncate={6} />
                   </td>
                   <td className="py-2.5 px-3">
-                    {ev.topics[0] && (
-                      <span className="text-[11px] font-semibold bg-[var(--color-accent-surface)] text-[var(--color-accent-text)] rounded-md px-2 py-[3px]">
-                        {ev.topics[0]}
-                        {ev.topics.length > 1
-                          ? ` +${ev.topics.length - 1}`
-                          : ""}
-                      </span>
-                    )}
+                    {ev.topics[0] ? (
+                      <div className="space-y-2">
+                        {ev.topics.map((topic, index) => (
+                          <div key={index} className="space-y-1">
+                            <SorobanValue
+                              value={topic}
+                              initialExpandedDepth={2}
+                              showRawToggle
+                              rawValue={topic}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
                   </td>
-                  <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-secondary)] max-w-[280px] truncate">
-                    {ev.value ?? "—"}
+                  <td className="py-2.5 px-3 text-xs text-[var(--color-text-secondary)]">
+                    {ev.value ? (
+                      <SorobanValue
+                        value={ev.value}
+                        initialExpandedDepth={2}
+                        showRawToggle
+                        rawValue={ev.value}
+                      />
+                    ) : (
+                      "—"
+                    )}
                   </td>
                   <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-secondary)]">
                     {ev.ledger.toLocaleString()}

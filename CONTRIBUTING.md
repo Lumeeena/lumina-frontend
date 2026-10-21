@@ -179,6 +179,15 @@ beyond it.
 This, with the analyzer above, closes [bundle budget issue
 #34](https://github.com/Lumeeena/lumina-frontend/issues/34).
 
+## Wallet recovery and browser checks
+
+See [wallet rejection recovery](docs/wallet-rejection.md) for prepared-transaction
+retries, [hydration regressions](TESTING.md#hydration-regressions) for deterministic
+initial renders, and the [client component audit](docs/client-boundaries.md) for
+the registry/guide boundaries and measured JavaScript reductions.
+[Core Web Vitals budgets](docs/web-vitals.md) documents the per-route CI journeys,
+PR-base comparison, initial targets and baseline update workflow.
+
 ## Translation
 
 User-facing strings are in `lib/i18n/en.ts`. See

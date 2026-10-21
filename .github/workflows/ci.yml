@@ -7,6 +7,43 @@ on:
     branches: [main]
 
 jobs:
+  vitals:
+    name: Core Web Vitals
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check out the PR base for the performance delta
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: .vitals-base
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Install PR base dependencies
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        run: npm ci --prefix .vitals-base
+      - name: Measure the PR base with the same journeys
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        run: node scripts/vitals-run.mjs --reference .vitals-base
+      - run: npm run test:vitals
+      - name: Upload per-route measurements and deltas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-web-vitals
+          path: |
+            test-results/vitals/
+            vitals-reference.json
+            vitals-reference-error.txt
+          retention-days: 14
+
   build:
     name: Build & Unit Tests
     runs-on: ubuntu-latest
@@ -17,6 +54,8 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - name: Check translation, bundle inventory and worker regressions
+        run: npm test -- lib/i18n/catalogue.test.ts scripts/bundle-contents.test.mjs scripts/service-worker.test.mjs
       - run: npm run build
       - run: git diff --exit-code -- lib/generated
       # Coverage rather than a plain run: the text summary lands in the job log
@@ -45,13 +84,16 @@ jobs:
       # compile mode: type checking belongs to the build job above, and
       # prerendering does not change which chunks a route loads.
       - run: npm run build:bundle
+      - run: npm run bundle:contents
       - run: npm run bundle:report
       - name: Upload bundle report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: bundle-report
-          path: .next/bundle-report.json
+          path: |
+            .next/bundle-report.json
+            .next/bundle-contents.json
           retention-days: 14
 
   e2e:

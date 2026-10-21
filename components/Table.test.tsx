@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
 import {
   Table,
@@ -81,6 +82,48 @@ describe("Table", () => {
     expect(region.getAttribute("tabindex")).toBe("0");
     expect(region.className).toContain("overflow-x-auto");
     expect(region.querySelector("table")).not.toBeNull();
+  });
+
+  it("keeps controls inside cells in the normal keyboard order", async () => {
+    const user = userEvent.setup();
+    render(
+      <Table caption="Account transactions" columnCount={2}>
+        <TableHead>
+          <tr>
+            <TableHeaderCell>Hash</TableHeaderCell>
+            <TableHeaderCell>Actions</TableHeaderCell>
+          </tr>
+        </TableHead>
+        <TableBody>
+          <TableRow>
+            <TableCell>abc</TableCell>
+            <TableCell>
+              <button type="button">Open transaction</button>
+            </TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>,
+    );
+
+    await user.tab();
+    expect(screen.getByRole("region")).toHaveFocus();
+    await user.tab();
+    expect(
+      screen.getByRole("button", { name: "Open transaction" }),
+    ).toHaveFocus();
+  });
+
+  it("forwards scroll events from the region", () => {
+    const onScroll = vi.fn();
+    render(
+      <Table caption="Account transactions" columnCount={2} onScroll={onScroll}>
+        {sample}
+      </Table>,
+    );
+
+    const region = screen.getByRole("region");
+    region.dispatchEvent(new Event("scroll", { bubbles: true }));
+    expect(onScroll).toHaveBeenCalledTimes(1);
   });
 
   it("publishes aria-busy only while the rows are being replaced", () => {

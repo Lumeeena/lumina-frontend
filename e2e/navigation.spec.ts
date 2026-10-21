@@ -93,7 +93,7 @@ test("the universal search routes an account address to its account page", async
   // The backend is unreachable in this suite, so what is asserted is the
   // routing: the address lands on its account page, which renders its own
   // degraded state rather than white-screening.
-  await page.getByLabelText("Search").fill(address);
+  await page.getByLabel("Search").fill(address);
   await page.getByRole("button", { name: "Search" }).click();
 
   await expect(page).toHaveURL(`/accounts/${address}`);
@@ -108,7 +108,7 @@ test("the universal search routes a transaction hash to its transaction page", a
     "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890";
   await page.goto("/explorer");
 
-  await page.getByLabelText("Search").fill(hash);
+  await page.getByLabel("Search").fill(hash);
   await page.getByRole("button", { name: "Search" }).click();
 
   await expect(page).toHaveURL(`/transactions/${hash}`);
@@ -121,7 +121,7 @@ test("the universal search sends anything unrecognised to the memo search", asyn
 }) => {
   await page.goto("/");
 
-  await page.getByLabelText("Search").fill("order 12345");
+  await page.getByLabel("Search").fill("order 12345");
   await page.getByRole("button", { name: "Search" }).click();
 
   // The memo search itself needs the indexer, so the URL is the assertion:
@@ -134,7 +134,7 @@ test("the / keyboard shortcut focuses the search box", async ({ page }) => {
   await page.goto("/");
 
   await page.keyboard.press("/");
-  await expect(page.getByLabelText("Search")).toBeFocused();
+  await expect(page.getByLabel("Search")).toBeFocused();
 });
 
 test("the registry page offers wallet connection when no wallet is present", async ({

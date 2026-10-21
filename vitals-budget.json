@@ -1,0 +1,234 @@
+{
+  "scenario": "Desktop Chromium; three cold contexts per route; fixed GraphQL fixtures; disconnected wallet; unavailable registry RPC",
+  "baselineStatus": "Initial project targets. No local browser baseline was collected; CI measures the PR base for deltas when it can build.",
+  "routes": {
+    "/accounts/[address]": {
+      "budget": {
+        "CLS": 0.1,
+        "INP": 200,
+        "LCP": 2500
+      },
+      "baseline": {
+        "CLS": null,
+        "INP": null,
+        "LCP": null
+      }
+    },
+    "/accounts": {
+      "budget": {
+        "CLS": 0.1,
+        "INP": 200,
+        "LCP": 2500
+      },
+      "baseline": {
+        "CLS": null,
+        "INP": null,
+        "LCP": null
+      }
+    },
+    "/assets/[code]/[issuer]": {
+      "budget": {
+        "CLS": 0.1,
+        "INP": 200,
+        "LCP": 2500
+      },
+      "baseline": {
+        "CLS": null,
+        "INP": null,
+        "LCP": null
+      }
+    },
+    "/assets": {
+      "budget": {
+        "CLS": 0.1,
+        "INP": 200,
+        "LCP": 2500
+      },
+      "baseline": {
+        "CLS": null,
+        "INP": null,
+        "LCP": null
+      }
+    },
+    "/contracts/[contractId]": {
+      "budget": {
+        "CLS": 0.1,
+        "INP": 200,
+        "LCP": 2500
+      },
+      "baseline": {
+        "CLS": null,
+        "INP": null,
+        "LCP": null
+      }
+    },
+    "/developers/getting-started": {
+      "budget": {
+        "CLS": 0.1,
+        "INP": 200,
+        "LCP": 2500
+      },
+      "baseline": {
+        "CLS": null,
+        "INP": null,
+        "LCP": null
+      }
+    },
+    "/developers/interactive-docs": {
+      "budget": {
+        "CLS": 0.1,
+        "INP": 200,
+        "LCP": 2500
+      },
+      "baseline": {
+        "CLS": null,
+        "INP": null,
+        "LCP": null
+      }
+    },
+    "/developers": {
+      "budget": {
+        "CLS": 0.1,
+        "INP": 200,
+        "LCP": 2500
+      },
+      "baseline": {
+        "CLS": null,
+        "INP": null,
+        "LCP": null
+      }
+    },
+    "/developers/usage": {
+      "budget": {
+        "CLS": 0.1,
+        "INP": 200,
+        "LCP": 2500
+      },
+      "baseline": {
+        "CLS": null,
+        "INP": null,
+        "LCP": null
+      }
+    },
+    "/events": {
+      "budget": {
+        "CLS": 0.1,
+        "INP": 200,
+        "LCP": 2500
+      },
+      "baseline": {
+        "CLS": null,
+        "INP": null,
+        "LCP": null
+      }
+    },
+    "/explorer": {
+      "budget": {
+        "CLS": 0.1,
+        "INP": 200,
+        "LCP": 2500
+      },
+      "baseline": {
+        "CLS": null,
+        "INP": null,
+        "LCP": null
+      }
+    },
+    "/graphql": {
+      "budget": {
+        "CLS": 0.1,
+        "INP": 200,
+        "LCP": 2500
+      },
+      "baseline": {
+        "CLS": null,
+        "INP": null,
+        "LCP": null
+      }
+    },
+    "/": {
+      "budget": {
+        "CLS": 0.1,
+        "INP": 200,
+        "LCP": 2500
+      },
+      "baseline": {
+        "CLS": null,
+        "INP": null,
+        "LCP": null
+      }
+    },
+    "/registry": {
+      "budget": {
+        "CLS": 0.1,
+        "INP": 200,
+        "LCP": 2500
+      },
+      "baseline": {
+        "CLS": null,
+        "INP": null,
+        "LCP": null
+      }
+    },
+    "/search": {
+      "budget": {
+        "CLS": 0.1,
+        "INP": 200,
+        "LCP": 2500
+      },
+      "baseline": {
+        "CLS": null,
+        "INP": null,
+        "LCP": null
+      }
+    },
+    "/stats": {
+      "budget": {
+        "CLS": 0.1,
+        "INP": 200,
+        "LCP": 2500
+      },
+      "baseline": {
+        "CLS": null,
+        "INP": null,
+        "LCP": null
+      }
+    },
+    "/transactions/[hash]": {
+      "budget": {
+        "CLS": 0.1,
+        "INP": 200,
+        "LCP": 2500
+      },
+      "baseline": {
+        "CLS": null,
+        "INP": null,
+        "LCP": null
+      }
+    },
+    "/transactions": {
+      "budget": {
+        "CLS": 0.1,
+        "INP": 200,
+        "LCP": 2500
+      },
+      "baseline": {
+        "CLS": null,
+        "INP": null,
+        "LCP": null
+      }
+    },
+    "/watch": {
+      "budget": {
+        "CLS": 0.1,
+        "INP": 200,
+        "LCP": 2500
+      },
+      "baseline": {
+        "CLS": null,
+        "INP": null,
+        "LCP": null
+      }
+    }
+  }
+}

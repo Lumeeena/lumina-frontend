@@ -11,6 +11,7 @@ import {
   type ActivityNotification,
 } from "@/lib/notifications";
 import { truncateAddress } from "@/lib/formatters";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 /** Above this the badge stops being countable at a glance; the panel is exact. */
 export const MAX_VISIBLE_BADGE_COUNT = 99;
@@ -30,6 +31,7 @@ export default function ActivityBell() {
   );
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
   const panelId = "activity-panel";
 
   const unread = notifications.reduce(
@@ -45,7 +47,11 @@ export default function ActivityBell() {
       if (!containerRef.current?.contains(event.target as Node)) setOpen(false);
     };
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key !== "Escape") return;
+      setOpen(false);
+      // The panel unmounts with focus possibly inside it. Return focus to the
+      // control that opened it so keyboard users are not dropped to the top.
+      buttonRef.current?.focus();
     };
     document.addEventListener("mousedown", onPointerDown);
     document.addEventListener("keydown", onKeyDown);
@@ -72,6 +78,7 @@ export default function ActivityBell() {
   return (
     <div className="relative ms-auto shrink-0" ref={containerRef}>
       <button
+        ref={buttonRef}
         type="button"
         onClick={handleOpen}
         aria-expanded={open}
@@ -82,13 +89,13 @@ export default function ActivityBell() {
             : `Watched address alerts, ${unread} unread`
         }
         data-testid="activity-bell"
-        className="relative inline-flex items-center justify-center size-8 rounded-lg text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-raised)] hover:text-[var(--color-text-primary)] transition-colors"
+        className="relative inline-flex items-center justify-center size-8 rounded-lg text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-raised)] hover:text-[var(--color-text-primary)] transition-colors motion-reduce:transition-none"
       >
         <Bell aria-hidden="true" className="size-4" strokeWidth={2} />
         {unread > 0 && (
           <span
             data-testid="activity-bell-count"
-            className="absolute -top-0.5 -end-0.5 min-w-[16px] h-4 px-1 rounded-full bg-[var(--color-error-text)] text-white text-[10px] font-bold leading-4 text-center tabular-nums"
+            className="absolute -top-0.5 -end-0.5 min-w-[16px] h-4 px-1 rounded-full bg-[var(--color-error-text)] text-[var(--color-bg-base)] text-[10px] font-bold leading-4 text-center tabular-nums"
           >
             {unread > MAX_VISIBLE_BADGE_COUNT ? `${MAX_VISIBLE_BADGE_COUNT}+` : unread}
           </span>
@@ -117,9 +124,12 @@ export default function ActivityBell() {
           </div>
 
           {notifications.length === 0 ? (
-            <p className="px-4 py-6 text-center text-[13px] text-[var(--color-text-muted)]">
-              Nothing yet. Alerts appear here when a watched address is active.
-            </p>
+            <EmptyState
+              variant="inline"
+              title="Nothing yet"
+              description="Alerts appear here when a watched address is active."
+              className="px-4 py-6 text-center"
+            />
           ) : (
             <ul className="max-h-[min(24rem,60vh)] overflow-y-auto divide-y divide-[var(--color-bg-overlay)]">
               {notifications.map((item) => (
@@ -146,7 +156,7 @@ function NotificationRow({ notification }: { notification: ActivityNotification 
     <li className="px-4 py-3" data-testid="activity-notification">
       <a
         href={`/accounts/${notification.address}`}
-        className="block hover:underline"
+        className="block hover:underline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--color-accent-fill)]"
       >
         <span className="flex items-center gap-2">
           <span className="text-[11px] font-semibold rounded-full bg-[var(--color-accent-surface)] text-[var(--color-accent-text)] px-2 py-0.5">

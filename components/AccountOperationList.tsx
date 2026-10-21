@@ -16,6 +16,7 @@ import { formatOperationType, truncateAddress } from "@/lib/formatters";
 import TimeAgo from "./TimeAgo";
 import LoadMoreFooter from "./LoadMoreFooter";
 import { t } from "@/lib/i18n";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 const PAGE_SIZE = 25;
 /** Matches the seed the server component renders. */
@@ -79,9 +80,11 @@ export default function AccountOperationList({
 
   if (rows.length === 0) {
     return (
-      <p className="text-sm text-[var(--color-text-muted)]">
-        {t("accountOps.noOperations")}
-      </p>
+      <EmptyState
+        variant="inline"
+        title="No operations yet"
+        description="Operations will appear here once this account is active on the network."
+      />
     );
   }
 
@@ -100,24 +103,16 @@ export default function AccountOperationList({
         aria-label="Account operations"
         aria-busy={loading || undefined}
         tabIndex={0}
-        className="rounded-xl border border-[var(--color-border-default)] overflow-x-auto"
+        className="rounded-xl border border-[var(--color-border-default)] overflow-x-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-fill)]"
       >
         <table className="w-full text-sm border-collapse">
           <caption className="sr-only">Account operations</caption>
           <thead>
             <tr>
-              <th scope="col" className={th}>
-                Type
-              </th>
-              <th scope="col" className={th}>
-                Transaction
-              </th>
-              <th scope="col" className={th}>
-                Detail
-              </th>
-              <th scope="col" className={th}>
-                Time
-              </th>
+              <th scope="col" className={th}>{t("table.type")}</th>
+              <th scope="col" className={th}>{t("table.transaction")}</th>
+              <th scope="col" className={th}>{t("table.detail")}</th>
+              <th scope="col" className={th}>{t("table.time")}</th>
             </tr>
           </thead>
           <tbody>
@@ -136,7 +131,8 @@ export default function AccountOperationList({
                     href={`https://stellar.expert/explorer/public/tx/${op.transactionHash}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mono text-xs text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline transition-colors"
+                    aria-label={`View transaction ${op.transactionHash} on Stellar Expert (opens in a new tab)`}
+                    className="mono text-xs text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline transition-colors motion-reduce:transition-none"
                   >
                     {truncateAddress(op.transactionHash, 6)}
                   </a>

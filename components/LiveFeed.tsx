@@ -14,6 +14,8 @@ import { truncateAddress } from "@/lib/formatters";
 import TimeAgo from "./TimeAgo";
 import ConnectionIndicator from "./ConnectionIndicator";
 import { t } from "@/lib/i18n";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { InlineLoading } from "@/components/ui/InlineLoading";
 
 /**
  * How many transactions the feed keeps.
@@ -241,8 +243,8 @@ export default function LiveFeed() {
               type="button"
               onClick={paused ? resumeFeed : pauseFeed}
               aria-label={pauseLabel}
-              aria-pressed={paused || undefined}
-              className="inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors px-1.5 py-1 rounded"
+              aria-pressed={paused}
+              className="inline-flex items-center gap-1 rounded px-1.5 py-1 text-[11px] font-semibold text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] motion-safe:transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-fill)]"
             >
               {paused ? <Play size={12} /> : <Pause size={12} />}
             </button>
@@ -274,18 +276,14 @@ export default function LiveFeed() {
       )}
 
       {loading ? (
-        <div
-          role="status"
-          aria-label="Loading live feed"
-          className="p-6 text-center text-[var(--color-text-muted)] text-sm animate-pulse"
-        >
-          <span className="sr-only">Loading live feed</span>
-          {t("liveFeed.fetching")}
-        </div>
+        <InlineLoading label="Fetching live data" className="p-6 text-center" />
       ) : txs.length === 0 ? (
-        <div className="p-6 text-center text-[var(--color-text-muted)] text-sm">
-          {t("liveFeed.noTransactions")}
-        </div>
+        <EmptyState
+          variant="inline"
+          title="No transactions yet"
+          description="New transactions will appear here as the network processes them."
+          className="p-6 text-center"
+        />
       ) : (
         <div
           ref={scrollRef}
@@ -329,7 +327,7 @@ export default function LiveFeed() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={`Transaction ${truncateAddress(tx.hash, 5)}, ${tx.successful ? "successful" : "failed"}`}
-                    className="mono text-xs text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline transition-colors"
+                    className="mono text-xs text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline motion-safe:transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-fill)]"
                   >
                     {truncateAddress(tx.hash, 5)}
                   </a>

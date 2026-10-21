@@ -19,6 +19,7 @@ import { truncateAddress } from "@/lib/formatters";
 import TimeAgo from "./TimeAgo";
 import LoadMoreFooter from "./LoadMoreFooter";
 import { t } from "@/lib/i18n";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 /** The seed the server component renders; the first client fetch widens past it. */
 export const SEED_LIMIT = 10;
@@ -82,9 +83,11 @@ export default function AccountTransactionList({
 
   if (rows.length === 0) {
     return (
-      <p className="text-sm text-[var(--color-text-muted)]">
-        {t("accountTxs.noTransactions")}
-      </p>
+      <EmptyState
+        variant="inline"
+        title="No transactions yet"
+        description="Transactions will appear here once this account submits one to the network."
+      />
     );
   }
 
@@ -103,24 +106,16 @@ export default function AccountTransactionList({
         aria-label="Account transactions"
         aria-busy={loading || undefined}
         tabIndex={0}
-        className="rounded-xl border border-[var(--color-border-default)] overflow-x-auto"
+        className="rounded-xl border border-[var(--color-border-default)] overflow-x-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-fill)]"
       >
         <table className="w-full text-sm border-collapse">
           <caption className="sr-only">Account transactions</caption>
           <thead>
             <tr>
-              <th scope="col" className={th}>
-                Hash
-              </th>
-              <th scope="col" className={th}>
-                Ledger
-              </th>
-              <th scope="col" className={th}>
-                Ops
-              </th>
-              <th scope="col" className={th}>
-                Time
-              </th>
+              <th scope="col" className={th}>{t("table.hash")}</th>
+              <th scope="col" className={th}>{t("table.ledger")}</th>
+              <th scope="col" className={th}>{t("table.ops")}</th>
+              <th scope="col" className={th}>{t("table.time")}</th>
             </tr>
           </thead>
           <tbody>
@@ -134,9 +129,10 @@ export default function AccountTransactionList({
                     href={`https://stellar.expert/explorer/public/tx/${tx.hash}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mono text-xs text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline transition-colors"
+                    className="mono text-xs text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-fill)]"
                   >
                     {truncateAddress(tx.hash, 6)}
+                    <span className="sr-only"> on stellar.expert (opens in new tab)</span>
                   </a>
                 </td>
                 <td className="py-2.5 px-3 mono text-xs">
