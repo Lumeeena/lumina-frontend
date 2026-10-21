@@ -105,6 +105,8 @@ The notable modules:
 - `lib/stellarAddress.ts` — client-side Stellar account and contract ID format
   validation. It checks the StrKey prefix, length and alphabet, not the checksum
   or whether the identifier exists.
+- `lib/registryHistory.ts` — normalizes indexed Registry contract events for
+  history views, preserving unknown events and best-effort payload data.
 - `lib/registry.ts`, `lib/wallet.ts`, `lib/sorobanTx.ts` — the on-chain read and
   write path described below.
 - `lib/types.ts` — the result types shared across pages and components.
