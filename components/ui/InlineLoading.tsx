@@ -66,7 +66,7 @@ export function InlineLoading({
   return (
     <p
       role="status"
-      className={`text-sm text-[var(--color-text-muted)] animate-pulse ${className}`}
+      className={`text-sm text-[var(--color-text-muted)] animate-pulse motion-reduce:animate-none ${className}`}
     >
       {label}&hellip;
     </p>
