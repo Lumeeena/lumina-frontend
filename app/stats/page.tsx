@@ -9,7 +9,9 @@ import { formatOperationType } from "@/lib/formatters";
 import StatCard from "@/components/StatCard";
 import BackendUnavailable from "@/components/BackendUnavailable";
 
-export const metadata: Metadata = routeMetadata(STATS);
+export function generateMetadata(): Metadata {
+  return routeMetadata(STATS);
+}
 
 async function getStats() {
   try {
