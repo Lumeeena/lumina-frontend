@@ -110,6 +110,8 @@ The notable modules:
 - `lib/searchQuery.ts` — classifies universal search input by shape and builds
   the corresponding account, contract, transaction or memo-search URL without
   waiting on a backend lookup.
+- `lib/operationFilters.ts` — watch activity constraints, URL/storage
+  normalization and matching, built on the shared `lib/filterModel.ts`.
 - `lib/registry.ts`, `lib/wallet.ts`, `lib/sorobanTx.ts` — the on-chain read and
   write path described below.
 - `lib/types.ts` — the result types shared across pages and components.
