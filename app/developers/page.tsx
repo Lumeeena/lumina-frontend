@@ -1,8 +1,18 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+import { routeMetadata } from "@/lib/metadata";
+
+export function generateMetadata(): Metadata {
+  return routeMetadata({
+    label: "Developer Portal",
+    description: "Lumina's developer documentation, API guides, and integration resources for building on Stellar.",
+    path: "/developers",
+  });
+}
 
 export default function DevelopersPage() {
   return (
-    <div>
+    <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
       <div className="mb-12">
         <h1 className="text-4xl font-bold text-[var(--color-text-primary)] mb-4">
           Lumina Developer Portal
