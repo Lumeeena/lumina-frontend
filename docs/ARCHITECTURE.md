@@ -107,6 +107,9 @@ The notable modules:
   or whether the identifier exists.
 - `lib/registryHistory.ts` — normalizes indexed Registry contract events for
   history views, preserving unknown events and best-effort payload data.
+- `lib/searchQuery.ts` — classifies universal search input by shape and builds
+  the corresponding account, contract, transaction or memo-search URL without
+  waiting on a backend lookup.
 - `lib/registry.ts`, `lib/wallet.ts`, `lib/sorobanTx.ts` — the on-chain read and
   write path described below.
 - `lib/types.ts` — the result types shared across pages and components.
