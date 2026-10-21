@@ -20,6 +20,7 @@ import {
   type WalletSession,
 } from "@/lib/wallet";
 import BackendUnavailable from "@/components/BackendUnavailable";
+import RegistryContractInfo from "@/components/RegistryContractInfo";
 import WalletInfo from "@/components/WalletInfo";
 import { Button } from "@/components/ui/Button";
 
@@ -253,6 +254,8 @@ function RegistryContent() {
         contract to opt into priority indexing — permissionless, on
         Stellar/Soroban testnet.
       </p>
+
+      <RegistryContractInfo />
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-8 items-start">
         <div className="border border-[var(--color-border-default)] rounded-2xl p-6 bg-[var(--color-bg-subtle)]">
