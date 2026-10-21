@@ -5,11 +5,30 @@
 
 const STRKEY_REGEX = /^[GC][A-Z2-7]{55}$/;
 
+/**
+ * Result returned by {@link validateStellarAddress}.
+ * An invalid result distinguishes an empty input from a malformed address;
+ * malformed results include a user-readable hint describing the format issue.
+ */
 export type AddressValidation =
   | { valid: true }
   | { valid: false; reason: "empty" }
   | { valid: false; reason: "malformed"; hint: string };
 
+/**
+ * Checks whether input has the expected StrKey text format for a Stellar
+ * account ID (`G...`) or Soroban contract ID (`C...`). Use this for client-side
+ * address-field validation before accepting or submitting an address.
+ *
+ * Input is trimmed and compared case-insensitively. An empty string returns
+ * `reason: "empty"`; whitespace-only input is malformed after trimming. The
+ * malformed result's `hint` is intended for display to the user. This checks
+ * only prefix, length, and alphabet; it does not verify the StrKey checksum,
+ * decode the identifier, or establish that the account or contract exists.
+ *
+ * @param raw The address text to validate.
+ * @returns A valid result, an empty-input result, or a malformed result with a hint.
+ */
 export function validateStellarAddress(raw: string): AddressValidation {
   if (!raw) return { valid: false, reason: "empty" };
 
@@ -36,7 +55,9 @@ export function validateStellarAddress(raw: string): AddressValidation {
   return {
     valid: false,
     reason: "malformed",
-    hint: hints.length > 0 ? hints.join("; ") : "not a valid Stellar account or contract ID",
+    hint:
+      hints.length > 0
+        ? hints.join("; ")
+        : "not a valid Stellar account or contract ID",
   };
 }
-
