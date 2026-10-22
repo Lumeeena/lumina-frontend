@@ -102,6 +102,16 @@ The notable modules:
   entry rather than four edits that drift.
 - `lib/metadata.ts` — `routeMetadata` and the generated OpenGraph images.
 - `lib/formatters.ts` — display helpers (`formatXLM`, `truncateAddress`, …).
+- `lib/stellarAddress.ts` — client-side Stellar account and contract ID format
+  validation. It checks the StrKey prefix, length and alphabet, not the checksum
+  or whether the identifier exists.
+- `lib/registryHistory.ts` — normalizes indexed Registry contract events for
+  history views, preserving unknown events and best-effort payload data.
+- `lib/searchQuery.ts` — classifies universal search input by shape and builds
+  the corresponding account, contract, transaction or memo-search URL without
+  waiting on a backend lookup.
+- `lib/operationFilters.ts` — watch activity constraints, URL/storage
+  normalization and matching, built on the shared `lib/filterModel.ts`.
 - `lib/registry.ts`, `lib/wallet.ts`, `lib/sorobanTx.ts` — the on-chain read and
   write path described below.
 - `lib/types.ts` — the result types shared across pages and components.
@@ -196,4 +206,3 @@ Developer API keys and usage quotas (`/developers/usage`) are scoped to the acti
 - **Key Ownership Association**: API keys and quota tracking are bound 1:1 to the connected Stellar wallet address (`ownerAddress`).
 - **Protected Management**: The usage dashboard requires an active wallet connection (`readPersistedSession()` / `getConnectedWallet()`) before rendering key details or allowing key creation/revocation.
 - **Graceful Disconnection**: Disconnecting a wallet immediately hides sensitive API keys and usage data. Keys remain safely stored and bound to the wallet address in storage, restoring visibility when the owner reconnects.
-
