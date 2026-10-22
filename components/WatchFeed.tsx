@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useWatchedActivity, type WatchActivity } from "@/lib/useWatchedActivity";
+import {
+  useWatchedActivity,
+  type WatchActivity,
+} from "@/lib/useWatchedActivity";
 import { matchesOperationFilters } from "@/lib/operationFilters";
 import { truncateAddress } from "@/lib/formatters";
 import ConnectionIndicator from "./ConnectionIndicator";
@@ -20,12 +23,21 @@ import { EmptyState } from "@/components/ui/EmptyState";
  * is a policy decision, not a fact about the account.
  */
 export default function WatchFeed() {
-  const { activity, entries, state, failureReason, retry, watching, alertCount } =
-    useWatchedActivity();
+  const {
+    activity,
+    entries,
+    state,
+    failureReason,
+    retry,
+    watching,
+    alertCount,
+  } = useWatchedActivity();
 
   // A map rather than a lookup per row, so rendering N rows is O(N) over a
   // fixed size instead of rescanning the watch list for every row.
-  const filtersByAddress = new Map(entries.map((entry) => [entry.address, entry.filters]));
+  const filtersByAddress = new Map(
+    entries.map((entry) => [entry.address, entry.filters]),
+  );
 
   return (
     <section aria-labelledby="watch-feed-heading" className="mb-10">
@@ -50,7 +62,10 @@ export default function WatchFeed() {
         />
       ) : (
         <>
-          <p className="text-[13px] text-[var(--color-text-secondary)] mb-3" data-testid="watch-summary">
+          <p
+            className="text-[13px] text-[var(--color-text-secondary)] mb-3"
+            data-testid="watch-summary"
+          >
             {t("watch.watchedAddresses", { count: watching })}
             {alertCount > 0
               ? ` · ${t("watch.matchingAlerts", { count: alertCount })}`
@@ -73,7 +88,11 @@ export default function WatchFeed() {
                   <WatchActivityRow
                     key={item.id}
                     item={item}
-                    alerts={filters ? matchesOperationFilters(item.operation, filters) : false}
+                    alerts={
+                      filters
+                        ? matchesOperationFilters(item.operation, filters)
+                        : false
+                    }
                   />
                 );
               })
@@ -99,7 +118,7 @@ function WatchActivityRow({
       </span>
       <Link
         href={`/accounts/${item.address}`}
-        className="mono text-xs text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline transition-colors"
+        className="mono text-xs text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline motion-safe:transition-colors motion-reduce:transition-none"
       >
         {truncateAddress(item.address, 5)}
       </Link>

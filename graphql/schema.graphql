@@ -99,6 +99,9 @@ type Query {
   """The custom schema registered for a contract, if any."""
   contractSchema(network: Network, contractId: String!): ContractSchema
 
+  contractStorageEntries(contractId: String!, keyPrefix: String, durability: String, limit: Int, cursor: String): ContractStorageEntryPage!
+  contractStorageKeyHistory(contractId: String!, key: String!): ContractStorageKeyHistoryPage!
+
   """
   Asset detail in one call: current supply and holder count plus a bucketed
   volume series. Supply is the sum of indexed `accounts.balances` for the
@@ -405,6 +408,8 @@ type ContractSchema {
   contractId: String!
   version: Int!
   events: [SchemaEvent!]!
+  contractStorageEntries(contractId: String!, keyPrefix: String, durability: String, limit: Int, cursor: String): ContractStorageEntryPage!
+  contractStorageKeyHistory(contractId: String!, key: String!): ContractStorageKeyHistoryPage!
 }
 
 # ─── Asset analytics ─────────────────────────────────────────────────────────
@@ -446,3 +451,30 @@ type VolumeBucket {
   volume: String!
   operationCount: Int!
 }
+
+# ─── Contract storage ─────────────────────────────────────────────────────────
+type ContractStorageEntry {
+  key: String!
+  durability: String!
+  value: String!
+  lastModifiedLedger: Int!
+  expiration: Int!
+}
+
+type ContractStorageEntryPage {
+  items: [ContractStorageEntry!]!
+  pageInfo: PageInfo!
+}
+
+type ContractStorageKeyHistoryItem {
+  value: String!
+  ledger: Int!
+  createdAt: String!
+}
+
+type ContractStorageKeyHistoryPage {
+  items: [ContractStorageKeyHistoryItem!]!
+  pageInfo: PageInfo!
+}
+
+# ─── Enums ───────────────────────────────────────────────────────────────────

@@ -63,11 +63,12 @@ export function AreaChart({
   const [showTable, setShowTable] = useState(false);
 
   // Generate text summary for screen readers
-  const dataSummary = data.length > 0
-    ? `Shows ${data.length} data points from ${data[0].label} to ${data[data.length - 1].label}. ` +
-      `Maximum value: ${Math.max(...data.map(d => d.value))}${unit || ''}. ` +
-      `Minimum value: ${Math.min(...data.map(d => d.value))}${unit || ''}.`
-    : "No data available.";
+  const dataSummary =
+    data.length > 0
+      ? `Shows ${data.length} data points from ${data[0].label} to ${data[data.length - 1].label}. ` +
+        `Maximum value: ${Math.max(...data.map((d) => d.value))}${unit || ""}. ` +
+        `Minimum value: ${Math.min(...data.map((d) => d.value))}${unit || ""}.`
+      : "No data available.";
 
   // State checks
   const isEmpty = data.length === 0;
@@ -82,7 +83,7 @@ export function AreaChart({
         height={height}
       >
         <div
-          className="w-full h-full rounded-lg animate-pulse bg-[var(--color-skeleton-bg)]"
+          className="w-full h-full rounded-lg animate-pulse motion-reduce:animate-none bg-[var(--color-skeleton-bg)]"
           aria-hidden="true"
         />
       </ChartContainer>
