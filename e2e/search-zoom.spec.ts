@@ -81,6 +81,12 @@ async function expectNoPageOverflow(page: import("@playwright/test").Page) {
   ).toBeLessThanOrEqual(dimensions.clientWidth);
 }
 
+async function zoomTo200Percent(page: import("@playwright/test").Page) {
+  await page.evaluate(() => {
+    document.documentElement.style.zoom = "2";
+  });
+}
+
 test.describe("search reflow at a narrow CSS viewport", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
@@ -144,5 +150,33 @@ test.describe("search reflow at a narrow CSS viewport", () => {
     } finally {
       if (graphqlFixture) await stopGraphqlFixture(graphqlFixture);
     }
+  });
+});
+
+test.describe("account and asset reflow at 200% zoom", () => {
+  test.use({ viewport: { width: 640, height: 844 } });
+
+  test("keeps the assets detail route within the viewport", async ({
+    page,
+  }) => {
+    await page.goto(
+      "/assets/USDC/GBWKFFXZ5CJESIHP2EOID5IOXMF472RO5XOJ36X475D5LJGI3AF5R5KY",
+    );
+    await zoomTo200Percent(page);
+    await expectNoPageOverflow(page);
+    await expect(
+      page.getByRole("link", { name: "Back to Assets" }),
+    ).toBeVisible();
+  });
+
+  test("keeps an account detail route within the viewport", async ({
+    page,
+  }) => {
+    await page.goto(
+      "/accounts/GBWKFFXZ5CJESIHP2EOID5IOXMF472RO5XOJ36X475D5LJGI3AF5R5KY",
+    );
+    await zoomTo200Percent(page);
+    await expectNoPageOverflow(page);
+    await expect(page.getByRole("navigation")).toBeVisible();
   });
 });

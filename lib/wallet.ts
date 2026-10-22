@@ -199,7 +199,7 @@ async function getWalletNetwork(): Promise<NetworkId | null> {
     // Try to get network from the kit - this may not be available in all wallet implementations
     const networkInfo = kit as unknown as { network?: string; _network?: string };
     const network = networkInfo.network || networkInfo._network;
-    
+
     // Map StellarWalletsKit network strings to our NetworkId
     if (network === 'PUBLIC') return 'mainnet';
     if (network === 'TESTNET') return 'testnet';

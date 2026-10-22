@@ -10,6 +10,7 @@
  * to access them again upon reconnecting.
  */
 
+/** The display and quota data associated with one wallet-owned API key. */
 export interface DeveloperKey {
   id: string;
   name: string;
@@ -20,6 +21,7 @@ export interface DeveloperKey {
   limit: number;
 }
 
+/** Minimal storage interface used to keep key management testable off-browser. */
 export interface StorageLike {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
@@ -33,6 +35,7 @@ function getStorage(): StorageLike | null {
   }
 }
 
+/** Return the wallet-scoped local-storage key used for API keys. */
 export function getKeyStorageKey(walletAddress: string): string {
   return `lumina.developerKeys.${walletAddress.trim().toUpperCase()}`;
 }
@@ -63,6 +66,13 @@ function createDefaultKeys(walletAddress: string): DeveloperKey[] {
   ];
 }
 
+/**
+ * Load a wallet's keys, seeding deterministic demo keys on first use.
+ *
+ * Storage failures are intentionally treated as an unavailable persistence
+ * layer: callers still receive the in-memory defaults and the UI remains
+ * usable without exposing a browser storage exception.
+ */
 export function loadKeysForWallet(
   walletAddress: string,
   storage: StorageLike | null = getStorage(),
@@ -85,6 +95,7 @@ export function loadKeysForWallet(
   }
 }
 
+/** Create and persist a new API key for one wallet without touching others. */
 export function createKeyForWallet(
   walletAddress: string,
   name: string,
@@ -112,6 +123,7 @@ export function createKeyForWallet(
   return updated;
 }
 
+/** Delete one key from a wallet's local collection and persist the result. */
 export function deleteKeyForWallet(
   walletAddress: string,
   keyId: string,

@@ -49,6 +49,10 @@ const defaultRegister = async (
   wait?: (ms: number) => Promise<void>,
   onFeeEstimated?: (fee: string) => void
 ) => {
+  // Checked before the wallet is asked to sign: a registry the call does not
+  // match should be explained here, not fail as an opaque simulation error.
+  await assertRegistryVersion();
+
   // Lazy so the browser-only wallet kit stays out of this module's import
   // graph — see the matching note in OwnerContracts.
   const { signWithWallet } = await import('@/lib/wallet');

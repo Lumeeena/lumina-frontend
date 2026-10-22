@@ -8,15 +8,23 @@ import { getActiveContracts } from "@/lib/registry";
 import { formatOperationType } from "@/lib/formatters";
 import StatCard from "@/components/StatCard";
 import BackendUnavailable from "@/components/BackendUnavailable";
+import NetworkStatsDashboard from "@/components/NetworkStatsDashboard";
 
-export const metadata: Metadata = routeMetadata(STATS);
+export function generateMetadata(): Metadata {
+  return routeMetadata(STATS);
+}
 
 async function getStats() {
   try {
     const data = await gqlFetch(GRAPHQL_URL, StatsDocument, { opLimit: 200 });
     return { ...data, unavailable: false };
   } catch {
-    return { latestLedger: null, operations: { items: [] }, unavailable: true };
+    return {
+      latestLedger: null,
+      operations: { items: [] },
+      transactions: { items: [] },
+      unavailable: true,
+    };
   }
 }
 
@@ -43,15 +51,14 @@ function opBreakdown(operations: Pick<Operation, "type">[]) {
 }
 
 export default async function StatsPage() {
-  const [{ latestLedger, operations, unavailable }, contracts] = await Promise.all([
-    getStats(),
-    getContractsRegisteredCount(),
-  ]);
+  const [{ latestLedger, operations, transactions, unavailable }, contracts] =
+    await Promise.all([getStats(), getContractsRegisteredCount()]);
   // A 200 can still come back half-empty — GraphQL nulls a field whose resolver
   // failed rather than failing the whole query. The ledger and the breakdown
   // are independent, so a missing one is an empty breakdown, not a thrown
   // `not iterable` that takes the page down with it.
   const indexed = operations?.items ?? [];
+  const txs = transactions?.items ?? [];
   const breakdown = opBreakdown(indexed);
 
   return (
@@ -62,9 +69,17 @@ export default async function StatsPage() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-9">
         <StatCard title="Latest Ledger" value={latestLedger ? latestLedger.sequence.toLocaleString() : "—"} subtitle="Stellar Mainnet" />
-        <StatCard title="Txs (last ledger)" value={latestLedger ? latestLedger.transactionCount.toLocaleString() : "—"} subtitle="Successful + failed" />
+        <StatCard title="Ledger Transactions" value={latestLedger ? latestLedger.transactionCount.toLocaleString() : "—"} subtitle="Latest ledger" />
         <StatCard title="Contracts Registered" value={contracts.count ?? "—"} subtitle="Via Lumina Registry" />
         <StatCard title="Avg Ledger Time" value="~5s" subtitle="Protocol target, not a live average" />
+      </div>
+
+      <div className="mb-12">
+        <NetworkStatsDashboard
+          latestLedger={latestLedger}
+          operations={indexed}
+          transactions={txs}
+        />
       </div>
 
       <h2 className="font-extrabold text-base mb-3.5 text-[var(--color-text-primary)]">Operation Type Breakdown</h2>

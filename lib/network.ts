@@ -167,3 +167,13 @@ export function withNetwork(href: string, network: NetworkId): string {
   const nextQuery = params.toString();
   return `${path}${nextQuery ? `?${nextQuery}` : ""}${hash}`;
 }
+
+/**
+ * The network a passphrase belongs to, or `null` for one we do not know.
+ *
+ * A deployment is configured by passphrase, so this is how a page says which
+ * network it is talking to in the words the switcher uses.
+ */
+export function networkForPassphrase(passphrase: string): NetworkInfo | null {
+  return NETWORKS.find((network) => network.passphrase === passphrase) ?? null;
+}

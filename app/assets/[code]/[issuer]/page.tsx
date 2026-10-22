@@ -53,7 +53,10 @@ const ASSET_DETAIL_DOCUMENT = new TypedDocumentString(`
       }
     }
   }
-`) as unknown as TypedDocumentString<AssetDetailQuery, AssetDetailQueryVariables>;
+`) as unknown as TypedDocumentString<
+  AssetDetailQuery,
+  AssetDetailQueryVariables
+>;
 
 function bucketLabel(iso: string): string {
   const d = new Date(iso);
@@ -65,7 +68,10 @@ function isAllZero(series: Array<{ volume: string }>) {
 }
 
 function totalVolume(series: Array<{ volume: string }>) {
-  return series.reduce((sum, bucket) => sum + parseFloat(bucket.volume || "0"), 0);
+  return series.reduce(
+    (sum, bucket) => sum + parseFloat(bucket.volume || "0"),
+    0,
+  );
 }
 
 export function generateMetadata({
@@ -166,7 +172,9 @@ export default async function AssetDetailPage({
             {asset.issuer}
           </p>
         ) : (
-          <p className="text-[var(--color-text-secondary)]">Native Stellar asset</p>
+          <p className="text-[var(--color-text-secondary)]">
+            Native Stellar asset
+          </p>
         )}
       </div>
 
@@ -199,8 +207,13 @@ export default async function AssetDetailPage({
         </div>
       </div>
 
-      <div className="rounded-xl border border-[var(--color-border-default)] overflow-hidden mb-8">
-        <table className="w-full text-sm border-collapse">
+      <div
+        role="region"
+        aria-label="Asset details"
+        tabIndex={0}
+        className="max-w-full rounded-xl border border-[var(--color-border-default)] overflow-x-auto mb-8 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-fill)]"
+      >
+        <table className="w-full min-w-[360px] text-sm border-collapse">
           <tbody>
             <tr className="border-b border-[var(--color-bg-overlay)]">
               <td className="py-2.5 px-3 text-[var(--color-text-muted)] text-xs w-[140px]">
@@ -216,7 +229,9 @@ export default async function AssetDetailPage({
               </td>
               <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-primary)] break-all">
                 {asset.issuer ? (
-                  <span title={asset.issuer}>{truncateAddress(asset.issuer, 12)}</span>
+                  <span title={asset.issuer}>
+                    {truncateAddress(asset.issuer, 12)}
+                  </span>
                 ) : (
                   "—"
                 )}
@@ -231,13 +246,16 @@ export default async function AssetDetailPage({
       </h2>
 
       {allZero ? (
-        <div className="rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-subtle)] flex flex-col items-center justify-center gap-2 p-8 text-center" style={{ minHeight: 280 }}>
+        <div
+          className="rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-subtle)] flex flex-col items-center justify-center gap-2 p-8 text-center"
+          style={{ minHeight: 280 }}
+        >
           <p className="text-[var(--color-text-secondary)] text-sm font-semibold">
             No activity in the last 30 days
           </p>
           <p className="text-[var(--color-text-muted)] text-xs max-w-xs">
-            Transfer volume for {asset.code ?? asset.asset} will appear here once
-            this asset is sent or received.
+            Transfer volume for {asset.code ?? asset.asset} will appear here
+            once this asset is sent or received.
           </p>
         </div>
       ) : (

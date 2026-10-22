@@ -1,7 +1,10 @@
 "use client";
 
+import type { Metadata } from "next";
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { routeMetadata } from "@/lib/metadata";
+import { REGISTRY } from "@/lib/routes";
 import {
   CATEGORIES,
   CATEGORY_LABELS,
@@ -20,6 +23,7 @@ import {
   type WalletSession,
 } from "@/lib/wallet";
 import BackendUnavailable from "@/components/BackendUnavailable";
+import RegistryContractInfo from "@/components/RegistryContractInfo";
 import WalletInfo from "@/components/WalletInfo";
 import { Button } from "@/components/ui/Button";
 
@@ -39,6 +43,10 @@ function RegistryListPlaceholder({ count, message }: { count: number; message: s
       ))}
     </div>
   );
+}
+
+export function generateMetadata(): Metadata {
+  return routeMetadata(REGISTRY);
 }
 
 // useSearchParams has to sit inside a Suspense boundary for Next to build.
@@ -254,6 +262,8 @@ function RegistryContent() {
         Stellar/Soroban testnet.
       </p>
 
+      <RegistryContractInfo />
+
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-8 items-start">
         <div className="border border-[var(--color-border-default)] rounded-2xl p-6 bg-[var(--color-bg-subtle)]">
           <h2 className="font-extrabold text-base mb-[18px] text-[var(--color-text-primary)]">
@@ -362,49 +372,53 @@ function RegistryContent() {
             </div>
           )}
 
-          {tab === "mine" ? (
-            walletAddress ? (
-              <Suspense fallback={<p className="text-sm text-[var(--color-text-muted)]">Loading your contracts…</p>}>
-                <OwnerContracts
-                  key={`${walletAddress}:${ownerRefresh}`}
-                  walletAddress={walletAddress}
-                  onChanged={loadEntries}
-                />
-              </Suspense>
-            ) : (
-              <p className="text-sm text-[var(--color-text-muted)]">
-                Connect a wallet to see the contracts you registered.
-              </p>
-            )
-          ) : entriesLoading ? (
-            <p className="text-sm text-[var(--color-text-muted)]">Loading registry entries…</p>
-          ) : entriesError ? (
-            <BackendUnavailable onRetry={loadEntries} />
-          ) : entries.length === 0 ? (
-            <p className="text-sm text-[var(--color-text-muted)]">
-              {category
-                ? `No active ${CATEGORY_LABELS[category]} contracts.`
-                : "No contracts registered yet."}
-            </p>
-          ) : (
-            <div
-              ref={entriesPlaceholder}
-              data-testid="registry-list"
-              className="flex flex-col gap-2"
-              aria-busy={!showEntries}
-              style={{ minHeight: entries.length * 144 + Math.max(0, entries.length - 1) * 8 }}
-            >
-              {showEntries ? (
-                <Suspense fallback={<RegistryListPlaceholder count={entries.length} message="Loading registry entries…" />}>
-                  {entries.map(entry => (
-                    <RegistryEntryCard key={entry.contractId} profile={entry} />
-                  ))}
-                </Suspense>
+          <div className="overflow-x-auto -mx-4 sm:mx-0">
+            <div className="min-w-full px-4 sm:px-0">
+              {tab === "mine" ? (
+                walletAddress ? (
+                  <Suspense fallback={<p className="text-sm text-[var(--color-text-muted)]">Loading your contracts…</p>}>
+                    <OwnerContracts
+                      key={`${walletAddress}:${ownerRefresh}`}
+                      walletAddress={walletAddress}
+                      onChanged={loadEntries}
+                    />
+                  </Suspense>
+                ) : (
+                  <p className="text-sm text-[var(--color-text-muted)]">
+                    Connect a wallet to see the contracts you registered.
+                  </p>
+                )
+              ) : entriesLoading ? (
+                <p className="text-sm text-[var(--color-text-muted)]">Loading registry entries…</p>
+              ) : entriesError ? (
+                <BackendUnavailable onRetry={loadEntries} />
+              ) : entries.length === 0 ? (
+                <p className="text-sm text-[var(--color-text-muted)]">
+                  {category
+                    ? `No active ${CATEGORY_LABELS[category]} contracts.`
+                    : "No contracts registered yet."}
+                </p>
               ) : (
-                <RegistryListPlaceholder count={entries.length} message="Registry entries will load as you scroll." />
+                <div
+                  ref={entriesPlaceholder}
+                  data-testid="registry-list"
+                  className="flex flex-col gap-2"
+                  aria-busy={!showEntries}
+                  style={{ minHeight: entries.length * 144 + Math.max(0, entries.length - 1) * 8 }}
+                >
+                  {showEntries ? (
+                    <Suspense fallback={<RegistryListPlaceholder count={entries.length} message="Loading registry entries…" />}>
+                      {entries.map(entry => (
+                        <RegistryEntryCard key={entry.contractId} profile={entry} />
+                      ))}
+                    </Suspense>
+                  ) : (
+                    <RegistryListPlaceholder count={entries.length} message="Registry entries will load as you scroll." />
+                  )}
+                </div>
               )}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

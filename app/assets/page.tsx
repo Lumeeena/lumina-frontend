@@ -20,7 +20,9 @@ export const dynamic = "force-dynamic";
  * for the same content. The crawl-exclusion rule in lib/routes.ts already keeps
  * query permutations out of the sitemap for the same reason.
  */
-export const metadata: Metadata = routeMetadata(ASSETS);
+export function generateMetadata(): Metadata {
+  return routeMetadata(ASSETS);
+}
 
 /**
  * Anything that is not literally `VOLUME` is the default ordering, so a stale
