@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { buildFeedbackUrl } from "@/lib/feedback";
 
 /**
  * The build's own version, inlined at build time from package.json (see
@@ -12,6 +14,7 @@ export const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? "unknown";
 
 export default function Footer() {
   const [copied, setCopied] = useState(false);
+  const pathname = usePathname();
   const text = `Lumina frontend v${APP_VERSION}`;
 
   function copyVersion() {
@@ -36,6 +39,14 @@ export default function Footer() {
         </button>
       </div>
       <div className="flex items-center justify-center gap-4 text-[11px]">
+        <a
+          href={buildFeedbackUrl({ pathname, appVersion: APP_VERSION })}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] transition-colors"
+        >
+          Report a problem
+        </a>
         <Link
           href="/status"
           className="text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] transition-colors"
