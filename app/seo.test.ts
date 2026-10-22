@@ -11,6 +11,8 @@ import { describe, expect, it } from "vitest";
 import sitemap from "@/app/sitemap";
 import robots from "@/app/robots";
 import { generateMetadata as searchMetadata } from "@/app/search/page";
+import { metadata as accountsMetadata } from "@/app/accounts/page";
+import { generateMetadata as assetMetadata } from "@/app/assets/[code]/[issuer]/page";
 import {
   CRAWL_EXCLUDED,
   HOME,
@@ -37,6 +39,24 @@ describe("search metadata", () => {
       title: SEARCH.label,
       description: SEARCH.description,
     });
+  });
+});
+
+describe("account and asset metadata", () => {
+  it("gives the accounts index its own identity", () => {
+    expect(accountsMetadata.title).toBe("Accounts");
+    expect(accountsMetadata.description).toContain("Stellar account");
+    expect(accountsMetadata.alternates?.canonical).toBe("/accounts");
+  });
+
+  it("includes the selected asset in detail metadata", async () => {
+    const metadata = await assetMetadata({
+      params: Promise.resolve({ code: "USDC", issuer: "GABC" }),
+    });
+
+    expect(metadata.title).toContain("USDC");
+    expect(metadata.description).toContain("USDC");
+    expect(metadata.alternates?.canonical).toBe("/assets/USDC/GABC");
   });
 });
 

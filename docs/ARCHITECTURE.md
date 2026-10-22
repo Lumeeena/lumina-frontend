@@ -101,6 +101,10 @@ The notable modules:
   `robots.txt` and per-route metadata all read from it, so adding a route is one
   entry rather than four edits that drift.
 - `lib/metadata.ts` — `routeMetadata` and the generated OpenGraph images.
+- `lib/contractActivity.ts` — bounded, deduplicated registry activity probes;
+  failed probes remain `unknown` instead of being misreported as quiet.
+- `lib/developerKeys.ts` — wallet-scoped API-key storage and quota helpers,
+  with storage failures degraded to an in-memory result.
 - `lib/formatters.ts` — display helpers (`formatXLM`, `truncateAddress`, …).
 - `lib/stellarAddress.ts` — client-side Stellar account and contract ID format
   validation. It checks the StrKey prefix, length and alphabet, not the checksum
