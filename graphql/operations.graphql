@@ -79,10 +79,21 @@ query Stats($opLimit: Int) {
   latestLedger {
     sequence
     transactionCount
+    operationCount
   }
   operations(limit: $opLimit) {
     items {
       type
+      createdAt
+      sourceAccount
+    }
+  }
+  transactions(limit: $opLimit) {
+    items {
+      createdAt
+      sourceAccount
+      operationCount
+      successful
     }
   }
 }

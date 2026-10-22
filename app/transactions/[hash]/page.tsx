@@ -17,6 +17,8 @@ import BackendUnavailable from "@/components/BackendUnavailable";
 import CopyAddressButton from "@/components/CopyAddressButton";
 import TimeAgo from "@/components/TimeAgo";
 import ViewTracker from "@/components/ViewTracker";
+import TransactionPreconditions from "@/components/TransactionPreconditions";
+import IndexingGapIndicator from "@/components/IndexingGapIndicator";
 
 export const dynamic = "force-dynamic";
 
@@ -180,6 +182,13 @@ export default async function TransactionPage({
                 </tr>
               </tbody>
             </table>
+          </div>
+
+          <h2 className="font-extrabold text-base mb-3 text-[var(--color-text-primary)]">
+            Preconditions
+          </h2>
+          <div className="mb-9">
+            <TransactionPreconditions preconditions={null} />
           </div>
 
           <h2 className="font-extrabold text-base mb-3 text-[var(--color-text-primary)]">
