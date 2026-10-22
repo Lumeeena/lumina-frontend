@@ -10,7 +10,9 @@ import StatCard from "@/components/StatCard";
 import BackendUnavailable from "@/components/BackendUnavailable";
 import NetworkStatsDashboard from "@/components/NetworkStatsDashboard";
 
-export const metadata: Metadata = routeMetadata(STATS);
+export function generateMetadata(): Metadata {
+  return routeMetadata(STATS);
+}
 
 async function getStats() {
   try {

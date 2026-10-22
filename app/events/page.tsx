@@ -15,7 +15,9 @@ export const dynamic = "force-dynamic";
 // deliberately not in the canonical URL: `/events?contractId=C…` is a filtered
 // view of the same page, and listing it beside `/events` would have two URLs
 // competing for the same content.
-export const metadata: Metadata = routeMetadata(EVENTS);
+export function generateMetadata(): Metadata {
+  return routeMetadata(EVENTS);
+}
 
 // The Lumina Registry deployed on testnet — the only contract with any
 // registered activity right now, used as the default example here.
