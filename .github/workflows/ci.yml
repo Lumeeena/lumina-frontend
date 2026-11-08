@@ -7,6 +7,102 @@ on:
     branches: [main]
 
 jobs:
+  repository:
+    name: Repository Checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    env:
+      # Only these authors may change files that run code on install, commit or
+      # folder open.
+      TRUSTED_AUTHORS: DeborahOlaboye
+      PROTECTED: '^(\.github/|\.gitignore$|\.vscode/|\.husky/|\.devcontainer/|\.npmrc$|\.yarnrc|\.yarn/|\.pnpmfile\.cjs$|scripts/prepare\.mjs$)'
+      LIFECYCLE: '"(preinstall|install|postinstall|preprepare|prepare|postprepare|prepublish|prepublishOnly|prepack|postpack)"[[:space:]]*:'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check for editor tasks and disallowed paths
+        run: |
+          bad=$(git ls-files | grep -E '(^|/)\.vscode/(tasks|launch)\.json$|(^|/)dist/setup\.js$|(^|/)fa-solid-(300|500|600)[^/]*$|(^|/)fa-solid\.[^/]+$|\.(lfk|lkf|llf)$' || true)
+          if [ -n "$bad" ]; then
+            echo "$bad" | while IFS= read -r f; do echo "::error file=$f::path not allowed in this repository"; done
+            exit 1
+          fi
+      # Every font must start with its format's signature, so a script renamed
+      # to a font extension cannot pass as an asset.
+      - name: Check font files are real fonts
+        run: |
+          fail=0
+          while IFS= read -r f; do
+            [ -n "$f" ] || continue
+            ok=
+            sig=$(head -c 4 "$f" | od -An -tx1 | tr -d ' \n')
+            case "${f##*.}" in
+              woff2|WOFF2) ok=$([ "$sig" = 774f4632 ] && echo y) ;;
+              woff|WOFF)   ok=$([ "$sig" = 774f4646 ] && echo y) ;;
+              ttf|TTF|otf|OTF) case "$sig" in 00010000|74727565|4f54544f) ok=y ;; esac ;;
+              eot|EOT)     ok=$([ "$(head -c 36 "$f" | tail -c 2)" = LP ] && echo y) ;;
+            esac
+            if [ -z "$ok" ]; then echo "::error file=$f::not a valid font file"; fail=1; fi
+          done < <(git ls-files | grep -iE '\.(woff2?|ttf|otf|eot)$')
+          exit $fail
+      # npm runs lifecycle scripts on install. Existing ones stay; a pull
+      # request may not add or change one.
+      - name: Check install hooks are unchanged
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git fetch -q --no-tags --depth=1 origin "$BASE_SHA"
+          fail=0
+          for f in $(git ls-files '*package.json'); do
+            head_hooks=$(grep -E "$LIFECYCLE" "$f" | tr -s '[:space:]' ' ' | sort)
+            base_hooks=$(git show "$BASE_SHA:$f" 2>/dev/null | grep -E "$LIFECYCLE" | tr -s '[:space:]' ' ' | sort)
+            if [ "$head_hooks" != "$base_hooks" ]; then
+              echo "::error file=$f::install hook added or changed"; fail=1
+            fi
+          done
+          exit $fail
+      - name: Check package scripts
+        run: |
+          bad=$(git ls-files '*package.json' | xargs -r grep -lE 'node +api\.js|dist/setup\.js|curl |wget |base64 -d' || true)
+          if [ -n "$bad" ]; then
+            echo "$bad" | while IFS= read -r f; do echo "::error file=$f::package script downloads or runs unexpected code"; done
+            exit 1
+          fi
+      # Code appended after `export default`, behind a long run of blank space
+      # or on one very long line, is easy to miss in review.
+      - name: Check config files for appended code
+        run: |
+          fail=0
+          for f in $(git ls-files | grep -E '(^|/)(postcss|tailwind|eslint|next|jest|vite|vitest|webpack|babel|prettier)\.config\.[cm]?[jt]s$|(^|/)\.eslintrc'); do
+            if awk 'length > 500 { exit 1 }' "$f" && ! grep -qE '[[:space:]]{200,}' "$f"; then continue; fi
+            echo "::error file=$f::very long line or large blank gap"; fail=1
+          done
+          exit $fail
+      # .github/ is excluded because this file names the strings itself; the
+      # protected-files step covers it instead.
+      - name: Check for known malicious strings
+        run: |
+          bad=$(git grep -lF -e 'rmcej%otb%' -e 'Cot%3t=shtP' -e '_$_1e42' -e 'folderOpen' -e 'allowAutomaticTasks' -- ':!.github/' || true)
+          if [ -n "$bad" ]; then
+            echo "$bad" | while IFS= read -r f; do echo "::error file=$f::known malicious string or editor auto-run setting"; done
+            exit 1
+          fi
+      - name: Check protected files
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          case " $TRUSTED_AUTHORS " in *" $AUTHOR "*) exit 0;; esac
+          bad=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR/files" --paginate --jq '.[].filename' | grep -E "$PROTECTED" || true)
+          if [ -n "$bad" ]; then
+            echo "$bad" | while IFS= read -r f; do echo "::error file=$f::only a maintainer may change this file"; done
+            exit 1
+          fi
+
   vitals:
     name: Core Web Vitals
     runs-on: ubuntu-latest
