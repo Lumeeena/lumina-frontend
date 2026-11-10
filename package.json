@@ -74,5 +74,8 @@
       "prettier --write"
     ],
     "*.{json,md,css,yml,yaml,graphql}": "prettier --write"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

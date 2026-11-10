@@ -8,8 +8,9 @@ environment variable, its default and what it affects.
 
 ## Getting set up
 
-Install a supported Node.js LTS version (Node 22 recommended; CI runs Node 20),
-then run `npm ci` to install exactly what `package-lock.json` pins.
+Install Node.js 20 (matching `.nvmrc` and `engines.node` in `package.json`; run
+`nvm use` if you use nvm), then run `npm ci` to install exactly what
+`package-lock.json` pins.
 
 The app reads everything through a GraphQL API. `npm run dev` serves
 `http://localhost:3000` and reads `http://localhost:4000/graphql` by default, so
