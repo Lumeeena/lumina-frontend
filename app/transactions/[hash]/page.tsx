@@ -114,7 +114,13 @@ export default async function TransactionPage({
             <CopyAddressButton address={transaction.hash} variant="hash" />
           </div>
           <p className="text-[var(--color-text-muted)] text-[13px] mb-6">
-            Included in ledger {transaction.ledger.toLocaleString()}
+            Included in ledger{" "}
+            <Link
+              href={`/ledgers/${transaction.ledger}`}
+              className="text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline"
+            >
+              {transaction.ledger.toLocaleString()}
+            </Link>
           </p>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">

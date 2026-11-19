@@ -11,6 +11,8 @@ import {
   type ActivityNotification,
 } from "@/lib/notifications";
 import { truncateAddress } from "@/lib/formatters";
+import { withNetwork } from "@/lib/network";
+import { useNetwork } from "@/lib/useNetwork";
 import { EmptyState } from "@/components/ui/EmptyState";
 
 /** Above this the badge stops being countable at a glance; the panel is exact. */
@@ -152,10 +154,11 @@ export default function ActivityBell() {
 }
 
 function NotificationRow({ notification }: { notification: ActivityNotification }) {
+  const { network } = useNetwork();
   return (
     <li className="px-4 py-3" data-testid="activity-notification">
       <a
-        href={`/accounts/${notification.address}`}
+        href={withNetwork(`/accounts/${notification.address}`, network)}
         className="block hover:underline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--color-accent-fill)]"
       >
         <span className="flex items-center gap-2">

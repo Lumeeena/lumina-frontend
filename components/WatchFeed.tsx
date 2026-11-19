@@ -7,6 +7,8 @@ import {
 } from "@/lib/useWatchedActivity";
 import { matchesOperationFilters } from "@/lib/operationFilters";
 import { truncateAddress } from "@/lib/formatters";
+import { withNetwork } from "@/lib/network";
+import { useNetwork } from "@/lib/useNetwork";
 import ConnectionIndicator from "./ConnectionIndicator";
 import TimeAgo from "./TimeAgo";
 import { t } from "@/lib/i18n";
@@ -23,6 +25,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
  * is a policy decision, not a fact about the account.
  */
 export default function WatchFeed() {
+  const { network } = useNetwork();
   const {
     activity,
     entries,
@@ -117,7 +120,7 @@ function WatchActivityRow({
         {item.operation.type}
       </span>
       <Link
-        href={`/accounts/${item.address}`}
+        href={withNetwork(`/accounts/${item.address}`, network)}
         className="mono text-xs text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline motion-safe:transition-colors motion-reduce:transition-none"
       >
         {truncateAddress(item.address, 5)}

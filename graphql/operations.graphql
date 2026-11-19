@@ -1,5 +1,5 @@
-query LatestLedger {
-  latestLedger {
+query LatestLedger($network: Network) {
+  latestLedger(network: $network) {
     sequence
     closedAt
     transactionCount
@@ -7,8 +7,8 @@ query LatestLedger {
   }
 }
 
-query AccountDetail($address: String!) {
-  account(address: $address) {
+query AccountDetail($address: String!, $network: Network) {
+  account(address: $address, network: $network) {
     address
     sequence
     subentryCount
@@ -59,8 +59,8 @@ query AccountDetail($address: String!) {
   }
 }
 
-query ContractEvents($contractId: String!, $limit: Int, $cursor: String) {
-  events(contractId: $contractId, limit: $limit, cursor: $cursor) {
+query ContractEvents($contractId: String!, $limit: Int, $cursor: String, $network: Network) {
+  events(contractId: $contractId, limit: $limit, cursor: $cursor, network: $network) {
     items {
       id
       type
@@ -75,20 +75,20 @@ query ContractEvents($contractId: String!, $limit: Int, $cursor: String) {
   }
 }
 
-query Stats($opLimit: Int) {
-  latestLedger {
+query Stats($opLimit: Int, $network: Network) {
+  latestLedger(network: $network) {
     sequence
     transactionCount
     operationCount
   }
-  operations(limit: $opLimit) {
+  operations(limit: $opLimit, network: $network) {
     items {
       type
       createdAt
       sourceAccount
     }
   }
-  transactions(limit: $opLimit) {
+  transactions(limit: $opLimit, network: $network) {
     items {
       createdAt
       sourceAccount
@@ -98,8 +98,8 @@ query Stats($opLimit: Int) {
   }
 }
 
-query TransactionPage($limit: Int, $cursor: String) {
-  transactions(limit: $limit, cursor: $cursor) {
+query TransactionPage($limit: Int, $cursor: String, $network: Network) {
+  transactions(limit: $limit, cursor: $cursor, network: $network) {
     items {
       hash
       ledger
@@ -118,8 +118,8 @@ query TransactionPage($limit: Int, $cursor: String) {
   }
 }
 
-query MemoSearch($query: String!) {
-  search(query: $query, limit: 20) {
+query MemoSearch($query: String!, $network: Network) {
+  search(query: $query, limit: 20, network: $network) {
     items {
       hash
       ledger
@@ -134,8 +134,8 @@ query MemoSearch($query: String!) {
   }
 }
 
-query TransactionDetail($hash: String!) {
-  transaction(hash: $hash) {
+query TransactionDetail($hash: String!, $network: Network) {
+  transaction(hash: $hash, network: $network) {
     hash
     ledger
     createdAt
@@ -158,8 +158,8 @@ query TransactionDetail($hash: String!) {
   }
 }
 
-query OwnerContractEvents($contractId: String!, $limit: Int) {
-  events(contractId: $contractId, limit: $limit) {
+query OwnerContractEvents($contractId: String!, $limit: Int, $network: Network) {
+  events(contractId: $contractId, limit: $limit, network: $network) {
     items {
       id
       type
@@ -173,8 +173,8 @@ query OwnerContractEvents($contractId: String!, $limit: Int) {
   }
 }
 
-query AccountOperations($address: String!, $limit: Int, $cursor: String) {
-  operations(account: $address, limit: $limit, cursor: $cursor) {
+query AccountOperations($address: String!, $limit: Int, $cursor: String, $network: Network) {
+  operations(account: $address, limit: $limit, cursor: $cursor, network: $network) {
     items {
       id
       type
@@ -199,8 +199,8 @@ query AccountOperations($address: String!, $limit: Int, $cursor: String) {
   }
 }
 
-query LiveFeedTransactions($limit: Int) {
-  transactions(limit: $limit) {
+query LiveFeedTransactions($limit: Int, $network: Network) {
+  transactions(limit: $limit, network: $network) {
     items {
       hash
       ledger
@@ -215,8 +215,8 @@ query LiveFeedTransactions($limit: Int) {
   }
 }
 
-subscription LiveFeedNewTransaction {
-  newTransaction {
+subscription LiveFeedNewTransaction($network: Network) {
+  newTransaction(network: $network) {
     hash
     ledger
     createdAt
@@ -229,8 +229,8 @@ subscription LiveFeedNewTransaction {
   }
 }
 
-query AccountTransactions($address: String!, $limit: Int) {
-  account(address: $address) {
+query AccountTransactions($address: String!, $limit: Int, $network: Network) {
+  account(address: $address, network: $network) {
     transactions(limit: $limit) {
       hash
       ledger
@@ -245,8 +245,8 @@ query AccountTransactions($address: String!, $limit: Int) {
   }
 }
 
-subscription AccountActivity($address: String!) {
-  accountActivity(address: $address) {
+subscription AccountActivity($address: String!, $network: Network) {
+  accountActivity(address: $address, network: $network) {
     id
     type
     createdAt
@@ -268,8 +268,8 @@ subscription AccountActivity($address: String!) {
 # The list half of the asset browser (#52). Deliberately does not select
 # `series`: that is the expensive part of AssetDetail and a list of twenty of
 # them is an aggregation nobody asked for. The detail query has it.
-query Assets($sortBy: AssetSort, $limit: Int, $cursor: String) {
-  assets(sortBy: $sortBy, limit: $limit, cursor: $cursor) {
+query Assets($sortBy: AssetSort, $limit: Int, $cursor: String, $network: Network) {
+  assets(sortBy: $sortBy, limit: $limit, cursor: $cursor, network: $network) {
     items {
       asset
       code
@@ -288,8 +288,8 @@ query Assets($sortBy: AssetSort, $limit: Int, $cursor: String) {
 # Per-asset transfer volume series used by the portfolio section of the account
 # page. `bucketSeconds` defaults to 86400 (daily) server-side; omitting it
 # here keeps the operation flexible for future range selectors.
-query AssetVolume($asset: String!, $from: String, $to: String, $bucketSeconds: Int) {
-  asset(asset: $asset, from: $from, to: $to, bucketSeconds: $bucketSeconds) {
+query AssetVolume($asset: String!, $from: String, $to: String, $bucketSeconds: Int, $network: Network) {
+  asset(asset: $asset, from: $from, to: $to, bucketSeconds: $bucketSeconds, network: $network) {
     asset
     code
     native
@@ -301,8 +301,8 @@ query AssetVolume($asset: String!, $from: String, $to: String, $bucketSeconds: I
   }
 }
 
-query AccountTrustlineOps($address: String!, $limit: Int, $cursor: String) {
-  operations(account: $address, type: CHANGE_TRUST, limit: $limit, cursor: $cursor) {
+query AccountTrustlineOps($address: String!, $limit: Int, $cursor: String, $network: Network) {
+  operations(account: $address, type: CHANGE_TRUST, limit: $limit, cursor: $cursor, network: $network) {
     items {
       id
       type
@@ -319,8 +319,8 @@ query AccountTrustlineOps($address: String!, $limit: Int, $cursor: String) {
   }
 }
 
-query ContractStorageEntries($contractId: String!, $keyPrefix: String, $durability: String, $limit: Int, $cursor: String) {
-  contractStorageEntries(contractId: $contractId, keyPrefix: $keyPrefix, durability: $durability, limit: $limit, cursor: $cursor) {
+query ContractStorageEntries($contractId: String!, $keyPrefix: String, $durability: String, $limit: Int, $cursor: String, $network: Network) {
+  contractStorageEntries(contractId: $contractId, keyPrefix: $keyPrefix, durability: $durability, limit: $limit, cursor: $cursor, network: $network) {
     items {
       key
       durability
@@ -335,12 +335,40 @@ query ContractStorageEntries($contractId: String!, $keyPrefix: String, $durabili
   }
 }
 
-query ContractStorageKeyHistory($contractId: String!, $key: String!) {
-  contractStorageKeyHistory(contractId: $contractId, key: $key) {
+query ContractStorageKeyHistory($contractId: String!, $key: String!, $network: Network) {
+  contractStorageKeyHistory(contractId: $contractId, key: $key, network: $network) {
     items {
       value
       ledger
       createdAt
+    }
+  }
+}
+
+query LedgerDetail($sequence: Int!, $network: Network, $limit: Int, $cursor: String) {
+  ledger(sequence: $sequence, network: $network) {
+    sequence
+    closedAt
+    transactionCount
+    operationCount
+    baseFee
+    baseReserve
+  }
+  transactions(limit: $limit, cursor: $cursor, network: $network) {
+    items {
+      hash
+      ledger
+      createdAt
+      sourceAccount
+      feeCharged
+      operationCount
+      successful
+      memoType
+      memo
+    }
+    pageInfo {
+      hasNextPage
+      cursor
     }
   }
 }

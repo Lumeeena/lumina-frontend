@@ -1,5 +1,9 @@
+'use client';
+
 import Link from "next/link";
 import { truncateAddress, formatXLM } from "@/lib/formatters";
+import { withNetwork } from "@/lib/network";
+import { useNetwork } from "@/lib/useNetwork";
 import type { Transaction } from "@/lib/types";
 
 interface FeeBumpTransactionRowProps {
@@ -11,6 +15,7 @@ export default function FeeBumpTransactionRow({
   feePayerTransaction,
   innerTransaction,
 }: FeeBumpTransactionRowProps) {
+  const { network } = useNetwork();
   return (
     <div className="rounded-xl border border-[var(--color-border-default)] overflow-hidden bg-[var(--color-bg-subtle)] p-4">
       <div className="space-y-4">
@@ -19,7 +24,7 @@ export default function FeeBumpTransactionRow({
             Fee Payer
           </h3>
           <Link
-            href={`/accounts/${feePayerTransaction.sourceAccount}`}
+            href={withNetwork(`/accounts/${feePayerTransaction.sourceAccount}`, network)}
             className="mono text-xs text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline"
           >
             {feePayerTransaction.sourceAccount}
@@ -38,7 +43,7 @@ export default function FeeBumpTransactionRow({
             </h3>
             <div className="space-y-2">
               <Link
-                href={`/transactions/${innerTransaction.hash}`}
+                href={withNetwork(`/transactions/${innerTransaction.hash}`, network)}
                 className="mono text-xs text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline block truncate"
               >
                 {innerTransaction.hash}
@@ -46,7 +51,7 @@ export default function FeeBumpTransactionRow({
               <div className="text-xs text-[var(--color-text-secondary)]">
                 Source:{" "}
                 <Link
-                  href={`/accounts/${innerTransaction.sourceAccount}`}
+                  href={withNetwork(`/accounts/${innerTransaction.sourceAccount}`, network)}
                   className="text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline"
                 >
                   {truncateAddress(innerTransaction.sourceAccount, 10)}
