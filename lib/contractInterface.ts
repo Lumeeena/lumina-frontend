@@ -9,10 +9,17 @@ export interface ContractFunction {
   outputs: string[];
 }
 
+export interface ContractDeployment {
+  deployer: string | null;
+  deploymentLedger: number | null;
+  wasmHash: string | null;
+}
+
 export interface ContractInterfaceResult {
   functions: ContractFunction[];
   wasmHash?: string;
   sharedContractIds: string[];
+  deployment: ContractDeployment | null;
   unreadable: boolean;
   unavailable: boolean;
 }
@@ -104,6 +111,8 @@ export async function getContractInterface(
   const deploymentRequest = query<{
     contract: null | {
       wasmHash: string;
+      deployer: string | null;
+      deploymentLedger: number | null;
       sharedWasmContracts: Array<{ contractId: string }> | null;
     };
   }>(
@@ -111,6 +120,8 @@ export async function getContractInterface(
     `query ContractDeployment($contractId: String!) {
       contract(contractId: $contractId) {
         wasmHash
+        deployer
+        deploymentLedger
         sharedWasmContracts { contractId }
       }
     }`,
@@ -145,6 +156,14 @@ export async function getContractInterface(
       metadata?.sharedWasmContracts
         ?.map(({ contractId: sharedId }) => sharedId)
         .filter((sharedId) => sharedId !== contractId) ?? [],
+    deployment:
+      metadata !== null
+        ? {
+            deployer: metadata.deployer ?? null,
+            deploymentLedger: metadata.deploymentLedger ?? null,
+            wasmHash: metadata.wasmHash ?? null,
+          }
+        : null,
     unreadable:
       contractInterface.status === "fulfilled" &&
       Boolean(specification) &&
