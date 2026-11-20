@@ -199,6 +199,35 @@ query AccountOperations($address: String!, $limit: Int, $cursor: String, $networ
   }
 }
 
+query AccountTrades($address: String!, $limit: Int, $cursor: String, $network: Network) {
+  trades(account: $address, limit: $limit, cursor: $cursor, network: $network) {
+    items {
+      id
+      pagingToken
+      ledgerCloseTime
+      tradeType
+      baseAccount
+      baseAmount
+      baseAssetType
+      baseAssetCode
+      baseAssetIssuer
+      baseOfferId
+      counterAccount
+      counterAmount
+      counterAssetType
+      counterAssetCode
+      counterAssetIssuer
+      counterOfferId
+      baseIsSeller
+      price
+    }
+    pageInfo {
+      hasNextPage
+      cursor
+    }
+  }
+}
+
 query LiveFeedTransactions($limit: Int, $network: Network) {
   transactions(limit: $limit, network: $network) {
     items {

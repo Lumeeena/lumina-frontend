@@ -35,7 +35,6 @@ vi.mock("@/lib/wallet", () => ({
   readPersistedSession,
   disconnectWallet: vi.fn(),
   signWithWallet: vi.fn(),
-  checkNetworkMismatch: vi.fn().mockResolvedValue(null),
 }));
 
 vi.mock("@/lib/registry", async () => {
@@ -344,6 +343,24 @@ describe("RegistryPage", () => {
     finishConnect({ address: OWNER });
 
     expect(await screen.findByText("My Protocol")).toBeTruthy();
+  });
+
+  it("keeps the connected wallet visible when the wallet is on the wrong network", async () => {
+    connectWallet.mockResolvedValue({ address: OWNER });
+    getConnectedWallet.mockResolvedValue(session(OWNER));
+    checkNetworkMismatch.mockResolvedValue({
+      error: "Network mismatch: your wallet is on Testnet.",
+    });
+    await renderRegistry();
+
+    await userEvent.click(await screen.findByRole("button", { name: /connect wallet/i }));
+
+    expect(await screen.findByText("Network Mismatch")).toBeTruthy();
+    expect(screen.getByRole("alert").textContent).toContain(
+      "your wallet is on Testnet",
+    );
+    expect(screen.getByText("Freighter")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Disconnect wallet" })).toBeTruthy();
   });
 
   it("switches back to the global list on demand", async () => {

@@ -172,11 +172,12 @@ otherwise grow without bound on a tab left open overnight; it is a "what is
 happening now" panel, not scrollback. React Compiler memoization is enabled per
 component via an annotation, and the boundary is measured rather than assumed.
 
-Client reads that are repeated on every visit can use `lib/queryCache.ts`. A
-cached answer is shown at once, is refetched only once it is older than the
-caller's freshness window, and stays on screen while that refresh runs. A
-failed refresh never replaces an answer that is already shown. Today this is
-the account portfolio's volume chart; other reads are not yet cached.
+Browser reads through `gqlFetch` use `lib/queryCache.ts`, keyed by endpoint,
+document and variables. Mutable reads are reusable for one minute; transaction
+details by hash and ledger details by sequence are immutable and remain cached
+for the browser session. The cache is bounded to the most recently written 100
+queries and is cleared after a confirmed write. Server-render reads are not
+stored in the browser cache.
 
 The GraphQL and Soroban RPC origins are preconnected from the root layout
 (`lib/preconnect.ts`), so the first request to each skips its DNS, TCP and TLS

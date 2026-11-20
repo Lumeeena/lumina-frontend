@@ -99,6 +99,7 @@ export default function AccountOperationList({
       </div>
 
       <div
+        id="account-operations"
         role="region"
         aria-label="Account operations"
         aria-busy={loading || undefined}
