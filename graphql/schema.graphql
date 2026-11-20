@@ -144,6 +144,19 @@ type Query {
   what it does and does not promise.
   """
   indexerStatus(network: Network): IndexerStatus!
+
+  """Paginated list of indexed accounts, ordered by most recent ledger activity. (#369)"""
+  accounts(
+    network: Network
+    limit: Int = 25
+    cursor: String
+  ): AccountPage!
+
+  """
+  Creation and merge history for one account.
+  Returns null when the address has never been seen by the indexer. (#376)
+  """
+  accountLifecycle(network: Network, address: String!): AccountLifecycle
 }
 
 type Subscription {
@@ -477,4 +490,39 @@ type ContractStorageKeyHistoryPage {
   pageInfo: PageInfo!
 }
 
-# ─── Enums ───────────────────────────────────────────────────────────────────
+# ─── Accounts listing (#369) ──────────────────────────────────────────────────
+
+"""Summary row for the accounts listing page."""
+type AccountSummary {
+  address: String!
+  sequence: String!
+  subentryCount: Int!
+  numSponsoring: Int!
+  lastModifiedLedger: Int!
+}
+
+"""One page of account summaries. Cursor-paginated."""
+type AccountPage {
+  items: [AccountSummary!]!
+  pageInfo: PageInfo!
+}
+
+# ─── Account lifecycle (#376) ─────────────────────────────────────────────────
+
+"""Creation and optional merge history for one account."""
+type AccountLifecycle {
+  """ISO-8601 timestamp of the create_account operation, or null if not indexed."""
+  createdAt: String
+  """Address of the account that funded the creation, or null if not indexed."""
+  creatorAddress: String
+  """Starting XLM balance from the create_account operation, or null if not indexed."""
+  startingBalance: String
+  """Transaction hash of the creation operation, or null if not indexed."""
+  creationTransactionHash: String
+  """ISO-8601 timestamp of the account_merge operation, or null if the account has not been merged."""
+  mergedAt: String
+  """Address the account was merged into, or null if the account has not been merged."""
+  mergedIntoAddress: String
+  """Transaction hash of the account_merge operation, or null if the account has not been merged."""
+  mergeTransactionHash: String
+}

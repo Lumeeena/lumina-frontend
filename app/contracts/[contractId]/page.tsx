@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { GRAPHQL_URL } from "@/lib/graphql";
+import { GRAPHQL_URL, gqlFetch } from "@/lib/graphql";
 import { getContractInterface } from "@/lib/contractInterface";
 import { routeMetadata } from "@/lib/metadata";
 import { truncateAddress } from "@/lib/formatters";
+import {
+  ContractStorageEntriesDocument,
+  type ContractStorageEntriesQuery,
+} from "@/lib/generated/graphql";
 import BackendUnavailable from "@/components/BackendUnavailable";
 import CopyAddressButton from "@/components/CopyAddressButton";
 import WatchIndicator from "@/components/WatchIndicator";
@@ -33,31 +37,32 @@ export function generateMetadata({
   });
 }
 
-interface ContractStorageEntry {
-  key: string;
-  durability: string;
-  value: unknown;
-  lastModifiedLedger: number;
-  expiration?: number;
-}
+const CONTRACT_STORAGE_PAGE_SIZE = 25;
 
-interface StorageResult {
-  entries: ContractStorageEntry[];
+type StorageItem = ContractStorageEntriesQuery["contractStorageEntries"]["items"][number];
+
+async function getContractStorage(
+  contractId: string,
+  cursor?: string,
+): Promise<{
+  items: StorageItem[];
+  pageInfo: { hasNextPage: boolean; cursor: string | null };
   unavailable: boolean;
-  noStorageQuery: boolean;
-}
-
-/**
- * Fetch contract storage entries. Currently returns a placeholder since the
- * backend query is not yet available. Once contractStorageEntries is added to
- * the backend, this function will fetch real data.
- */
-async function getContractStorage(): Promise<StorageResult> {
-  return {
-    entries: [],
-    unavailable: false,
-    noStorageQuery: true,
-  };
+}> {
+  try {
+    const data = await gqlFetch(GRAPHQL_URL, ContractStorageEntriesDocument, {
+      contractId,
+      limit: CONTRACT_STORAGE_PAGE_SIZE,
+      cursor: cursor ?? null,
+    });
+    return { ...data.contractStorageEntries, unavailable: false };
+  } catch {
+    return {
+      items: [],
+      pageInfo: { hasNextPage: false, cursor: null },
+      unavailable: true,
+    };
+  }
 }
 
 const th =
@@ -78,15 +83,18 @@ function signature(
 
 export default async function ContractPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ contractId: string }>;
+  searchParams: Promise<{ storageCursor?: string }>;
 }) {
   const { contractId } = await params;
-  const [{ entries, unavailable, noStorageQuery }, contractInterface] =
-    await Promise.all([
-      getContractStorage(),
-      getContractInterface(GRAPHQL_URL, contractId),
-    ]);
+  const { storageCursor } = await searchParams;
+
+  const [storage, contractInterface] = await Promise.all([
+    getContractStorage(contractId, storageCursor),
+    getContractInterface(GRAPHQL_URL, contractId),
+  ]);
 
   return (
     <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
@@ -150,7 +158,7 @@ export default async function ContractPage({
             {contractInterface.unavailable
               ? "The contract interface service is temporarily unavailable."
               : contractInterface.unreadable
-                ? "This contract’s WASM specification could not be read."
+                ? "This contract's WASM specification could not be read."
                 : "No readable function specification is indexed for this contract yet."}
           </div>
         )}
@@ -176,61 +184,39 @@ export default async function ContractPage({
         )}
       </section>
 
-      {unavailable ? (
-        <BackendUnavailable />
-      ) : noStorageQuery ? (
-        <div className="p-8 rounded-xl border border-[var(--color-warning-outline)] bg-[var(--color-warning-bg)]">
-          <p className="text-[var(--color-warning-text)] font-semibold mb-2">
-            Storage Inspection Coming Soon
-          </p>
-          <p className="text-[var(--color-text-muted)] text-sm max-w-2xl">
-            The backend is not yet indexing contract storage entries. This page
-            will show a paginated list of all storage keys for this contract,
-            with their durability, value, and modification history once the
-            backend is updated.
-          </p>
-        </div>
-      ) : (
-        <div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-            <div className={stat}>
-              <div className={statLabel}>Total Entries</div>
-              <div className="font-bold text-sm mt-1 text-[var(--color-text-primary)]">
-                {entries.length}
-              </div>
-            </div>
-          </div>
+      <section aria-labelledby="storage-heading" className="mb-8">
+        <h2
+          id="storage-heading"
+          className="font-extrabold text-base mb-3 text-[var(--color-text-primary)]"
+        >
+          Storage Entries
+        </h2>
 
-          <h2 className="font-extrabold text-base mb-3 text-[var(--color-text-primary)]">
-            Storage Entries
-          </h2>
-          <div className="rounded-xl border border-[var(--color-border-default)] overflow-x-auto">
-            {entries.length === 0 ? (
-              <div className="p-8 text-center text-[var(--color-text-muted)] text-sm">
-                No storage entries indexed for this contract yet. Event indexing
-                is opt-in on the indexer — see the lumina-backend README.
-              </div>
-            ) : (
+        {storage.unavailable ? (
+          <BackendUnavailable />
+        ) : storage.items.length === 0 ? (
+          <div className="rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-subtle)] p-8 text-center">
+            <p className="text-sm text-[var(--color-text-muted)]">
+              No storage entries indexed for this contract yet. Event indexing
+              is opt-in on the indexer — see the lumina-backend README.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="rounded-xl border border-[var(--color-border-default)] overflow-x-auto mb-4">
               <table className="w-full text-sm border-collapse">
                 <caption className="sr-only">Contract storage entries</caption>
                 <thead>
                   <tr>
-                    <th scope="col" className={th}>
-                      Key
-                    </th>
-                    <th scope="col" className={th}>
-                      Durability
-                    </th>
-                    <th scope="col" className={th}>
-                      Value
-                    </th>
-                    <th scope="col" className={th}>
-                      Last Modified
-                    </th>
+                    <th scope="col" className={th}>Key</th>
+                    <th scope="col" className={th}>Durability</th>
+                    <th scope="col" className={th}>Value</th>
+                    <th scope="col" className={th}>Last Modified</th>
+                    <th scope="col" className={th}>Expiration</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {entries.map((entry) => (
+                  {storage.items.map((entry) => (
                     <tr
                       key={entry.key}
                       className="border-b border-[var(--color-bg-overlay)] last:border-0"
@@ -246,24 +232,41 @@ export default async function ContractPage({
                           value={entry.value}
                           initialExpandedDepth={2}
                           showRawToggle
-                          rawValue={
-                            typeof entry.value === "string"
-                              ? entry.value
-                              : JSON.stringify(entry.value)
-                          }
+                          rawValue={entry.value}
                         />
                       </td>
                       <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-secondary)]">
                         {entry.lastModifiedLedger.toLocaleString()}
                       </td>
+                      <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-muted)]">
+                        {entry.expiration.toLocaleString()}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            )}
-          </div>
-        </div>
-      )}
+            </div>
+            <div className="flex justify-end gap-3">
+              {storageCursor && (
+                <Link
+                  href={`/contracts/${contractId}`}
+                  className="inline-flex items-center gap-1 rounded-lg border border-[var(--color-border-default)] px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-raised)] transition-colors"
+                >
+                  ← First page
+                </Link>
+              )}
+              {storage.pageInfo.hasNextPage && storage.pageInfo.cursor && (
+                <Link
+                  href={`/contracts/${contractId}?storageCursor=${encodeURIComponent(storage.pageInfo.cursor)}`}
+                  className="inline-flex items-center gap-1 rounded-lg bg-[var(--color-accent-fill)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+                >
+                  Next →
+                </Link>
+              )}
+            </div>
+          </>
+        )}
+      </section>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-query LatestLedger($network: Network) {
+﻿query LatestLedger($network: Network) {
   latestLedger(network: $network) {
     sequence
     closedAt
@@ -365,6 +365,50 @@ query LedgerDetail($sequence: Int!, $network: Network, $limit: Int, $cursor: Str
       successful
       memoType
       memo
+    }
+    pageInfo {
+      hasNextPage
+      cursor
+    }
+  }
+}
+
+query AccountsList($limit: Int, $cursor: String) {
+  accounts(limit: $limit, cursor: $cursor) {
+    items {
+      address
+      sequence
+      subentryCount
+      numSponsoring
+      lastModifiedLedger
+    }
+    pageInfo {
+      hasNextPage
+      cursor
+    }
+  }
+}
+
+query AccountLifecycle($address: String!) {
+  accountLifecycle(address: $address) {
+    createdAt
+    creatorAddress
+    startingBalance
+    creationTransactionHash
+    mergedAt
+    mergedIntoAddress
+    mergeTransactionHash
+  }
+}
+
+query ContractStorageEntries($contractId: String!, $keyPrefix: String, $durability: String, $limit: Int, $cursor: String) {
+  contractStorageEntries(contractId: $contractId, keyPrefix: $keyPrefix, durability: $durability, limit: $limit, cursor: $cursor) {
+    items {
+      key
+      durability
+      value
+      lastModifiedLedger
+      expiration
     }
     pageInfo {
       hasNextPage

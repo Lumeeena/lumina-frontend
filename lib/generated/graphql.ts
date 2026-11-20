@@ -1,4 +1,4 @@
-/* eslint-disable */
+﻿/* eslint-disable */
 import type { DocumentTypeDecoration } from '@graphql-typed-document-node/core';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = T | null | undefined;
@@ -71,7 +71,7 @@ export type AssetPage = {
 
 /** What a list of assets is ordered by. See the `assets` root field. */
 export type AssetSort =
-  /** Most-held first — the default, and the useful one for a token list. */
+  /** Most-held first â€” the default, and the useful one for a token list. */
   | 'HOLDERS'
   /** Highest recent transfer volume first. */
   | 'VOLUME';
@@ -133,8 +133,8 @@ export type CustomEventField = {
 };
 
 /**
- * One filter clause. `value` is a string for every type — see CustomEventField
- * for why — and is coerced server-side using the type the schema declares.
+ * One filter clause. `value` is a string for every type â€” see CustomEventField
+ * for why â€” and is coerced server-side using the type the schema declares.
  */
 export type CustomEventFilter = {
   field: Scalars['String']['input'];
@@ -162,7 +162,7 @@ export type FilterOp =
  * from Horizon tip read at the moment of the call and a lag threshold, and the
  * numbers move between calls. Use it to render "data is N ledgers behind" or
  * "showing cached data", not as an SLA and not as a gate on showing data at all
- * — stale data with an honest label beats no data.
+ * â€” stale data with an honest label beats no data.
  *
  * The query is built to answer "how stale?" rather than fail when the indexer
  * is down: the indexed side comes from Postgres, the tip comes from Horizon,
@@ -205,7 +205,7 @@ export type Ledger = {
  * part of the API contract: naming a network that is not here has to be a
  * question a client can ask and get a definite answer to, not a string that
  * silently resolves to a different dataset. Declaring a network in `NETWORKS`
- * that this enum does not carry fails at startup — see docs/MULTI_NETWORK.md.
+ * that this enum does not carry fails at startup â€” see docs/MULTI_NETWORK.md.
  */
 export type Network =
   | 'FUTURENET'
@@ -265,10 +265,10 @@ export type PageInfo = {
  *
  * Every field takes an optional `network` argument:
  *
- * - **Omitted** — the primary network configured for this deployment. That is
+ * - **Omitted** â€” the primary network configured for this deployment. That is
  *   exactly the data every client saw before the argument existed, which is why
  *   adding it is additive rather than breaking.
- * - **Named** — that network and only that network. A network the deployment
+ * - **Named** â€” that network and only that network. A network the deployment
  *   does not serve is a `BAD_USER_INPUT` error, never a silent fall back to the
  *   primary: "I asked for testnet and got mainnet" is the data-mixing failure
  *   this argument exists to prevent.
@@ -279,7 +279,7 @@ export type Query = {
   /**
    * Asset detail in one call: current supply and holder count plus a bucketed
    * volume series. Supply is the sum of indexed `accounts.balances` for the
-   * asset (a last-seen snapshot, not ledger state) — see the query docs for
+   * asset (a last-seen snapshot, not ledger state) â€” see the query docs for
    * limitations. The series reuses the `operations(asset:)` predicate, so its
    * buckets always agree with the operation list.
    */
@@ -291,7 +291,7 @@ export type Query = {
    * a walk through the assets keeps its place even as newer activity lands. The
    * page is a summary: it carries supply and holder counts, not the per-asset
    * volume series `asset` returns. Clients that want the series ask for it on
-   * `asset`, one asset at a time — a list of fifty series is fifty times the
+   * `asset`, one asset at a time â€” a list of fifty series is fifty times the
    * aggregation for a column nobody is reading.
    */
   assets: AssetPage;
@@ -308,7 +308,7 @@ export type Query = {
    */
   events: ContractEventPage;
   /**
-   * How far behind the chain this API data is. Advisory — see IndexerStatus for
+   * How far behind the chain this API data is. Advisory â€” see IndexerStatus for
    * what it does and does not promise.
    */
   indexerStatus: IndexerStatus;
@@ -338,10 +338,10 @@ export type Query = {
  *
  * Every field takes an optional `network` argument:
  *
- * - **Omitted** — the primary network configured for this deployment. That is
+ * - **Omitted** â€” the primary network configured for this deployment. That is
  *   exactly the data every client saw before the argument existed, which is why
  *   adding it is additive rather than breaking.
- * - **Named** — that network and only that network. A network the deployment
+ * - **Named** â€” that network and only that network. A network the deployment
  *   does not serve is a `BAD_USER_INPUT` error, never a silent fall back to the
  *   primary: "I asked for testnet and got mainnet" is the data-mixing failure
  *   this argument exists to prevent.
@@ -357,10 +357,10 @@ export type QueryAccountArgs = {
  *
  * Every field takes an optional `network` argument:
  *
- * - **Omitted** — the primary network configured for this deployment. That is
+ * - **Omitted** â€” the primary network configured for this deployment. That is
  *   exactly the data every client saw before the argument existed, which is why
  *   adding it is additive rather than breaking.
- * - **Named** — that network and only that network. A network the deployment
+ * - **Named** â€” that network and only that network. A network the deployment
  *   does not serve is a `BAD_USER_INPUT` error, never a silent fall back to the
  *   primary: "I asked for testnet and got mainnet" is the data-mixing failure
  *   this argument exists to prevent.
@@ -379,10 +379,10 @@ export type QueryAssetArgs = {
  *
  * Every field takes an optional `network` argument:
  *
- * - **Omitted** — the primary network configured for this deployment. That is
+ * - **Omitted** â€” the primary network configured for this deployment. That is
  *   exactly the data every client saw before the argument existed, which is why
  *   adding it is additive rather than breaking.
- * - **Named** — that network and only that network. A network the deployment
+ * - **Named** â€” that network and only that network. A network the deployment
  *   does not serve is a `BAD_USER_INPUT` error, never a silent fall back to the
  *   primary: "I asked for testnet and got mainnet" is the data-mixing failure
  *   this argument exists to prevent.
@@ -400,10 +400,10 @@ export type QueryAssetsArgs = {
  *
  * Every field takes an optional `network` argument:
  *
- * - **Omitted** — the primary network configured for this deployment. That is
+ * - **Omitted** â€” the primary network configured for this deployment. That is
  *   exactly the data every client saw before the argument existed, which is why
  *   adding it is additive rather than breaking.
- * - **Named** — that network and only that network. A network the deployment
+ * - **Named** â€” that network and only that network. A network the deployment
  *   does not serve is a `BAD_USER_INPUT` error, never a silent fall back to the
  *   primary: "I asked for testnet and got mainnet" is the data-mixing failure
  *   this argument exists to prevent.
@@ -419,10 +419,10 @@ export type QueryContractSchemaArgs = {
  *
  * Every field takes an optional `network` argument:
  *
- * - **Omitted** — the primary network configured for this deployment. That is
+ * - **Omitted** â€” the primary network configured for this deployment. That is
  *   exactly the data every client saw before the argument existed, which is why
  *   adding it is additive rather than breaking.
- * - **Named** — that network and only that network. A network the deployment
+ * - **Named** â€” that network and only that network. A network the deployment
  *   does not serve is a `BAD_USER_INPUT` error, never a silent fall back to the
  *   primary: "I asked for testnet and got mainnet" is the data-mixing failure
  *   this argument exists to prevent.
@@ -442,10 +442,10 @@ export type QueryCustomEventsArgs = {
  *
  * Every field takes an optional `network` argument:
  *
- * - **Omitted** — the primary network configured for this deployment. That is
+ * - **Omitted** â€” the primary network configured for this deployment. That is
  *   exactly the data every client saw before the argument existed, which is why
  *   adding it is additive rather than breaking.
- * - **Named** — that network and only that network. A network the deployment
+ * - **Named** â€” that network and only that network. A network the deployment
  *   does not serve is a `BAD_USER_INPUT` error, never a silent fall back to the
  *   primary: "I asked for testnet and got mainnet" is the data-mixing failure
  *   this argument exists to prevent.
@@ -464,10 +464,10 @@ export type QueryEventsArgs = {
  *
  * Every field takes an optional `network` argument:
  *
- * - **Omitted** — the primary network configured for this deployment. That is
+ * - **Omitted** â€” the primary network configured for this deployment. That is
  *   exactly the data every client saw before the argument existed, which is why
  *   adding it is additive rather than breaking.
- * - **Named** — that network and only that network. A network the deployment
+ * - **Named** â€” that network and only that network. A network the deployment
  *   does not serve is a `BAD_USER_INPUT` error, never a silent fall back to the
  *   primary: "I asked for testnet and got mainnet" is the data-mixing failure
  *   this argument exists to prevent.
@@ -482,10 +482,10 @@ export type QueryIndexerStatusArgs = {
  *
  * Every field takes an optional `network` argument:
  *
- * - **Omitted** — the primary network configured for this deployment. That is
+ * - **Omitted** â€” the primary network configured for this deployment. That is
  *   exactly the data every client saw before the argument existed, which is why
  *   adding it is additive rather than breaking.
- * - **Named** — that network and only that network. A network the deployment
+ * - **Named** â€” that network and only that network. A network the deployment
  *   does not serve is a `BAD_USER_INPUT` error, never a silent fall back to the
  *   primary: "I asked for testnet and got mainnet" is the data-mixing failure
  *   this argument exists to prevent.
@@ -500,10 +500,10 @@ export type QueryLatestLedgerArgs = {
  *
  * Every field takes an optional `network` argument:
  *
- * - **Omitted** — the primary network configured for this deployment. That is
+ * - **Omitted** â€” the primary network configured for this deployment. That is
  *   exactly the data every client saw before the argument existed, which is why
  *   adding it is additive rather than breaking.
- * - **Named** — that network and only that network. A network the deployment
+ * - **Named** â€” that network and only that network. A network the deployment
  *   does not serve is a `BAD_USER_INPUT` error, never a silent fall back to the
  *   primary: "I asked for testnet and got mainnet" is the data-mixing failure
  *   this argument exists to prevent.
@@ -519,10 +519,10 @@ export type QueryLedgerArgs = {
  *
  * Every field takes an optional `network` argument:
  *
- * - **Omitted** — the primary network configured for this deployment. That is
+ * - **Omitted** â€” the primary network configured for this deployment. That is
  *   exactly the data every client saw before the argument existed, which is why
  *   adding it is additive rather than breaking.
- * - **Named** — that network and only that network. A network the deployment
+ * - **Named** â€” that network and only that network. A network the deployment
  *   does not serve is a `BAD_USER_INPUT` error, never a silent fall back to the
  *   primary: "I asked for testnet and got mainnet" is the data-mixing failure
  *   this argument exists to prevent.
@@ -542,10 +542,10 @@ export type QueryOperationsArgs = {
  *
  * Every field takes an optional `network` argument:
  *
- * - **Omitted** — the primary network configured for this deployment. That is
+ * - **Omitted** â€” the primary network configured for this deployment. That is
  *   exactly the data every client saw before the argument existed, which is why
  *   adding it is additive rather than breaking.
- * - **Named** — that network and only that network. A network the deployment
+ * - **Named** â€” that network and only that network. A network the deployment
  *   does not serve is a `BAD_USER_INPUT` error, never a silent fall back to the
  *   primary: "I asked for testnet and got mainnet" is the data-mixing failure
  *   this argument exists to prevent.
@@ -563,10 +563,10 @@ export type QuerySearchArgs = {
  *
  * Every field takes an optional `network` argument:
  *
- * - **Omitted** — the primary network configured for this deployment. That is
+ * - **Omitted** â€” the primary network configured for this deployment. That is
  *   exactly the data every client saw before the argument existed, which is why
  *   adding it is additive rather than breaking.
- * - **Named** — that network and only that network. A network the deployment
+ * - **Named** â€” that network and only that network. A network the deployment
  *   does not serve is a `BAD_USER_INPUT` error, never a silent fall back to the
  *   primary: "I asked for testnet and got mainnet" is the data-mixing failure
  *   this argument exists to prevent.
@@ -582,10 +582,10 @@ export type QueryTransactionArgs = {
  *
  * Every field takes an optional `network` argument:
  *
- * - **Omitted** — the primary network configured for this deployment. That is
+ * - **Omitted** â€” the primary network configured for this deployment. That is
  *   exactly the data every client saw before the argument existed, which is why
  *   adding it is additive rather than breaking.
- * - **Named** — that network and only that network. A network the deployment
+ * - **Named** â€” that network and only that network. A network the deployment
  *   does not serve is a `BAD_USER_INPUT` error, never a silent fall back to the
  *   primary: "I asked for testnet and got mainnet" is the data-mixing failure
  *   this argument exists to prevent.
@@ -1218,3 +1218,114 @@ export const AccountTrustlineOpsDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<AccountTrustlineOpsQuery, AccountTrustlineOpsQueryVariables>;
+
+// ── AccountsList (#369) ──────────────────────────────────────────────────────
+
+export type AccountsListQueryVariables = Exact<{
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  cursor?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+export type AccountsListQuery = {
+  accounts: {
+    items: Array<{
+      address: string;
+      sequence: string;
+      subentryCount: number;
+      numSponsoring: number;
+      lastModifiedLedger: number;
+    }>;
+    pageInfo: { hasNextPage: boolean; cursor: string | null };
+  };
+};
+
+export const AccountsListDocument = new TypedDocumentString(`
+    query AccountsList($limit: Int, $cursor: String) {
+  accounts(limit: $limit, cursor: $cursor) {
+    items {
+      address
+      sequence
+      subentryCount
+      numSponsoring
+      lastModifiedLedger
+    }
+    pageInfo {
+      hasNextPage
+      cursor
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<AccountsListQuery, AccountsListQueryVariables>;
+
+// ── AccountLifecycle (#376) ──────────────────────────────────────────────────
+
+export type AccountLifecycleQueryVariables = Exact<{
+  address: Scalars['String']['input'];
+}>;
+
+export type AccountLifecycleQuery = {
+  accountLifecycle: {
+    createdAt: string | null;
+    creatorAddress: string | null;
+    startingBalance: string | null;
+    creationTransactionHash: string | null;
+    mergedAt: string | null;
+    mergedIntoAddress: string | null;
+    mergeTransactionHash: string | null;
+  } | null;
+};
+
+export const AccountLifecycleDocument = new TypedDocumentString(`
+    query AccountLifecycle($address: String!) {
+  accountLifecycle(address: $address) {
+    createdAt
+    creatorAddress
+    startingBalance
+    creationTransactionHash
+    mergedAt
+    mergedIntoAddress
+    mergeTransactionHash
+  }
+}
+    `) as unknown as TypedDocumentString<AccountLifecycleQuery, AccountLifecycleQueryVariables>;
+
+// ── ContractStorageEntries (#370) ────────────────────────────────────────────
+
+export type ContractStorageEntriesQueryVariables = Exact<{
+  contractId: Scalars['String']['input'];
+  keyPrefix?: InputMaybe<Scalars['String']['input']>;
+  durability?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  cursor?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+export type ContractStorageEntriesQuery = {
+  contractStorageEntries: {
+    items: Array<{
+      key: string;
+      durability: string;
+      value: string;
+      lastModifiedLedger: number;
+      expiration: number;
+    }>;
+    pageInfo: { hasNextPage: boolean; cursor: string | null };
+  };
+};
+
+export const ContractStorageEntriesDocument = new TypedDocumentString(`
+    query ContractStorageEntries($contractId: String!, $keyPrefix: String, $durability: String, $limit: Int, $cursor: String) {
+  contractStorageEntries(contractId: $contractId, keyPrefix: $keyPrefix, durability: $durability, limit: $limit, cursor: $cursor) {
+    items {
+      key
+      durability
+      value
+      lastModifiedLedger
+      expiration
+    }
+    pageInfo {
+      hasNextPage
+      cursor
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<ContractStorageEntriesQuery, ContractStorageEntriesQueryVariables>;
