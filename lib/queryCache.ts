@@ -16,6 +16,10 @@
 
 /** Oldest entries are evicted past this, so a long session cannot grow the cache without bound. */
 export const MAX_CACHED_QUERIES = 100;
+/** Mutable browser reads are reused for one minute. */
+export const MUTABLE_QUERY_TTL_MS = 60_000;
+
+const IMMUTABLE_QUERY_NAMES = new Set(["TransactionDetail", "LedgerDetail"]);
 
 interface CacheEntry {
   data: unknown;
@@ -23,6 +27,17 @@ interface CacheEntry {
 }
 
 const entries = new Map<string, CacheEntry>();
+
+/**
+ * Transaction details and ledgers are immutable once indexed. Other reads can
+ * change as new ledgers arrive, so they get a short freshness window.
+ */
+export function queryTtl(query: string): number {
+  const operationName = query.match(/\bquery\s+([_A-Za-z][_0-9A-Za-z]*)/)?.[1];
+  return operationName && IMMUTABLE_QUERY_NAMES.has(operationName)
+    ? Number.POSITIVE_INFINITY
+    : MUTABLE_QUERY_TTL_MS;
+}
 
 /**
  * Bumped by every invalidation. A read that started before an invalidation

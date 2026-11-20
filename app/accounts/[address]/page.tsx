@@ -4,6 +4,8 @@ import {
   AccountTrustlineOpsDocument as TRUSTLINE_QUERY,
   AccountLifecycleDocument,
   type AccountLifecycleQuery,
+  AccountTradesDocument as ACCOUNT_TRADES_QUERY,
+  type AccountTradesQuery,
 } from "@/lib/generated/graphql";
 import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
 import { accountOgImage, routeMetadata } from "@/lib/metadata";
@@ -15,6 +17,7 @@ import AccountActivityFeed from "@/components/AccountActivityFeed";
 import AccountPortfolio from "@/components/AccountPortfolio";
 import AccountTransactionList from "@/components/AccountTransactionList";
 import AccountOperationList from "@/components/AccountOperationList";
+import AccountTrades from "@/components/AccountTrades";
 import AccountTrustlineTimeline from "@/components/AccountTrustlineTimeline";
 import AccountLifecycleSection from "@/components/AccountLifecycle";
 import BackendUnavailable from "@/components/BackendUnavailable";
@@ -81,6 +84,22 @@ async function getAccountLifecycle(address: string): Promise<{
   }
 }
 
+async function getAccountTrades(address: string): Promise<{
+  trades: AccountTradesQuery["trades"]["items"];
+  unavailable: boolean;
+}> {
+  try {
+    const data = await gqlFetch(GRAPHQL_URL, ACCOUNT_TRADES_QUERY, {
+      address,
+      limit: 10,
+      cursor: null,
+    });
+    return { trades: data.trades.items, unavailable: false };
+  } catch {
+    return { trades: [], unavailable: true };
+  }
+}
+
 const th =
   "text-left text-[11px] tracking-[0.06em] uppercase text-[var(--color-text-muted)] px-3 py-2.5 border-b border-[var(--color-border-default)] bg-[var(--color-bg-subtle)]";
 const stat =
@@ -95,10 +114,11 @@ export default async function AccountPage({
   params: Promise<{ address: string }>;
 }) {
   const { address } = await params;
-  const [result, trustlineOps, lifecycleResult] = await Promise.all([
+  const [result, trustlineOps, lifecycleResult, tradesResult] = await Promise.all([
     getAccount(address),
     getTrustlineOps(address),
     getAccountLifecycle(address),
+    getAccountTrades(address),
   ]);
   const account = result.account;
 
@@ -269,6 +289,21 @@ export default async function AccountPage({
             address={account.address}
             initial={account.transactions ?? []}
           />
+
+          <h2 className="font-extrabold text-base mt-9 mb-3 text-[var(--color-text-primary)]">
+            Trades
+          </h2>
+          {tradesResult.unavailable ? (
+            <p role="alert" className="text-sm text-[var(--color-error-text)]">
+              Trade history is unavailable. Check your connection and refresh this page to try again.
+            </p>
+          ) : (
+            <AccountTrades
+              key={account.address}
+              address={account.address}
+              initial={tradesResult.trades}
+            />
+          )}
 
           <h2 className="font-extrabold text-base mt-9 mb-3 text-[var(--color-text-primary)]">
             Recent Operations

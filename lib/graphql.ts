@@ -1,4 +1,12 @@
 import type { TypedDocumentString } from "./generated/graphql";
+import {
+  isFresh,
+  queryGeneration,
+  queryKey,
+  queryTtl,
+  readQuery,
+  writeQuery,
+} from "./queryCache";
 
 interface GraphQLResponse<T> {
   data?: T;
@@ -23,10 +31,20 @@ export async function gqlFetch<T, V extends Record<string, unknown>>(
   ...args: GqlArgs<V>
 ): Promise<T> {
   const [variables, options] = args;
+  const documentText = document.toString();
+  const useBrowserCache =
+    typeof window !== "undefined" && url === PUBLIC_GRAPHQL_URL;
+  const key = useBrowserCache
+    ? queryKey(url, documentText, variables ?? {})
+    : null;
+  const cached = key ? readQuery<T>(key) : undefined;
+  const generation = useBrowserCache ? queryGeneration() : 0;
+  if (cached && isFresh(cached, queryTtl(documentText))) return cached.data;
+
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query: document.toString(), variables }),
+    body: JSON.stringify({ query: documentText, variables }),
     signal: options?.signal,
   });
 
@@ -41,6 +59,7 @@ export async function gqlFetch<T, V extends Record<string, unknown>>(
   if (!body.data) {
     throw new Error("GraphQL response had no data");
   }
+  if (key) writeQuery(key, body.data, { generation });
   return body.data;
 }
 

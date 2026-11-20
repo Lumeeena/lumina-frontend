@@ -3,8 +3,10 @@ import {
   invalidateQueryCache,
   isFresh,
   MAX_CACHED_QUERIES,
+  MUTABLE_QUERY_TTL_MS,
   queryGeneration,
   queryKey,
+  queryTtl,
   readQuery,
   writeQuery,
 } from "./queryCache";
@@ -23,6 +25,23 @@ describe("queryKey", () => {
     expect(queryKey("https://other.example.com/graphql", QUERY, { asset: "XLM" })).not.toBe(base);
     expect(queryKey(ENDPOINT, `${QUERY} `, { asset: "XLM" })).not.toBe(base);
     expect(queryKey(ENDPOINT, QUERY, { asset: "USDC" })).not.toBe(base);
+  });
+
+  describe("queryTtl", () => {
+    it("keeps transaction and ledger detail queries for the session", () => {
+      expect(queryTtl("query TransactionDetail($hash: String!) { transaction(hash: $hash) { hash } }")).toBe(
+        Number.POSITIVE_INFINITY,
+      );
+      expect(queryTtl("query LedgerDetail($sequence: Int!) { ledger(sequence: $sequence) { sequence } }")).toBe(
+        Number.POSITIVE_INFINITY,
+      );
+    });
+
+    it("gives other reads a short freshness window", () => {
+      expect(queryTtl("query AccountDetail($address: String!) { account(address: $address) { address } }")).toBe(
+        MUTABLE_QUERY_TTL_MS,
+      );
+    });
   });
 
   it("is the same for the same inputs, so a repeat read finds its entry", () => {

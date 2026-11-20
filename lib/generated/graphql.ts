@@ -730,6 +730,15 @@ export type AccountOperationsQueryVariables = Exact<{
 
 export type AccountOperationsQuery = { operations: { items: Array<{ id: string, type: OperationType, createdAt: string, transactionHash: string, sourceAccount: string, from: string | null, to: string | null, amount: string | null, asset: string | null, startingBalance: string | null, funder: string | null, offerId: string | null, price: string | null, selling: string | null, buying: string | null }>, pageInfo: { hasNextPage: boolean, cursor: string | null } } };
 
+export type AccountTradesQueryVariables = Exact<{
+  address: Scalars['String']['input'];
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  cursor?: InputMaybe<Scalars['String']['input']>;
+  network?: InputMaybe<Network>;
+}>;
+
+export type AccountTradesQuery = { trades: { items: Array<{ id: string, pagingToken: string, ledgerCloseTime: string, tradeType: string, baseAccount: string, baseAmount: string, baseAssetType: string, baseAssetCode: string | null, baseAssetIssuer: string | null, baseOfferId: string | null, counterAccount: string | null, counterAmount: string, counterAssetType: string, counterAssetCode: string | null, counterAssetIssuer: string | null, counterOfferId: string | null, baseIsSeller: boolean | null, price: string | null }>, pageInfo: { hasNextPage: boolean, cursor: string | null } } };
+
 export type LiveFeedTransactionsQueryVariables = Exact<{
   limit?: InputMaybe<Scalars['Int']['input']>;
 }>;
@@ -1007,6 +1016,36 @@ export const AccountOperationsDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<AccountOperationsQuery, AccountOperationsQueryVariables>;
+export const AccountTradesDocument = new TypedDocumentString(`
+    query AccountTrades($address: String!, $limit: Int, $cursor: String, $network: Network) {
+  trades(account: $address, limit: $limit, cursor: $cursor, network: $network) {
+    items {
+      id
+      pagingToken
+      ledgerCloseTime
+      tradeType
+      baseAccount
+      baseAmount
+      baseAssetType
+      baseAssetCode
+      baseAssetIssuer
+      baseOfferId
+      counterAccount
+      counterAmount
+      counterAssetType
+      counterAssetCode
+      counterAssetIssuer
+      counterOfferId
+      baseIsSeller
+      price
+    }
+    pageInfo {
+      hasNextPage
+      cursor
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<AccountTradesQuery, AccountTradesQueryVariables>;
 export const LiveFeedTransactionsDocument = new TypedDocumentString(`
     query LiveFeedTransactions($limit: Int) {
   transactions(limit: $limit) {
