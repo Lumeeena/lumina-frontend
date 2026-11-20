@@ -47,8 +47,8 @@ description and crawl policy — and everything else reads from it: the navbar,
 `sitemap.ts`, `robots.txt` and the per-route metadata. Adding a route means
 adding one entry there, not editing four files and hoping they agree.
 
-**Indexed.** The eight stable routes (`/`, `/explorer`, `/transactions`,
-`/search`, `/events`, `/graphql`, `/registry`, `/stats`) are in `sitemap.xml`
+**Indexed.** The nine stable routes (`/`, `/explorer`, `/transactions`,
+`/ledgers`, `/search`, `/events`, `/graphql`, `/registry`, `/stats`) are in `sitemap.xml`
 and each carries its own title, description, canonical URL and 1200×630 share
 card.
 

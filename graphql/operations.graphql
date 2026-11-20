@@ -364,6 +364,21 @@ query LedgerDetail($sequence: Int!, $network: Network, $limit: Int, $cursor: Str
   }
 }
 
+query LedgersList($limit: Int, $cursor: String, $network: Network) {
+  ledgers(limit: $limit, cursor: $cursor, network: $network) {
+    items {
+      sequence
+      closedAt
+      transactionCount
+      operationCount
+    }
+    pageInfo {
+      hasNextPage
+      cursor
+    }
+  }
+}
+
 query AccountsList($limit: Int, $cursor: String) {
   accounts(limit: $limit, cursor: $cursor) {
     items {

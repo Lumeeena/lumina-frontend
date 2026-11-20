@@ -17,6 +17,7 @@ import {
   CRAWL_EXCLUDED,
   HOME,
   INDEXABLE_ROUTES,
+  LEDGERS,
   NAV_ROUTES,
   SEARCH,
 } from "@/lib/routes";
@@ -151,5 +152,16 @@ describe("robots.txt", () => {
     const patterns = robots().rules[0].disallow ?? [];
     expect(patterns).not.toContain("/");
     expect(patterns.some((p) => p === HOME.path)).toBe(false);
+  });
+
+  it("lists the ledgers index while keeping the per-ledger pages out", () => {
+    // `/ledgers/` blocks one page per sequence; the listing at `/ledgers` is a
+    // finite page and belongs in the sitemap.
+    const paths = sitemap().map((entry) => new URL(entry.url).pathname);
+
+    expect(paths).toContain(LEDGERS.path);
+    expect(paths.some((p) => p.startsWith(`${LEDGERS.path}/`))).toBe(false);
+    expect(robots().rules[0].disallow).toContain(`${LEDGERS.path}/`);
+    expect(robots().rules[0].disallow).not.toContain(LEDGERS.path);
   });
 });

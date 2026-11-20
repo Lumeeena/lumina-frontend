@@ -53,6 +53,13 @@ export const TRANSACTIONS: RouteInfo = {
   prefetch: true,
 };
 
+export const LEDGERS: RouteInfo = {
+  path: "/ledgers",
+  label: "Ledgers",
+  description:
+    "Indexed Stellar ledgers, newest first: close time, transaction and operation counts, and any gaps in the index.",
+};
+
 export const SEARCH: RouteInfo = {
   path: "/search",
   label: "Search",
@@ -125,6 +132,7 @@ export const STABLE_ROUTES: readonly RouteInfo[] = [
   HOME,
   EXPLORER,
   TRANSACTIONS,
+  LEDGERS,
   SEARCH,
   EVENTS,
   ASSETS,

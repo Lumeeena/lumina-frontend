@@ -146,6 +146,18 @@
         "LCP": null
       }
     },
+    "/ledgers": {
+      "budget": {
+        "CLS": 0.1,
+        "INP": 200,
+        "LCP": 2500
+      },
+      "baseline": {
+        "CLS": null,
+        "INP": null,
+        "LCP": null
+      }
+    },
     "/": {
       "budget": {
         "CLS": 0.1,

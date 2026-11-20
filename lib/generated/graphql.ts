@@ -1219,6 +1219,32 @@ export const AccountTrustlineOpsDocument = new TypedDocumentString(`
 }
     `) as unknown as TypedDocumentString<AccountTrustlineOpsQuery, AccountTrustlineOpsQueryVariables>;
 
+export type LedgersListQueryVariables = Exact<{
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  cursor?: InputMaybe<Scalars['String']['input']>;
+  network?: InputMaybe<Network>;
+}>;
+
+
+export type LedgersListQuery = { ledgers: { items: Array<{ sequence: number, closedAt: string, transactionCount: number, operationCount: number }>, pageInfo: { hasNextPage: boolean, cursor: string | null } } };
+
+export const LedgersListDocument = new TypedDocumentString(`
+    query LedgersList($limit: Int, $cursor: String, $network: Network) {
+  ledgers(limit: $limit, cursor: $cursor, network: $network) {
+    items {
+      sequence
+      closedAt
+      transactionCount
+      operationCount
+    }
+    pageInfo {
+      hasNextPage
+      cursor
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<LedgersListQuery, LedgersListQueryVariables>;
+
 // ── AccountsList (#369) ──────────────────────────────────────────────────────
 
 export type AccountsListQueryVariables = Exact<{

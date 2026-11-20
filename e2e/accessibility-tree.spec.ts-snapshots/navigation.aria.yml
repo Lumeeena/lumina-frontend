@@ -10,6 +10,8 @@
         - /url: /explorer
     - link "Transactions":
         - /url: /transactions
+    - link "Ledgers":
+        - /url: /ledgers
     - link "Search":
         - /url: /search
     - link "Contract Events":
