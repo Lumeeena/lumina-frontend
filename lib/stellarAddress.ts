@@ -1,92 +1,41 @@
-import { StrKey } from "@stellar/stellar-sdk";
+import { StrKey } from '@stellar/stellar-sdk';
 
-// Stellar Ed25519 public keys & Soroban contract IDs are Strkey-encoded:
-//   - Account IDs start with 'G' (56 chars)
-//   - Contract IDs start with 'C' (56 chars)
-//   - Muxed account IDs start with 'M' (69 chars, SEP-0023)
-//   - Base32 alphabet: A-Z and 2-7 (case-insensitive input is normalised to upper)
-
-const STRKEY_REGEX = /^[GC][A-Z2-7]{55}$/;
-const MUXED_REGEX = /^M[A-Z2-7]{68}$/;
-
-/**
- * Result returned by {@link validateStellarAddress}.
- * An invalid result distinguishes an empty input from a malformed address;
- * malformed results include a user-readable hint describing the format issue.
- */
 export type AddressValidation =
   | { valid: true; muxed?: false }
   | { valid: true; muxed: true; baseAccount: string; muxedId: string }
   | { valid: false; reason: "empty" }
   | { valid: false; reason: "malformed"; hint: string };
 
-/**
- * Checks whether input has the expected StrKey text format for a Stellar
- * account ID (`G...`), Soroban contract ID (`C...`), or muxed account
- * address (`M...`, SEP-0023). Use this for client-side address-field
- * validation before accepting or submitting an address.
- *
- * Input is trimmed and compared case-insensitively. An empty string returns
- * `reason: "empty"`; whitespace-only input is malformed after trimming.
- * M-addresses are verified against the StrKey checksum via the Stellar SDK;
- * G and C addresses are checked by prefix, length, and alphabet only.
- *
- * A valid muxed result includes the decoded `baseAccount` (G-address) and
- * the `muxedId` (uint64 as a decimal string) for display.
- *
- * @param raw The address text to validate.
- * @returns A valid result, an empty-input result, or a malformed result with a hint.
- */
+const STRKEY_REGEX = /^[GC][A-Z2-7]{55}$/;
+
 export function validateStellarAddress(raw: string): AddressValidation {
   if (!raw) return { valid: false, reason: "empty" };
-
   const address = raw.trim().toUpperCase();
 
-  if (STRKEY_REGEX.test(address)) return { valid: true };
-
-  // Muxed account address (M..., 69 chars, SEP-0023)
-  if (MUXED_REGEX.test(address)) {
-    if (!StrKey.isValidMed25519PublicKey(address)) {
-      return {
-        valid: false,
-        reason: "malformed",
-        hint: "muxed address checksum is invalid",
-      };
-    }
-    const components = decodeMuxedAddress(address);
-    if (!components) {
-      return { valid: false, reason: "malformed", hint: "could not decode muxed address" };
-    }
-    return { valid: true, muxed: true, ...components };
+  if (STRKEY_REGEX.test(address)) {
+    // Verify the StrKey checksum — the regex only checks alphabet/length
+    const isAccount = address.startsWith('G') && StrKey.isValidEd25519PublicKey(address);
+    const isContract = address.startsWith('C') && StrKey.isValidContract(address);
+    if (isAccount || isContract) return { valid: true };
+    return {
+      valid: false,
+      reason: "malformed",
+      hint: "checksum mismatch — the address contains a typo",
+    };
   }
 
-  // Build a human-readable hint so the user knows what to fix.
   const hints: string[] = [];
-
-  if (!address.startsWith("G") && !address.startsWith("C") && !address.startsWith("M")) {
-    hints.push(`must start with "G", "C", or "M" (starts with "${raw[0]}")`);
-  }
-
-  if (!address.startsWith("M") && address.length !== 56) {
+  if (!address.startsWith("G") && !address.startsWith("C"))
+    hints.push(`must start with "G" or "C" (starts with "${raw[0]}")`);
+  if (address.length !== 56)
     hints.push(`must be 56 characters (got ${address.length})`);
-  }
-
-  if (address.startsWith("M") && address.length !== 69) {
-    hints.push(`muxed address must be 69 characters (got ${address.length})`);
-  }
-
   const badChars = Array.from(new Set(address.replace(/[A-Z2-7]/g, "")));
-  if (badChars.length > 0) {
+  if (badChars.length > 0)
     hints.push(`contains invalid characters: ${badChars.join(" ")}`);
-  }
-
   return {
     valid: false,
     reason: "malformed",
-    hint:
-      hints.length > 0
-        ? hints.join("; ")
-        : "not a valid Stellar account, contract, or muxed account ID",
+    hint: hints.length > 0 ? hints.join("; ") : "not a valid Stellar account or contract ID",
   };
 }
 

@@ -41,12 +41,12 @@ function formatCsvCell(raw: string): string {
  * Notes the row limit and references bulk export for larger sets.
  * Cell values are sanitized against spreadsheet formula injection (#363).
  */
-export function exportToCSV(
+export function buildCSV(
   data: Record<string, unknown>[],
   columns: string[],
-  filename: string = 'export.csv',
   maxRows: number = 1000
-): void {
+): string {
+  const BOM = '﻿';
   const limited = data.slice(0, maxRows);
   const headers = columns.join(',');
   const rows = limited.map(row =>
@@ -56,15 +56,30 @@ export function exportToCSV(
       return formatCsvCell(String(val));
     }).join(',')
   );
+  return BOM + [headers, ...rows].join('\r\n');
+}
 
-  const csv = [headers, ...rows].join('\n');
+/**
+ * Export the current filtered view as CSV.
+ * Includes every column, not only the visible ones.
+ * Notes the row limit and references bulk export for larger sets.
+ */
+export function exportToCSV(
+  data: Record<string, unknown>[],
+  columns: string[],
+  filename: string = 'export.csv',
+  maxRows: number = 1000
+): void {
+  const csv = buildCSV(data, columns, maxRows);
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
   a.download = filename;
   a.click();
-  URL.revokeObjectURL(url);
+  // Defer revocation so the browser has time to start the download before the
+  // object URL is gone (#364). Immediate revocation can cancel in-flight downloads.
+  window.setTimeout(() => URL.revokeObjectURL(url), 100);
 }
 
 /**

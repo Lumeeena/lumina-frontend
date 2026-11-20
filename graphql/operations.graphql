@@ -319,28 +319,19 @@ query AccountTrustlineOps($address: String!, $limit: Int, $cursor: String, $netw
   }
 }
 
-query ContractStorageEntries($contractId: String!, $keyPrefix: String, $durability: String, $limit: Int, $cursor: String, $network: Network) {
+query ContractStorageEntries($contractId: String!, $keyPrefix: String, $durability: ContractStorageDurability, $limit: Int, $cursor: String, $network: Network) {
   contractStorageEntries(contractId: $contractId, keyPrefix: $keyPrefix, durability: $durability, limit: $limit, cursor: $cursor, network: $network) {
     items {
       key
       durability
       value
       lastModifiedLedger
-      expiration
+      state
+      liveUntilLedger
     }
     pageInfo {
       hasNextPage
       cursor
-    }
-  }
-}
-
-query ContractStorageKeyHistory($contractId: String!, $key: String!, $network: Network) {
-  contractStorageKeyHistory(contractId: $contractId, key: $key, network: $network) {
-    items {
-      value
-      ledger
-      createdAt
     }
   }
 }
