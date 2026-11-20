@@ -14,9 +14,51 @@ export function generateMetadata(): Metadata {
   return routeMetadata(STATS);
 }
 
+/** Bucket returned by the backend's networkStats rollup query. */
+interface NetworkStatsBucket {
+  timestamp: string;
+  transactionCount: number;
+  operationCount: number;
+}
+
+/** Fetch network stats rollup from the backend (Lumeeena/lumina-backend#380). */
+async function getNetworkStats(
+  startTime: string,
+  endTime: string,
+  granularity: string,
+): Promise<{ buckets: NetworkStatsBucket[] | null; unavailable: boolean }> {
+  try {
+    const response = await fetch(GRAPHQL_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        query: `query NetworkStats($startTime: String!, $endTime: String!, $granularity: String!) {
+          networkStats(startTime: $startTime, endTime: $endTime, granularity: $granularity) {
+            buckets { timestamp transactionCount operationCount }
+          }
+        }`,
+        variables: { startTime, endTime, granularity },
+      }),
+      next: { revalidate: 300 },
+    });
+    if (!response.ok) return { buckets: null, unavailable: true };
+    const json = (await response.json()) as {
+      data?: { networkStats?: { buckets: NetworkStatsBucket[] } | null };
+      errors?: unknown[];
+    };
+    const buckets = json.data?.networkStats?.buckets ?? null;
+    return { buckets, unavailable: false };
+  } catch {
+    return { buckets: null, unavailable: true };
+  }
+}
+
 async function getStats() {
   try {
-    const data = await gqlFetch(GRAPHQL_URL, StatsDocument, { opLimit: 200 });
+    // opLimit is intentionally omitted: the breakdown section now shows a
+    // modest recent sample only as supplementary context. The primary time-
+    // series charts come from networkStats rollups (#373).
+    const data = await gqlFetch(GRAPHQL_URL, StatsDocument, { opLimit: 50 });
     return { ...data, unavailable: false };
   } catch {
     return {
@@ -51,15 +93,23 @@ function opBreakdown(operations: Pick<Operation, "type">[]) {
 }
 
 export default async function StatsPage() {
-  const [{ latestLedger, operations, transactions, unavailable }, contracts] =
-    await Promise.all([getStats(), getContractsRegisteredCount()]);
-  // A 200 can still come back half-empty — GraphQL nulls a field whose resolver
-  // failed rather than failing the whole query. The ledger and the breakdown
-  // are independent, so a missing one is an empty breakdown, not a thrown
-  // `not iterable` that takes the page down with it.
+  const now = new Date();
+  const dayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+  const [
+    { latestLedger, operations, transactions, unavailable },
+    contracts,
+    networkStats,
+  ] = await Promise.all([
+    getStats(),
+    getContractsRegisteredCount(),
+    getNetworkStats(dayAgo.toISOString(), now.toISOString(), "HOUR"),
+  ]);
+
   const indexed = operations?.items ?? [];
   const txs = transactions?.items ?? [];
   const breakdown = opBreakdown(indexed);
+  const rollupBuckets = networkStats.buckets;
 
   return (
     <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
@@ -75,15 +125,32 @@ export default async function StatsPage() {
       </div>
 
       <div className="mb-12">
-        <NetworkStatsDashboard
-          latestLedger={latestLedger}
-          operations={indexed}
-          transactions={txs}
-        />
+        {rollupBuckets && rollupBuckets.length > 0 ? (
+          <NetworkStatsDashboard
+            latestLedger={latestLedger}
+            operations={indexed}
+            transactions={txs}
+            networkStatsBuckets={rollupBuckets}
+          />
+        ) : (
+          <div>
+            <NetworkStatsDashboard
+              latestLedger={latestLedger}
+              operations={indexed}
+              transactions={txs}
+            />
+            <p className="text-xs text-[var(--color-text-muted)] mt-3">
+              Time-series charts will be driven by backend network stats rollups once available
+              (lumina-backend#380). The charts above reflect a small recent sample.
+            </p>
+          </div>
+        )}
       </div>
 
       <h2 className="font-extrabold text-base mb-3.5 text-[var(--color-text-primary)]">Operation Type Breakdown</h2>
-      <p className="text-xs text-[var(--color-text-muted)] mb-3">Based on the most recent {indexed.length} indexed operations.</p>
+      <p className="text-xs text-[var(--color-text-muted)] mb-3">
+        Based on the most recent {indexed.length} indexed operations.
+      </p>
       <div className="border border-[var(--color-border-default)] rounded-xl p-5 flex flex-col gap-3.5">
         {breakdown.length === 0 ? (
           <p className="text-sm text-[var(--color-text-muted)]">No operations indexed yet.</p>

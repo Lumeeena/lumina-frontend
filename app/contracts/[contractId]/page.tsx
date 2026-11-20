@@ -16,12 +16,6 @@ import ViewTracker from "@/components/ViewTracker";
 
 export const dynamic = "force-dynamic";
 
-/**
- * Metadata from the contract ID alone, following the same pattern as
- * transaction and account pages: a share card is fetched by bots that do not
- * wait for GraphQL, and a title built from the URL is instant and always
- * correct.
- */
 export function generateMetadata({
   params,
 }: {
@@ -96,6 +90,8 @@ export default async function ContractPage({
     getContractInterface(GRAPHQL_URL, contractId),
   ]);
 
+  const { deployment } = contractInterface;
+
   return (
     <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
       <ViewTracker
@@ -121,6 +117,58 @@ export default async function ContractPage({
       <p className="text-[var(--color-text-muted)] text-[13px] mb-6">
         Soroban contract interface and storage
       </p>
+
+      {/* Deployment details section (#379) */}
+      <section className="mb-8" aria-labelledby="contract-deployment-heading">
+        <h2
+          id="contract-deployment-heading"
+          className="font-extrabold text-base mb-3 text-[var(--color-text-primary)]"
+        >
+          Deployment
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className={stat}>
+            <div className={statLabel}>Deployer</div>
+            {deployment?.deployer ? (
+              <Link
+                href={`/accounts/${deployment.deployer}`}
+                className="mono text-xs text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline break-all mt-1 block"
+              >
+                {truncateAddress(deployment.deployer, 6)}
+              </Link>
+            ) : (
+              <div className="text-xs text-[var(--color-text-muted)] mt-1">
+                {deployment === null ? "Unavailable" : "Not recorded yet"}
+              </div>
+            )}
+          </div>
+          <div className={stat}>
+            <div className={statLabel}>Deployment Ledger</div>
+            {deployment?.deploymentLedger != null ? (
+              <Link
+                href={`/ledgers/${deployment.deploymentLedger}`}
+                className="mono text-xs text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline mt-1 block"
+              >
+                {deployment.deploymentLedger.toLocaleString()}
+              </Link>
+            ) : (
+              <div className="text-xs text-[var(--color-text-muted)] mt-1">
+                {deployment === null ? "Unavailable" : "Not recorded yet"}
+              </div>
+            )}
+          </div>
+          <div className={stat}>
+            <div className={statLabel}>WASM Hash</div>
+            {contractInterface.wasmHash ? (
+              <span className="mono text-xs text-[var(--color-text-secondary)] break-all mt-1 block">
+                {truncateAddress(contractInterface.wasmHash, 8)}
+              </span>
+            ) : (
+              <div className="text-xs text-[var(--color-text-muted)] mt-1">Not recorded yet</div>
+            )}
+          </div>
+        </div>
+      </section>
 
       <section className="mb-8" aria-labelledby="contract-interface-heading">
         <div className="flex items-baseline justify-between gap-4 mb-3 flex-wrap">
