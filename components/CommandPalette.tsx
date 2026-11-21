@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Search, ChevronRight } from "lucide-react";
 import { NAV_ROUTES, HOME } from "@/lib/routes";
 import { isEditableTarget } from "@/lib/shortcuts";
+import { Dialog } from "@/components/ui/Dialog";
 
 export interface PaletteItem {
   id: string;
@@ -22,7 +23,7 @@ export default function CommandPalette() {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
-  const opener = useRef<HTMLElement | null>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
 
   const items: PaletteItem[] = [
     {
@@ -54,7 +55,7 @@ export default function CommandPalette() {
   );
 
   const handleOpen = useCallback(() => {
-    opener.current =
+    triggerRef.current =
       document.activeElement instanceof HTMLElement
         ? document.activeElement
         : null;
@@ -65,7 +66,6 @@ export default function CommandPalette() {
 
   const handleClose = useCallback(() => {
     setOpen(false);
-    opener.current?.focus();
   }, []);
 
   const handleSelect = useCallback(() => {
@@ -136,96 +136,87 @@ export default function CommandPalette() {
   }, [handleOpen]);
 
   return (
-    <>
-      {open && (
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      title=""
+      hideHeader
+      className="max-w-2xl bg-[var(--color-bg-base)] rounded-lg border border-[var(--color-border-default)] shadow-lg overflow-hidden"
+    >
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--color-border-default)]">
+        <Search className="w-5 h-5 text-[var(--color-text-secondary)]" />
+        <input
+          ref={inputRef}
+          id="palette-input"
+          type="text"
+          placeholder="Search routes and actions..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleKeyDown}
+          aria-autocomplete="list"
+          aria-controls="palette-list"
+          aria-expanded={open}
+          className="flex-1 bg-transparent text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] outline-none"
+        />
+        <span className="text-xs text-[var(--color-text-secondary)]">
+          ESC
+        </span>
+      </div>
+
+      {filteredItems.length > 0 ? (
         <div
-          className="fixed inset-0 z-40 flex items-start justify-center pt-16 bg-black/40"
-          onClick={handleClose}
+          ref={listRef}
+          id="palette-list"
+          role="listbox"
+          className="max-h-96 overflow-y-auto"
         >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-2xl bg-[var(--color-bg-base)] rounded-lg border border-[var(--color-border-default)] shadow-lg overflow-hidden"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="palette-input"
-          >
-            <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--color-border-default)]">
-              <Search className="w-5 h-5 text-[var(--color-text-secondary)]" />
-              <input
-                ref={inputRef}
-                id="palette-input"
-                type="text"
-                placeholder="Search routes and actions..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={handleKeyDown}
-                aria-autocomplete="list"
-                aria-controls="palette-list"
-                aria-expanded={open}
-                className="flex-1 bg-transparent text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] outline-none"
-              />
-              <span className="text-xs text-[var(--color-text-secondary)]">
-                ESC
-              </span>
-            </div>
-
-            {filteredItems.length > 0 ? (
-              <div
-                ref={listRef}
-                id="palette-list"
-                role="listbox"
-                className="max-h-96 overflow-y-auto"
-              >
-                {filteredItems.map((item, index) => (
-                  <button
-                    key={item.id}
-                    data-index={index}
-                    onClick={handleSelect}
-                    onMouseEnter={() => setSelectedIndex(index)}
-                    role="option"
-                    aria-selected={selectedIndex === index}
-                    className={`w-full px-4 py-3 text-left flex items-center justify-between gap-3 transition-colors ${
-                      selectedIndex === index
-                        ? "bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)]"
-                        : "text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      {item.icon && (
-                        <div className="text-[var(--color-text-secondary)] flex-shrink-0">
-                          {item.icon}
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm">
-                          {item.label}
-                        </div>
-                        {item.description && (
-                          <div className="text-xs text-[var(--color-text-secondary)] truncate">
-                            {item.description}
-                          </div>
-                        )}
-                      </div>
+          {filteredItems.map((item, index) => (
+            <button
+              key={item.id}
+              data-index={index}
+              onClick={handleSelect}
+              onMouseEnter={() => setSelectedIndex(index)}
+              role="option"
+              aria-selected={selectedIndex === index}
+              className={`w-full px-4 py-3 text-left flex items-center justify-between gap-3 transition-colors ${
+                selectedIndex === index
+                  ? "bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)]"
+                  : "text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]"
+              }`}
+            >
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                {item.icon && (
+                  <div className="text-[var(--color-text-secondary)] flex-shrink-0">
+                    {item.icon}
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-sm">
+                    {item.label}
+                  </div>
+                  {item.description && (
+                    <div className="text-xs text-[var(--color-text-secondary)] truncate">
+                      {item.description}
                     </div>
-                    <ChevronRight className="w-4 h-4 text-[var(--color-text-tertiary)] flex-shrink-0" />
-                  </button>
-                ))}
+                  )}
+                </div>
               </div>
-            ) : (
-              <div className="px-4 py-8 text-center text-[var(--color-text-secondary)]">
-                <p className="text-sm">No results found</p>
-              </div>
-            )}
-
-            <div className="px-4 py-3 border-t border-[var(--color-border-default)] text-xs text-[var(--color-text-tertiary)]">
-              <div className="flex justify-between">
-                <span>⏎ Select</span>
-                <span>↑↓ Navigate</span>
-              </div>
-            </div>
-          </div>
+              <ChevronRight className="w-4 h-4 text-[var(--color-text-tertiary)] flex-shrink-0" />
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div className="px-4 py-8 text-center text-[var(--color-text-secondary)]">
+          <p className="text-sm">No results found</p>
         </div>
       )}
-    </>
+
+      <div className="px-4 py-3 border-t border-[var(--color-border-default)] text-xs text-[var(--color-text-tertiary)]">
+        <div className="flex justify-between">
+          <span>⏎ Select</span>
+          <span>↑↓ Navigate</span>
+        </div>
+      </div>
+    </Dialog>
   );
 }

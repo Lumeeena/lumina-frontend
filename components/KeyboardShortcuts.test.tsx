@@ -82,4 +82,19 @@ describe("KeyboardShortcuts", () => {
     fireEvent.keyDown(window, { key: "r" });
     expect(push).not.toHaveBeenCalled();
   });
+
+  it("returns focus to the trigger button on close", () => {
+    render(<KeyboardShortcuts />);
+    const triggerButton = screen.getByRole("button", { name: /keyboard shortcuts/i });
+    triggerButton.focus();
+    expect(document.activeElement).toBe(triggerButton);
+
+    fireEvent.keyDown(window, { key: "?" });
+    expect(screen.getByRole("dialog", { name: /keyboard shortcuts/i })).toBeTruthy();
+    expect(document.activeElement).not.toBe(triggerButton);
+
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(document.activeElement).toBe(triggerButton);
+  });
 });
