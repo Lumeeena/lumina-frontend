@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { GRAPHQL_URL, gqlFetch } from "@/lib/graphql";
-import { getContractInterface } from "@/lib/contractInterface";
+import {
+  getContractInterface,
+  SHARED_WASM_LIMIT,
+} from "@/lib/contractInterface";
 import { routeMetadata } from "@/lib/metadata";
 import { truncateAddress } from "@/lib/formatters";
 import {
@@ -12,6 +15,7 @@ import BackendUnavailable from "@/components/BackendUnavailable";
 import CopyAddressButton from "@/components/CopyAddressButton";
 import WatchIndicator from "@/components/WatchIndicator";
 import SorobanValue from "@/components/SorobanValue";
+import SharedWasmContracts from "@/components/SharedWasmContracts";
 import ViewTracker from "@/components/ViewTracker";
 
 export const dynamic = "force-dynamic";
@@ -168,6 +172,15 @@ export default async function ContractPage({
             )}
           </div>
         </div>
+
+        {/* Only once the deployment loaded: an unavailable API must not read
+            as "no other contract shares this code". */}
+        {deployment && (
+          <SharedWasmContracts
+            contracts={deployment.sharedWasmContracts}
+            limit={SHARED_WASM_LIMIT}
+          />
+        )}
       </section>
 
       <section className="mb-8" aria-labelledby="contract-interface-heading">
@@ -208,26 +221,6 @@ export default async function ContractPage({
               : contractInterface.unreadable
                 ? "This contract's WASM specification could not be read."
                 : "No readable function specification is indexed for this contract yet."}
-          </div>
-        )}
-
-        {contractInterface.sharedContractIds.length > 0 && (
-          <div className="mt-5">
-            <h3 className="text-sm font-semibold text-[var(--color-text-primary)] mb-2">
-              Contracts using the same WASM
-            </h3>
-            <ul className="space-y-1">
-              {contractInterface.sharedContractIds.map((sharedId) => (
-                <li key={sharedId}>
-                  <Link
-                    href={`/contracts/${sharedId}`}
-                    className="mono text-xs text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-fill)]"
-                  >
-                    {sharedId}
-                  </Link>
-                </li>
-              ))}
-            </ul>
           </div>
         )}
       </section>

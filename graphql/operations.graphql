@@ -319,6 +319,20 @@ query AccountTrustlineOps($address: String!, $limit: Int, $cursor: String, $netw
   }
 }
 
+query ContractDeployment($contractId: String!, $sharedLimit: Int) {
+  contract(contractId: $contractId) {
+    wasmHash
+    deployer
+    deployedLedger
+    sharedWasmContracts(limit: $sharedLimit) {
+      contractId
+      deployer
+      deployedLedger
+      deployedAt
+    }
+  }
+}
+
 query ContractStorageEntries($contractId: String!, $keyPrefix: String, $durability: ContractStorageDurability, $limit: Int, $cursor: String, $network: Network) {
   contractStorageEntries(contractId: $contractId, keyPrefix: $keyPrefix, durability: $durability, limit: $limit, cursor: $cursor, network: $network) {
     items {

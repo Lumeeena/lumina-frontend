@@ -1289,6 +1289,30 @@ export const AccountLifecycleDocument = new TypedDocumentString(`
 }
     `) as unknown as TypedDocumentString<AccountLifecycleQuery, AccountLifecycleQueryVariables>;
 
+export type ContractDeploymentQueryVariables = Exact<{
+  contractId: Scalars['String']['input'];
+  sharedLimit?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type ContractDeploymentQuery = { contract: { wasmHash: string, deployer: string, deployedLedger: number, sharedWasmContracts: Array<{ contractId: string, deployer: string, deployedLedger: number, deployedAt: string }> | null } | null };
+
+export const ContractDeploymentDocument = new TypedDocumentString(`
+    query ContractDeployment($contractId: String!, $sharedLimit: Int) {
+  contract(contractId: $contractId) {
+    wasmHash
+    deployer
+    deployedLedger
+    sharedWasmContracts(limit: $sharedLimit) {
+      contractId
+      deployer
+      deployedLedger
+      deployedAt
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<ContractDeploymentQuery, ContractDeploymentQueryVariables>;
+
 // ── ContractStorageEntries (#370) ────────────────────────────────────────────
 
 export type ContractStorageEntriesQueryVariables = Exact<{

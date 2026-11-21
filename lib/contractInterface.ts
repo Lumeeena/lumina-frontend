@@ -1,3 +1,14 @@
+import {
+  ContractDeploymentDocument,
+  type ContractDeploymentQuery,
+} from "./generated/graphql";
+
+/**
+ * How many same-code contracts to ask for. The API returns them without a
+ * total, so a full page is shown as "the first N" rather than as all of them.
+ */
+export const SHARED_WASM_LIMIT = 10;
+
 export interface ContractArgument {
   name: string;
   type: string;
@@ -9,16 +20,25 @@ export interface ContractFunction {
   outputs: string[];
 }
 
+/** Another contract deployed from the same wasm, with its own deployment. */
+export interface SharedWasmContract {
+  contractId: string;
+  deployer: string;
+  deployedLedger: number;
+  deployedAt: string;
+}
+
 export interface ContractDeployment {
   deployer: string | null;
   deploymentLedger: number | null;
   wasmHash: string | null;
+  /** Other contracts running the same code, never this one. */
+  sharedWasmContracts: SharedWasmContract[];
 }
 
 export interface ContractInterfaceResult {
   functions: ContractFunction[];
   wasmHash?: string;
-  sharedContractIds: string[];
   deployment: ContractDeployment | null;
   unreadable: boolean;
   unavailable: boolean;
@@ -88,12 +108,12 @@ export function normalizeFunctions(value: unknown): ContractFunction[] {
 async function query<T>(
   url: string,
   document: string,
-  contractId: string,
+  variables: Record<string, unknown>,
 ): Promise<T> {
   const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query: document, variables: { contractId } }),
+    body: JSON.stringify({ query: document, variables }),
     next: { revalidate: 60 },
   });
   if (!response.ok)
@@ -108,24 +128,13 @@ export async function getContractInterface(
   url: string,
   contractId: string,
 ): Promise<ContractInterfaceResult> {
-  const deploymentRequest = query<{
-    contract: null | {
-      wasmHash: string;
-      deployer: string | null;
-      deploymentLedger: number | null;
-      sharedWasmContracts: Array<{ contractId: string }> | null;
-    };
-  }>(
+  // From operations.graphql, so the selection is checked against the schema.
+  // It used to be written inline here and asked for `deploymentLedger`, a
+  // field the API does not have, which failed the whole request.
+  const deploymentRequest = query<ContractDeploymentQuery>(
     url,
-    `query ContractDeployment($contractId: String!) {
-      contract(contractId: $contractId) {
-        wasmHash
-        deployer
-        deploymentLedger
-        sharedWasmContracts { contractId }
-      }
-    }`,
-    contractId,
+    ContractDeploymentDocument.toString(),
+    { contractId, sharedLimit: SHARED_WASM_LIMIT },
   );
   const interfaceRequest = query<{
     contractInterface: null | { wasmHash?: string; functions: unknown };
@@ -134,7 +143,7 @@ export async function getContractInterface(
     `query ContractInterface($contractId: String!) {
       contractInterface(contractId: $contractId) { wasmHash functions }
     }`,
-    contractId,
+    { contractId },
   );
 
   const [deployment, contractInterface] = await Promise.allSettled([
@@ -152,16 +161,17 @@ export async function getContractInterface(
   return {
     functions,
     wasmHash: specification?.wasmHash ?? metadata?.wasmHash,
-    sharedContractIds:
-      metadata?.sharedWasmContracts
-        ?.map(({ contractId: sharedId }) => sharedId)
-        .filter((sharedId) => sharedId !== contractId) ?? [],
     deployment:
       metadata !== null
         ? {
             deployer: metadata.deployer ?? null,
-            deploymentLedger: metadata.deploymentLedger ?? null,
+            deploymentLedger: metadata.deployedLedger ?? null,
             wasmHash: metadata.wasmHash ?? null,
+            // The API leaves this contract out already; filtered again so a
+            // contract can never be listed as sharing code with itself.
+            sharedWasmContracts: (metadata.sharedWasmContracts ?? []).filter(
+              (shared) => shared.contractId !== contractId,
+            ),
           }
         : null,
     unreadable:
