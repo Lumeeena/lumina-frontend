@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_ROUTES } from "@/lib/routes";
@@ -11,6 +11,8 @@ import LocaleSwitcher from "./LocaleSwitcher";
 import ThemeToggle from "@/components/ThemeToggle";
 import TimezoneToggle from "@/components/TimezoneToggle";
 import AddressLabelManager from "./AddressLabelManager";
+import ActivityBell from "./ActivityBell";
+import { loadWatches, subscribeToWatches } from "@/lib/watches";
 
 /**
  * The nav for one network: the wordmark, the section links, and optionally the
@@ -80,6 +82,19 @@ function RoutedNavContent({ pathname }: { pathname: string }) {
 
 export default function Navbar() {
   const pathname = usePathname();
+  const [hasWatches, setHasWatches] = useState(false);
+
+  useEffect(() => {
+    // Check if there are any watches on mount
+    setHasWatches(loadWatches().length > 0);
+
+    // Re-check when watches change
+    const unsubscribe = subscribeToWatches(() => {
+      setHasWatches(loadWatches().length > 0);
+    });
+
+    return unsubscribe;
+  }, []);
 
   return (
     <nav aria-label="Main navigation" className="flex items-center gap-1 px-4 sm:px-7 h-[60px] border-b border-[var(--color-border-default)] bg-[var(--color-bg-base)]/90 backdrop-blur sticky top-0 z-20 overflow-x-auto">
@@ -94,6 +109,7 @@ export default function Navbar() {
 
       {/* Push the toggle and switcher to the far right */}
       <div className="ms-auto shrink-0 flex items-center gap-2">
+        {hasWatches && <ActivityBell />}
         <AddressLabelManager />
         <LocaleSwitcher />
         <TimezoneToggle />

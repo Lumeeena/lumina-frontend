@@ -8,17 +8,49 @@ interface AnalyticsPayload {
   timestamp: number;
 }
 
+// Known event types that the analytics system accepts
+const KNOWN_EVENTS = ["pageView", "featureUsage"] as const;
+
+// Maximum field lengths to prevent log flooding
+const MAX_FIELD_LENGTHS = {
+  event: 50,
+  route: 500,
+  feature: 100,
+  sessionId: 50,
+} as const;
+
 function validatePayload(data: unknown): data is AnalyticsPayload {
   if (typeof data !== "object" || data === null) return false;
 
   const payload = data as Record<string, unknown>;
-  return (
-    typeof payload.event === "string" &&
-    (payload.route === undefined || typeof payload.route === "string") &&
-    (payload.feature === undefined || typeof payload.feature === "string") &&
-    typeof payload.sessionId === "string" &&
-    typeof payload.timestamp === "number"
-  );
+
+  // Type checks
+  if (
+    typeof payload.event !== "string" ||
+    (payload.route !== undefined && typeof payload.route !== "string") ||
+    (payload.feature !== undefined && typeof payload.feature !== "string") ||
+    typeof payload.sessionId !== "string" ||
+    typeof payload.timestamp !== "number"
+  ) {
+    return false;
+  }
+
+  // Length checks
+  if (
+    payload.event.length > MAX_FIELD_LENGTHS.event ||
+    (payload.route !== undefined && payload.route.length > MAX_FIELD_LENGTHS.route) ||
+    (payload.feature !== undefined && payload.feature.length > MAX_FIELD_LENGTHS.feature) ||
+    payload.sessionId.length > MAX_FIELD_LENGTHS.sessionId
+  ) {
+    return false;
+  }
+
+  // Known event check
+  if (!KNOWN_EVENTS.includes(payload.event as any)) {
+    return false;
+  }
+
+  return true;
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -35,14 +67,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ ok: true });
     }
 
-    // In production, you would aggregate and store this data
-    // For now, we just acknowledge receipt
-    console.debug("Analytics event received:", {
-      event: data.event,
-      route: data.route,
-      feature: data.feature,
-      timestamp: new Date(data.timestamp).toISOString(),
-    });
+    // Analytics events are acknowledged but not currently stored or aggregated.
+    // See docs/FEATURES.md for details on data handling.
 
     return NextResponse.json({ ok: true });
   } catch (error) {

@@ -107,6 +107,8 @@ Data collected:
 - Route changes (page views by path, not specific values)
 - Feature usage (which features are used, not by whom)
 
+**Data handling:** Analytics events are currently acknowledged by the `/api/analytics` endpoint but are not stored or aggregated. Events are validated for type, length, and known event names before acceptance. Oversized or unknown payloads are rejected with a 400 status. Per-event logging is disabled in production to prevent log flooding.
+
 Users can opt out via localStorage: see `lib/analytics.ts` for the `setOptOut()` method.
 
 The analytics endpoint is at `/api/analytics` and requires the request to validate.

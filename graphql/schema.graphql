@@ -845,6 +845,30 @@ type Transaction {
   Operations may be null when their lookup fails; errors remain local to this field.
   """
   operations: [Operation!]
+  """
+  The account that paid the fee for this transaction. Null for non-fee-bump
+  transactions. When present and differs from sourceAccount, this is a fee bump.
+  """
+  feePayer: String
+  """
+  For fee bump transactions, a summary of the inner transaction that was bumped.
+  Null for regular transactions.
+  """
+  innerTransaction: InnerTransaction
+}
+
+"""
+A summary of the inner transaction for fee bump transactions.
+"""
+type InnerTransaction {
+  """Transaction hash, 64 lowercase hex characters."""
+  hash: String!
+  """Account that submitted the inner transaction."""
+  sourceAccount: String!
+  """Operations in the inner transaction."""
+  operationCount: Int!
+  """False when the inner transaction failed."""
+  successful: Boolean!
 }
 
 """

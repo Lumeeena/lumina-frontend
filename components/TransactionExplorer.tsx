@@ -30,8 +30,23 @@ import {
 import TransactionFilters from "./TransactionFilters";
 import BackendUnavailable from "./BackendUnavailable";
 import { t } from "@/lib/i18n";
+import { ColumnVisibilityMenu } from "./ColumnVisibilityMenu";
+import { useColumnVisibility } from "@/lib/useColumnVisibility";
 
 export const PAGE_SIZE = 50;
+
+// Column definitions for the transaction table
+const TRANSACTION_COLUMNS = [
+  { key: "status", label: "Status" },
+  { key: "hash", label: "Hash" },
+  { key: "ledger", label: "Ledger" },
+  { key: "source", label: "Source" },
+  { key: "ops", label: "Ops" },
+  { key: "fee", label: "Fee" },
+  { key: "time", label: "Time" },
+] as const;
+
+const COLUMN_KEYS = TRANSACTION_COLUMNS.map(col => col.key);
 
 /**
  * How many filtered matches to chase before stopping.
@@ -75,6 +90,12 @@ export default function TransactionExplorer({
   const loadedHashes = useRef(new Set<string>());
   const loadingRef = useRef(false);
   const requestControllerRef = useRef<AbortController | null>(null);
+
+  // Column visibility state
+  const { isVisible, toggleColumn, visibleCount } = useColumnVisibility(
+    "transaction-explorer",
+    COLUMN_KEYS
+  );
 
   // The URL is the source of truth for filters, so a refresh, a back button
   // and a pasted link all land on the same view.
@@ -339,13 +360,21 @@ export default function TransactionExplorer({
               })
             : t("explorer.loadedCount", { count: txs.length })}
         </span>
-        <span
-          role="status"
-          aria-live="polite"
-          className="text-[var(--color-text-muted)] animate-pulse motion-reduce:animate-none"
-        >
-          {loading ? t("explorer.loading") : ""}
-        </span>
+        <div className="flex items-center gap-3">
+          <ColumnVisibilityMenu
+            columns={TRANSACTION_COLUMNS}
+            isVisible={isVisible}
+            toggleColumn={toggleColumn}
+            visibleCount={visibleCount}
+          />
+          <span
+            role="status"
+            aria-live="polite"
+            className="text-[var(--color-text-muted)] animate-pulse motion-reduce:animate-none"
+          >
+            {loading ? t("explorer.loading") : ""}
+          </span>
+        </div>
       </div>
 
       <VirtualizedTransactionTable
@@ -359,6 +388,7 @@ export default function TransactionExplorer({
         }
         initialScrollTop={restoredScrollTop}
         onScrollTopChange={handleScrollTopChange}
+        visibleColumns={COLUMN_KEYS.filter(isVisible)}
       >
         <div ref={sentinelRef} data-testid="scroll-sentinel" className="h-px" />
       </VirtualizedTransactionTable>

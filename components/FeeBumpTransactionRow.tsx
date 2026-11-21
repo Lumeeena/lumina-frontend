@@ -6,9 +6,16 @@ import { withNetwork } from "@/lib/network";
 import { useNetwork } from "@/lib/useNetwork";
 import type { Transaction } from "@/lib/types";
 
+interface InnerTransaction {
+  hash: string;
+  sourceAccount: string;
+  operationCount: number;
+  successful: boolean;
+}
+
 interface FeeBumpTransactionRowProps {
   feePayerTransaction: Transaction;
-  innerTransaction?: Transaction | null;
+  innerTransaction?: InnerTransaction | null;
 }
 
 export default function FeeBumpTransactionRow({
@@ -31,7 +38,7 @@ export default function FeeBumpTransactionRow({
           </Link>
           <div className="text-xs text-[var(--color-text-secondary)] mt-1">
             Fee:{" "}
-            {formatXLM((parseInt(feePayerTransaction.feeCharged) / 1e7).toFixed(7))}{" "}
+            {formatXLM(feePayerTransaction.feeCharged)}{" "}
             XLM
           </div>
         </div>

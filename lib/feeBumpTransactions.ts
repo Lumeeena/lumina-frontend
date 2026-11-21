@@ -1,5 +1,7 @@
 // Helper functions for working with fee bump transactions
 
+import { formatXLM } from "./formatters";
+
 export interface FeeBumpTransaction {
   feePayerAccount: string;
   feeCharged: string;
@@ -26,13 +28,13 @@ export function formatFeeBump(feeBump: FeeBumpTransaction): {
 } {
   return {
     feePayerAddress: feeBump.feePayerAccount,
-    feeAmount: (parseInt(feeBump.feeCharged) / 1e7).toFixed(7),
+    feeAmount: formatXLM(feeBump.feeCharged),
     hasInnerTransaction: !!(feeBump.innerTransaction),
   };
 }
 
 export function getFeeBumpDescription(feeBump: FeeBumpTransaction): string {
-  const fee = (parseInt(feeBump.feeCharged) / 1e7).toFixed(7);
+  const fee = formatXLM(feeBump.feeCharged);
   if (feeBump.innerTransaction) {
     return `Fee bump: ${fee} XLM paid by ${feeBump.feePayerAccount}`;
   }
