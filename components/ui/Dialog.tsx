@@ -30,6 +30,10 @@ export interface DialogProps {
   className?: string;
   /** Maximum width class. */
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  /** Ref to the trigger element for focus return. */
+  triggerRef?: React.RefObject<HTMLElement>;
+  /** Hide the default header for custom layouts. */
+  hideHeader?: boolean;
 }
 
 const MAX_WIDTH_CLASSES = {
@@ -41,7 +45,7 @@ const MAX_WIDTH_CLASSES = {
 };
 
 export const Dialog = React.forwardRef<HTMLDivElement, DialogProps>(
-  ({ open, onClose, title, description, children, footer, className = '', maxWidth = 'md' }, ref) => {
+  ({ open, onClose, title, description, children, footer, className = '', maxWidth = 'md', triggerRef, hideHeader = false }, ref) => {
     const panelRef = React.useRef<HTMLDivElement>(null);
     const titleId = React.useId();
     const descId = React.useId();
@@ -88,6 +92,13 @@ export const Dialog = React.forwardRef<HTMLDivElement, DialogProps>(
       return () => panel.removeEventListener('keydown', handleKeyDown);
     }, [open, onClose]);
 
+    // Focus return to trigger on close
+    React.useEffect(() => {
+      if (!open) {
+        triggerRef?.current?.focus();
+      }
+    }, [open, triggerRef]);
+
     // Scroll lock
     React.useEffect(() => {
       if (!open) return;
@@ -114,25 +125,27 @@ export const Dialog = React.forwardRef<HTMLDivElement, DialogProps>(
           className={`bg-[var(--color-bg-primary)] rounded-xl shadow-2xl border border-[var(--color-border-default)] w-full ${MAX_WIDTH_CLASSES[maxWidth]} ${className}`}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--color-border-default)]">
-            <div>
-              <h2 id={titleId} className="text-lg font-semibold text-[var(--color-text-primary)]">
-                {title}
-              </h2>
-              {description && (
-                <p id={descId} className="text-sm text-[var(--color-text-secondary)] mt-1">
-                  {description}
-                </p>
-              )}
+          {!hideHeader && (
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--color-border-default)]">
+              <div>
+                <h2 id={titleId} className="text-lg font-semibold text-[var(--color-text-primary)]">
+                  {title}
+                </h2>
+                {description && (
+                  <p id={descId} className="text-sm text-[var(--color-text-secondary)] mt-1">
+                    {description}
+                  </p>
+                )}
+              </div>
+              <button
+                onClick={onClose}
+                className="p-2 rounded-lg hover:bg-[var(--color-bg-raised)] transition-colors"
+                aria-label="Close dialog"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
-            <button
-              onClick={onClose}
-              className="p-2 rounded-lg hover:bg-[var(--color-bg-raised)] transition-colors"
-              aria-label="Close dialog"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+          )}
 
           {/* Body */}
           <div className="px-6 py-4">{children}</div>
