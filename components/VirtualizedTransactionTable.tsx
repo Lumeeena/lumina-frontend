@@ -9,14 +9,15 @@ import { t } from "@/lib/i18n";
 
 const ROW_HEIGHT = 41;
 const OVERSCAN = 12;
-/** Number of columns in the desktop table: status dot + hash + ledger + source + ops + fee + time. */
-const COLUMNS = 7;
+/** All possible columns in the desktop table: status dot + hash + ledger + source + ops + fee + time. */
+const ALL_COLUMNS = 7;
 
 export default function VirtualizedTransactionTable({
   transactions,
   emptyMessage,
   children,
   initialScrollTop = 0,
+  visibleColumns,
 }: {
   transactions: Transaction[];
   emptyMessage: string | null;
@@ -29,6 +30,8 @@ export default function VirtualizedTransactionTable({
   initialScrollTop?: number;
   /** Reports the scroll offset so the parent can remember it. */
   onScrollTopChange?: (scrollTop: number) => void;
+  /** List of column keys that should be visible. If not provided, all columns are shown. */
+  visibleColumns?: string[];
 }) {
   // TanStack Virtual exposes mutable instance methods that cannot be memoized.
   // Keep that boundary here so filtering, fetching and presets remain eligible.
@@ -42,6 +45,10 @@ export default function VirtualizedTransactionTable({
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Determine which columns to show
+  const columnKeys = visibleColumns || ["status", "hash", "ledger", "source", "ops", "fee", "time"];
+  const columnCount = columnKeys.length;
 
   // ── Virtualization ──────────────────────────────────────────────────────
 
@@ -84,30 +91,42 @@ export default function VirtualizedTransactionTable({
             key={tx.hash}
             className="rounded-lg border border-[var(--color-border-default)] p-4 bg-[var(--color-bg-subtle)]"
           >
-            <div className="flex justify-between items-start mb-2">
-              <span className="text-xs font-semibold text-[var(--color-text-muted)]">{t("table.hash")}</span>
-              <span className="mono text-xs text-[var(--color-text-primary)] font-semibold truncate ms-2">{tx.hash.slice(0, 12)}…</span>
-            </div>
-            <div className="flex justify-between items-start mb-2">
-              <span className="text-xs font-semibold text-[var(--color-text-muted)]">{t("table.ledger")}</span>
-              <span className="mono text-xs text-[var(--color-text-primary)]">{tx.ledger}</span>
-            </div>
-            <div className="flex justify-between items-start mb-2">
-              <span className="text-xs font-semibold text-[var(--color-text-muted)]">{t("table.source")}</span>
-              <span className="mono text-xs text-[var(--color-text-primary)] truncate ms-2">{tx.sourceAccount.slice(0, 12)}…</span>
-            </div>
-            <div className="flex justify-between items-start mb-2">
-              <span className="text-xs font-semibold text-[var(--color-text-muted)]">{t("table.operations")}</span>
-              <span className="mono text-xs text-[var(--color-text-primary)]">{tx.operationCount}</span>
-            </div>
-            <div className="flex justify-between items-start mb-2">
-              <span className="text-xs font-semibold text-[var(--color-text-muted)]">{t("table.fee")}</span>
-              <span className="mono text-xs text-[var(--color-text-primary)]">{tx.feeCharged}</span>
-            </div>
-            <div className="flex justify-between items-start">
-              <span className="text-xs font-semibold text-[var(--color-text-muted)]">{t("table.time")}</span>
-              <span className="text-xs text-[var(--color-text-primary)]">{new Date(tx.createdAt).toLocaleDateString()}</span>
-            </div>
+            {columnKeys.includes("hash") && (
+              <div className="flex justify-between items-start mb-2">
+                <span className="text-xs font-semibold text-[var(--color-text-muted)]">{t("table.hash")}</span>
+                <span className="mono text-xs text-[var(--color-text-primary)] font-semibold truncate ms-2">{tx.hash.slice(0, 12)}…</span>
+              </div>
+            )}
+            {columnKeys.includes("ledger") && (
+              <div className="flex justify-between items-start mb-2">
+                <span className="text-xs font-semibold text-[var(--color-text-muted)]">{t("table.ledger")}</span>
+                <span className="mono text-xs text-[var(--color-text-primary)]">{tx.ledger}</span>
+              </div>
+            )}
+            {columnKeys.includes("source") && (
+              <div className="flex justify-between items-start mb-2">
+                <span className="text-xs font-semibold text-[var(--color-text-muted)]">{t("table.source")}</span>
+                <span className="mono text-xs text-[var(--color-text-primary)] truncate ms-2">{tx.sourceAccount.slice(0, 12)}…</span>
+              </div>
+            )}
+            {columnKeys.includes("ops") && (
+              <div className="flex justify-between items-start mb-2">
+                <span className="text-xs font-semibold text-[var(--color-text-muted)]">{t("table.operations")}</span>
+                <span className="mono text-xs text-[var(--color-text-primary)]">{tx.operationCount}</span>
+              </div>
+            )}
+            {columnKeys.includes("fee") && (
+              <div className="flex justify-between items-start mb-2">
+                <span className="text-xs font-semibold text-[var(--color-text-muted)]">{t("table.fee")}</span>
+                <span className="mono text-xs text-[var(--color-text-primary)]">{tx.feeCharged}</span>
+              </div>
+            )}
+            {columnKeys.includes("time") && (
+              <div className="flex justify-between items-start">
+                <span className="text-xs font-semibold text-[var(--color-text-muted)]">{t("table.time")}</span>
+                <span className="text-xs text-[var(--color-text-primary)]">{new Date(tx.createdAt).toLocaleDateString()}</span>
+              </div>
+            )}
           </div>
         ))}
         {children}
@@ -119,7 +138,7 @@ export default function VirtualizedTransactionTable({
     <Table
       ref={scrollRef}
       caption="Transactions"
-      columnCount={COLUMNS}
+      columnCount={columnCount}
       stickyHeader
       containerClassName="rounded-xl border border-[var(--color-border-default)] overflow-auto max-h-[70vh]"
       onScroll={event => onScrollTopChange?.(event.currentTarget.scrollTop)}
@@ -133,13 +152,13 @@ export default function VirtualizedTransactionTable({
         {/* A plain row: `TableRow`'s border belongs to body rows, and the
             header cells already draw their own. */}
         <tr>
-          <TableHeaderCell className="w-6" />
-          <TableHeaderCell>{t("table.hash")}</TableHeaderCell>
-          <TableHeaderCell>{t("table.ledger")}</TableHeaderCell>
-          <TableHeaderCell>{t("table.source")}</TableHeaderCell>
-          <TableHeaderCell>{t("table.ops")}</TableHeaderCell>
-          <TableHeaderCell>{t("table.fee")}</TableHeaderCell>
-          <TableHeaderCell>{t("table.time")}</TableHeaderCell>
+          {columnKeys.includes("status") && <TableHeaderCell className="w-6" />}
+          {columnKeys.includes("hash") && <TableHeaderCell>{t("table.hash")}</TableHeaderCell>}
+          {columnKeys.includes("ledger") && <TableHeaderCell>{t("table.ledger")}</TableHeaderCell>}
+          {columnKeys.includes("source") && <TableHeaderCell>{t("table.source")}</TableHeaderCell>}
+          {columnKeys.includes("ops") && <TableHeaderCell>{t("table.ops")}</TableHeaderCell>}
+          {columnKeys.includes("fee") && <TableHeaderCell>{t("table.fee")}</TableHeaderCell>}
+          {columnKeys.includes("time") && <TableHeaderCell>{t("table.time")}</TableHeaderCell>}
         </tr>
       </TableHead>
       <TableBody>
@@ -147,18 +166,19 @@ export default function VirtualizedTransactionTable({
           // Layout, not data: kept as a bare cell so the inline height the
           // virtualizer measures is not padded out by the shared cell styles.
           <tr aria-hidden="true">
-            <td colSpan={COLUMNS} style={{ height: paddingTop }} />
+            <td colSpan={columnCount} style={{ height: paddingTop }} />
           </tr>
         )}
         {virtualRows.map((virtualRow) => (
           <TransactionRow
             key={transactions[virtualRow.index].hash}
             tx={transactions[virtualRow.index]}
+            visibleColumns={columnKeys}
           />
         ))}
         {paddingBottom > 0 && (
           <tr aria-hidden="true">
-            <td colSpan={COLUMNS} style={{ height: paddingBottom }} />
+            <td colSpan={columnCount} style={{ height: paddingBottom }} />
           </tr>
         )}
       </TableBody>
