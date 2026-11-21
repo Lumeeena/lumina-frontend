@@ -20,6 +20,7 @@ import AccountLifecycleSection from "@/components/AccountLifecycle";
 import BackendUnavailable from "@/components/BackendUnavailable";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import ViewTracker from "@/components/ViewTracker";
+import { AccountActions } from "@/components/AccountActions";
 
 export const dynamic = "force-dynamic";
 
@@ -155,6 +156,7 @@ export default async function AccountPage({
             </h1>
             <CopyAddressButton address={address} />
             <WatchIndicator address={address} />
+            <AccountActions account={account} address={address} />
             {isMerged && (
               <span className="rounded-full bg-[var(--color-warning-bg)] border border-[var(--color-warning-outline)] text-[var(--color-warning-text)] text-xs font-semibold px-3 py-1">
                 Merged

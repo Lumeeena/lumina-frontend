@@ -9,6 +9,7 @@ import { truncateAddress } from "@/lib/formatters";
 import { routeMetadata } from "@/lib/metadata";
 import { SITE_NAME } from "@/lib/site";
 import { TypedDocumentString } from "@/lib/generated/graphql";
+import { AssetActions } from "@/components/AssetActions";
 
 const BUCKET_SECONDS = 86_400;
 
@@ -166,6 +167,7 @@ export default async function AssetDetailPage({
               {asset.native ? "Native asset" : "Custom asset"}
             </span>
           )}
+          <AssetActions asset={asset} />
         </div>
         {asset.issuer ? (
           <p className="mono text-base break-all text-[var(--color-text-secondary)]">
