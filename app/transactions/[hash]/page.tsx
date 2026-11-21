@@ -17,6 +17,8 @@ import BackendUnavailable from "@/components/BackendUnavailable";
 import CopyAddressButton from "@/components/CopyAddressButton";
 import TimeAgo from "@/components/TimeAgo";
 import ViewTracker from "@/components/ViewTracker";
+import TransactionPreconditions from "@/components/TransactionPreconditions";
+import IndexingGapIndicator from "@/components/IndexingGapIndicator";
 
 export const dynamic = "force-dynamic";
 
@@ -112,7 +114,13 @@ export default async function TransactionPage({
             <CopyAddressButton address={transaction.hash} variant="hash" />
           </div>
           <p className="text-[var(--color-text-muted)] text-[13px] mb-6">
-            Included in ledger {transaction.ledger.toLocaleString()}
+            Included in ledger{" "}
+            <Link
+              href={`/ledgers/${transaction.ledger}`}
+              className="text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline"
+            >
+              {transaction.ledger.toLocaleString()}
+            </Link>
           </p>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -180,6 +188,13 @@ export default async function TransactionPage({
                 </tr>
               </tbody>
             </table>
+          </div>
+
+          <h2 className="font-extrabold text-base mb-3 text-[var(--color-text-primary)]">
+            Preconditions
+          </h2>
+          <div className="mb-9">
+            <TransactionPreconditions preconditions={null} />
           </div>
 
           <h2 className="font-extrabold text-base mb-3 text-[var(--color-text-primary)]">

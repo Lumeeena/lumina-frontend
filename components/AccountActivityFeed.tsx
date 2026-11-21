@@ -104,7 +104,7 @@ export default function AccountActivityFeed({ address }: { address: string }) {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`View ${operation.type.toLowerCase()} transaction ${operation.transactionHash} on Stellar Expert (opens in a new tab)`}
-                  className="mono text-xs text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-fill)]"
+                  className="mono text-xs text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline motion-safe:transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-fill)]"
                 >
                   {truncateAddress(operation.transactionHash, 5)}
                 </a>

@@ -58,6 +58,11 @@ export const EMPTY_OPERATION_FILTERS: OperationFilters = {
   asset: "",
 };
 
+/**
+ * Operation types accepted by the watch type filter, with `all` as its
+ * unfiltered choice. Use this list to populate type controls and validate
+ * values loaded from URLs or storage.
+ */
 export const OPERATION_TYPE_FILTERS: readonly (Operation["type"] | "all")[] = [
   "all",
   "PAYMENT",
@@ -81,6 +86,8 @@ export const OPERATION_TYPE_FILTERS: readonly (Operation["type"] | "all")[] = [
 /**
  * Native XLM arrives with a null asset, so a filter that only ever read
  * `operation.asset` could never match the currency most people are watching for.
+ * Use this helper wherever an operation's asset code is compared or displayed
+ * as part of watch filtering; non-null asset values pass through unchanged.
  */
 export function operationAsset(operation: Operation): string {
   return operation.asset ?? "XLM";
@@ -98,7 +105,11 @@ const OPERATION_FILTER_SPEC: FilterSpec<Operation> = [
     // the payment default. Falling back to "all" here would turn a typo into an
     // alert on every operation, which is the opposite of what the default is for.
     parse: (raw) =>
-      oneOf(raw, OPERATION_TYPE_FILTERS, DEFAULT_OPERATION_FILTERS.operationType),
+      oneOf(
+        raw,
+        OPERATION_TYPE_FILTERS,
+        DEFAULT_OPERATION_FILTERS.operationType,
+      ),
     serialise: (value) => String(value),
     matches: (value, operation) =>
       value === "all" ||
@@ -107,18 +118,35 @@ const OPERATION_FILTER_SPEC: FilterSpec<Operation> = [
       operation.type === value,
   },
   minNumberField("minAmount", (operation) => {
-    if (operation.amount === null || operation.amount === undefined) return null;
+    if (operation.amount === null || operation.amount === undefined)
+      return null;
     const amount = Number(operation.amount);
     return Number.isFinite(amount) ? amount : null;
   }),
   substringField("asset", operationAsset),
 ];
 
-/** How many of the three fields are set — the "(2)" in "2 filters active". */
+/**
+ * Count active type, minimum-amount and asset constraints for a watch settings
+ * indicator. `all`, a missing amount bound and a blank asset are inactive;
+ * `PAYMENT` is active even though it is the watch default, and a zero amount
+ * is an active bound.
+ *
+ * @param filters Watch operation filters to inspect.
+ * @returns The number of active constraints, from zero to three.
+ */
 export function countActiveOperationFilters(filters: OperationFilters): number {
   return countActiveFilters(filters, OPERATION_FILTER_SPEC);
 }
 
+/**
+ * Check whether no operation constraints are active. Use this to identify an
+ * unfiltered watch; the payment-only default is not empty, while `all` with no
+ * amount or asset constraint is.
+ *
+ * @param filters Watch operation filters to inspect.
+ * @returns `true` when every field is at its unfiltered value.
+ */
 export function isEmptyOperationFilters(filters: OperationFilters): boolean {
   return specIsEmpty(filters, OPERATION_FILTER_SPEC);
 }
@@ -140,34 +168,74 @@ export function matchesOperationFilters(
   return specMatches(operation, filters, OPERATION_FILTER_SPEC);
 }
 
+/**
+ * Apply watch filters to an operation list. Use this to show only matching
+ * activity; when filters are empty it returns the original array unchanged,
+ * otherwise it returns a filtered array. An amount bound excludes operations
+ * that have no valid numeric amount.
+ *
+ * @param operations Operations to filter.
+ * @param filters Watch operation filters to apply.
+ * @returns The original list for empty filters, or a new list of matches.
+ */
 export function applyOperationFilters(
   operations: Operation[],
   filters: OperationFilters,
 ): Operation[] {
   if (isEmptyOperationFilters(filters)) return operations;
-  return operations.filter((operation) => matchesOperationFilters(operation, filters));
+  return operations.filter((operation) =>
+    matchesOperationFilters(operation, filters),
+  );
 }
 
-export function operationFiltersToQueryString(filters: OperationFilters): string {
+/**
+ * Serialize watch filters into a shareable URL query string. Only active fields
+ * are emitted; the `PAYMENT` default is included, while `all`, a missing amount
+ * and a blank asset are omitted. Zero is serialized as a real minimum.
+ *
+ * @param filters Watch operation filters to serialize.
+ * @returns Query-string parameters without a leading `?`.
+ */
+export function operationFiltersToQueryString(
+  filters: OperationFilters,
+): string {
   return filtersToQueryString(filters, OPERATION_FILTER_SPEC);
 }
 
+/**
+ * Parse watch filters from a query string or `URLSearchParams`. Missing and
+ * blank parameters use the watch defaults; unknown parameters are ignored, and
+ * invalid type or amount values fall back to `PAYMENT` or no amount bound
+ * rather than throwing. Use this to restore shareable watch-filter URLs.
+ *
+ * @param query Query-string text or already parsed search parameters.
+ * @returns A complete filter object, defaulting to payment-only filtering.
+ */
 export function operationFiltersFromQueryString(
   query: string | URLSearchParams,
 ): OperationFilters {
-  return filtersFromQueryString(query, OPERATION_FILTER_SPEC, DEFAULT_OPERATION_FILTERS);
+  return filtersFromQueryString(
+    query,
+    OPERATION_FILTER_SPEC,
+    DEFAULT_OPERATION_FILTERS,
+  );
 }
 /**
- * Coerce anything read out of storage into a valid filter.
+ * Coerce an untrusted value, such as persisted watch data, into valid filters.
  *
  * Storage is writable by hand and survived a schema change, so a watch saved by
  * an older build can be missing fields or carrying a value the enum does not
  * contain. Filling each field from the default keeps one bad watch from
- * rendering the whole list unfilterable.
+ * rendering the whole list unfilterable. Non-object input returns a fresh copy
+ * of the payment-only default. For objects, invalid fields are repaired
+ * independently: invalid types become `PAYMENT`, invalid/negative/non-finite
+ * amounts become `null`, and non-string assets become empty strings; valid
+ * asset strings are trimmed.
+ *
+ * @param value Untrusted filter data from storage or another external source.
+ * @returns A complete, normalized watch filter object.
  */
-export function normaliseOperationFilters(
-  value: unknown,
-): OperationFilters {
+export function normaliseOperationFilters(value: unknown): OperationFilters {
   if (typeof value !== "object" || value === null) {
     return { ...DEFAULT_OPERATION_FILTERS };
   }

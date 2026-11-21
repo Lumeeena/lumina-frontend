@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import {
   AccountDetailDocument as ACCOUNT_QUERY,
   AccountTrustlineOpsDocument as TRUSTLINE_QUERY,
+  AccountLifecycleDocument,
+  type AccountLifecycleQuery,
 } from "@/lib/generated/graphql";
 import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
 import { accountOgImage, routeMetadata } from "@/lib/metadata";
@@ -14,6 +16,7 @@ import AccountPortfolio from "@/components/AccountPortfolio";
 import AccountTransactionList from "@/components/AccountTransactionList";
 import AccountOperationList from "@/components/AccountOperationList";
 import AccountTrustlineTimeline from "@/components/AccountTrustlineTimeline";
+import AccountLifecycleSection from "@/components/AccountLifecycle";
 import BackendUnavailable from "@/components/BackendUnavailable";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import ViewTracker from "@/components/ViewTracker";
@@ -66,6 +69,18 @@ async function getTrustlineOps(address: string): Promise<{ items: TrustlineOp[];
   }
 }
 
+async function getAccountLifecycle(address: string): Promise<{
+  lifecycle: AccountLifecycleQuery["accountLifecycle"];
+  unavailable: boolean;
+}> {
+  try {
+    const data = await gqlFetch(GRAPHQL_URL, AccountLifecycleDocument, { address });
+    return { lifecycle: data.accountLifecycle, unavailable: false };
+  } catch {
+    return { lifecycle: null, unavailable: true };
+  }
+}
+
 const th =
   "text-left text-[11px] tracking-[0.06em] uppercase text-[var(--color-text-muted)] px-3 py-2.5 border-b border-[var(--color-border-default)] bg-[var(--color-bg-subtle)]";
 const stat =
@@ -80,9 +95,10 @@ export default async function AccountPage({
   params: Promise<{ address: string }>;
 }) {
   const { address } = await params;
-  const [result, trustlineOps] = await Promise.all([
+  const [result, trustlineOps, lifecycleResult] = await Promise.all([
     getAccount(address),
     getTrustlineOps(address),
+    getAccountLifecycle(address),
   ]);
   const account = result.account;
 
@@ -95,6 +111,8 @@ export default async function AccountPage({
       ].filter((f): f is string => Boolean(f))
     : [];
   if (account && flagTags.length === 0) flagTags.push("No Special Flags");
+
+  const isMerged = !!lifecycleResult.lifecycle?.mergedIntoAddress;
 
   return (
     <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
@@ -137,6 +155,11 @@ export default async function AccountPage({
             </h1>
             <CopyAddressButton address={address} />
             <WatchIndicator address={address} />
+            {isMerged && (
+              <span className="rounded-full bg-[var(--color-warning-bg)] border border-[var(--color-warning-outline)] text-[var(--color-warning-text)] text-xs font-semibold px-3 py-1">
+                Merged
+              </span>
+            )}
           </div>
           <p className="text-[var(--color-text-muted)] text-[13px] mb-6">
             Last modified at ledger{" "}
@@ -264,6 +287,12 @@ export default async function AccountPage({
             </p>
           ) : (
             <AccountTrustlineTimeline address={account.address} initial={trustlineOps.items} />
+          )}
+
+          {!lifecycleResult.unavailable && lifecycleResult.lifecycle && (
+            <div className="mt-9">
+              <AccountLifecycleSection lifecycle={lifecycleResult.lifecycle} />
+            </div>
           )}
         </div>
       )}

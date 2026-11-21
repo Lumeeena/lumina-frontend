@@ -24,7 +24,8 @@
     "measure:compiler": "node scripts/measure-compiler.mjs",
     "test:vitals": "node scripts/vitals-run.mjs",
     "vitals:update": "node scripts/vitals-run.mjs --update",
-    "build:vitals": "npm run codegen && next build --experimental-build-mode compile && next build --experimental-build-mode generate"
+    "build:vitals": "npm run codegen && next build --experimental-build-mode compile && next build --experimental-build-mode generate",
+    "check:schema": "node scripts/check-schema.mjs"
   },
   "dependencies": {
     "@creit.tech/stellar-wallets-kit": "^2.5.0",

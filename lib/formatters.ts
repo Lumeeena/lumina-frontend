@@ -51,20 +51,55 @@ export function setAmountUnit(unit: AmountUnit): void {
   localStorage.setItem(AMOUNT_UNIT_KEY, unit);
 }
 
+const STROOP_SCALE = BigInt(10_000_000); // 10^7
+
+/**
+ * Convert a decimal XLM string to stroops using BigInt arithmetic.
+ * Avoids float rounding: "922337203685.4775807" ↔ 9223372036854775807n exactly.
+ */
+function decimalToStroops(amount: string): bigint | null {
+  const trimmed = amount.trim();
+  if (!trimmed) return null;
+  const dot = trimmed.indexOf(".");
+  if (dot === -1) {
+    // Integer XLM — multiply directly
+    try {
+      return BigInt(trimmed) * STROOP_SCALE;
+    } catch {
+      return null;
+    }
+  }
+  const whole = trimmed.slice(0, dot) || "0";
+  // Pad or truncate fractional part to exactly 7 digits
+  const rawFrac = trimmed.slice(dot + 1);
+  const frac = rawFrac.padEnd(7, "0").slice(0, 7);
+  try {
+    return BigInt(whole) * STROOP_SCALE + BigInt(frac);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Format an XLM decimal string for display, respecting the user's unit preference.
+ *
+ * In stroops mode the decimal string is converted to stroops with BigInt
+ * arithmetic so large balances are exact. In decimal mode the existing
+ * formatStroops-style path is used, again with BigInt, so the display value
+ * is never off by a stroop.
+ */
 export function formatXLM(amount: string, unit?: AmountUnit): string {
   const resolvedUnit = unit || getAmountUnit();
   if (resolvedUnit === "stroops") {
-    // Convert decimal XLM to stroops (1 XLM = 10^7 stroops) and show raw
-    const num = parseFloat(amount);
-    if (isNaN(num)) return amount;
-    return Math.round(num * 1e7).toString();
+    const stroops = decimalToStroops(amount);
+    if (stroops === null) return amount;
+    return stroops.toString();
   }
-  const num = parseFloat(amount);
-  if (isNaN(num)) return amount;
-  return new Intl.NumberFormat(getLocale(), {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 7,
-  }).format(num);
+  // Decimal display: route through the same BigInt formatter as formatStroops
+  // so large balances (near int64 max) are shown without float loss.
+  const stroops = decimalToStroops(amount);
+  if (stroops === null) return amount;
+  return formatStroops(stroops);
 }
 
 /**

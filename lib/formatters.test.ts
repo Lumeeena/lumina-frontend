@@ -70,6 +70,33 @@ describe("formatXLM", () => {
     expect(result).toContain("234");
     expect(result).toContain("50");
   });
+
+  it("converts decimal to stroops exactly without floating-point rounding", () => {
+    // 922337203685.4775807 XLM * 1e7 = 9223372036854775807 stroops (int64 max)
+    expect(formatXLM("922337203685.4775807", "stroops")).toBe("9223372036854775807");
+  });
+
+  it("converts a small fractional amount to stroops exactly", () => {
+    expect(formatXLM("0.0000001", "stroops")).toBe("1");
+  });
+
+  it("converts integer XLM to stroops exactly", () => {
+    expect(formatXLM("100", "stroops")).toBe("1000000000");
+  });
+
+  it("displays a large XLM amount in decimal mode without float loss", () => {
+    // 922337203685.4775807 XLM — a float would lose the last digit
+    const result = formatXLM("922337203685.4775807", "decimal");
+    expect(result).toContain("922,337,203,685");
+    expect(result).toContain("4775807");
+  });
+
+  it("round-trips: decimal -> stroops -> formatStroops matches decimal display", () => {
+    const xlm = "12345678.9";
+    const stroops = formatXLM(xlm, "stroops");
+    const { formatStroops } = require("./formatters");
+    expect(formatXLM(xlm, "decimal")).toBe(formatStroops(BigInt(stroops)));
+  });
 });
 
 describe("formatStroops", () => {
@@ -101,6 +128,10 @@ describe("formatStroops", () => {
     expect(result).toContain("234");
     expect(result).toContain("567");
     expect(result).toContain("89");
+  });
+
+  it("handles int64 max stroops exactly", () => {
+    expect(formatStroops(BigInt("9223372036854775807"))).toBe("922,337,203,685.4775807");
   });
 });
 

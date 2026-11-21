@@ -5,6 +5,61 @@
  */
 
 /**
+ * Characters that spreadsheet applications (Excel, Numbers, Google Sheets)
+ * interpret as formula prefixes. OWASP CSV injection guidance: prefix with a
+ * single quote to force text interpretation.
+ */
+const FORMULA_PREFIXES = new Set(['=', '+', '-', '@', '\t', '\r']);
+
+/**
+ * Sanitize a cell value so spreadsheet applications treat it as text.
+ * Values that start with a formula prefix get a single-quote prepended,
+ * which is the OWASP-recommended defence against CSV injection.
+ */
+export function sanitizeCsvCell(value: string): string {
+  if (value.length > 0 && FORMULA_PREFIXES.has(value[0])) {
+    return "'" + value;
+  }
+  return value;
+}
+
+/**
+ * Escape and optionally sanitize one CSV cell value.
+ * Wraps in quotes when the value contains a comma, quote, or newline.
+ * Always sanitizes against formula injection.
+ */
+function formatCsvCell(raw: string): string {
+  const sanitized = sanitizeCsvCell(raw);
+  return sanitized.includes(',') || sanitized.includes('"') || sanitized.includes('\n')
+    ? `"${sanitized.replace(/"/g, '""')}"`
+    : sanitized;
+}
+
+/**
+ * Export the current filtered view as CSV.
+ * Includes every column, not only the visible ones.
+ * Notes the row limit and references bulk export for larger sets.
+ * Cell values are sanitized against spreadsheet formula injection (#363).
+ */
+export function buildCSV(
+  data: Record<string, unknown>[],
+  columns: string[],
+  maxRows: number = 1000
+): string {
+  const BOM = '﻿';
+  const limited = data.slice(0, maxRows);
+  const headers = columns.join(',');
+  const rows = limited.map(row =>
+    columns.map(col => {
+      const val = row[col];
+      if (val === null || val === undefined) return '';
+      return formatCsvCell(String(val));
+    }).join(',')
+  );
+  return BOM + [headers, ...rows].join('\r\n');
+}
+
+/**
  * Export the current filtered view as CSV.
  * Includes every column, not only the visible ones.
  * Notes the row limit and references bulk export for larger sets.
@@ -15,28 +70,16 @@ export function exportToCSV(
   filename: string = 'export.csv',
   maxRows: number = 1000
 ): void {
-  const limited = data.slice(0, maxRows);
-  const headers = columns.join(',');
-  const rows = limited.map(row =>
-    columns.map(col => {
-      const val = row[col];
-      if (val === null || val === undefined) return '';
-      const str = String(val);
-      // Escape CSV: wrap in quotes if contains comma, quote, or newline
-      return str.includes(',') || str.includes('"') || str.includes('\n')
-        ? `"${str.replace(/"/g, '""')}"`
-        : str;
-    }).join(',')
-  );
-
-  const csv = [headers, ...rows].join('\n');
+  const csv = buildCSV(data, columns, maxRows);
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
   a.download = filename;
   a.click();
-  URL.revokeObjectURL(url);
+  // Defer revocation so the browser has time to start the download before the
+  // object URL is gone (#364). Immediate revocation can cancel in-flight downloads.
+  window.setTimeout(() => URL.revokeObjectURL(url), 100);
 }
 
 /**

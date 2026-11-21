@@ -1,11 +1,16 @@
+'use client';
+
 import Link from "next/link";
 import type { Transaction } from "@/lib/types";
 import { truncateAddress, formatXLM } from "@/lib/formatters";
+import { withNetwork } from "@/lib/network";
+import { useNetwork } from "@/lib/useNetwork";
 import TimeAgo from "./TimeAgo";
 import WatchIndicator from "./WatchIndicator";
 import { TableCell, TableRow } from "./Table";
 
 export default function TransactionRow({ tx }: { tx: Transaction }) {
+  const { network } = useNetwork();
   const fee = (parseInt(tx.feeCharged) / 1e7).toFixed(7);
   return (
     <tr className="border-b border-[var(--color-bg-overlay)] last:border-0">
@@ -23,10 +28,14 @@ export default function TransactionRow({ tx }: { tx: Transaction }) {
           {truncateAddress(tx.hash, 6)}
         </a>
       </td>
-      <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-secondary)]">{tx.ledger.toLocaleString()}</td>
+      <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-secondary)]">
+        <Link href={withNetwork(`/ledgers/${tx.ledger}`, network)} className="hover:text-[var(--color-accent-text)] hover:underline transition-colors">
+          {tx.ledger.toLocaleString()}
+        </Link>
+      </td>
       <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-secondary)]">
         <span className="inline-flex items-center gap-1">
-          <Link href={`/accounts/${tx.sourceAccount}`} className="hover:text-[var(--color-accent-text)] hover:underline transition-colors">
+          <Link href={withNetwork(`/accounts/${tx.sourceAccount}`, network)} className="hover:text-[var(--color-accent-text)] hover:underline transition-colors">
             {truncateAddress(tx.sourceAccount)}
           </Link>
           <WatchIndicator address={tx.sourceAccount} />

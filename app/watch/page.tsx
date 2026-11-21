@@ -5,7 +5,9 @@ import WatchedAddressList from "@/components/WatchedAddressList";
 import WatchFeed from "@/components/WatchFeed";
 import PushOptIn from "@/components/PushOptIn";
 
-export const metadata: Metadata = routeMetadata(WATCHES);
+export function generateMetadata(): Metadata {
+  return routeMetadata(WATCHES);
+}
 
 /**
  * The watch page. Part of #9 / #80, / #81, / #82 and / #83.

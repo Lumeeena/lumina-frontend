@@ -69,17 +69,26 @@ links behind a `<Suspense>` boundary whose fallback is the same nav on the
 default network: the server-rendered HTML is a complete nav, not an empty one
 that fills in after hydration.
 
+## Network-aware GraphQL queries
+
+Every GraphQL operation now accepts an optional `$network` parameter. When passed, the query is executed on the specified network; when omitted, it defaults to the deployment's primary network. This allows the same query to serve data from mainnet, testnet, or futurenet as the page's URL selects.
+
+Calling code threads the network from `useNetwork()` or the URL into `gqlFetch` and subscriptions, so a page viewed on testnet sees testnet data, not the deployment's default.
+
+## Network-preserving internal links
+
+Internal links outside the nav — in search results, transaction tables, and account activity — now use `withNetwork` to carry the selected network forward. Following a link from a testnet page keeps the page on testnet instead of reverting to the default network.
+
+## Ledger detail page
+
+A new page `/ledgers/[sequence]` shows a ledger's close time, fees, base reserve, operation count, and its transactions. Ledger numbers across the app — in the transaction detail page and transaction tables — link to it.
+
 ## Not yet
 
-The URL says which network a page is about; making every page *serve* that
-network is the rest of [#10](https://github.com/Lumeeena/lumina-frontend/issues/10):
+The URL says which network a page is about; completing the story is the rest of [#10](https://github.com/Lumeeena/lumina-frontend/issues/10):
 
-- GraphQL queries are not parametrized by network, because the backend schema
-  does not accept one yet (the backend issue is a hard dependency there).
 - The Registry page's RPC URL, passphrase and contract id still come from
   `NEXT_PUBLIC_*` environment variables, one deployment per network — see
   [ENVIRONMENT_VARIABLES.md](./ENVIRONMENT_VARIABLES.md). Between a URL that
   selects testnet and a build configured for mainnet, the build wins until that
   work lands.
-- Internal links outside the nav — search results, transaction tables, account
-  activity — are not yet written with `withNetwork`.

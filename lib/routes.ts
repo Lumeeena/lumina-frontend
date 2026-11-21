@@ -172,6 +172,11 @@ export const CRAWL_EXCLUDED: readonly CrawlExclusion[] = [
       "one page per transaction hash — an unbounded set for the same reason as account pages",
   },
   {
+    pattern: "/ledgers/",
+    reason:
+      "one page per ledger sequence — an unbounded set that grows with every new ledger, none of them a route anyone arrives on directly",
+  },
+  {
     pattern: "/*?",
     reason:
       "filter and search permutations (?contractId=, ?category=, ?status=, ?q=…) are the same content as the canonical route, so they multiply the URL space without adding anything to crawl",

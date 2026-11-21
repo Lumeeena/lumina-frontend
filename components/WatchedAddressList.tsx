@@ -15,6 +15,8 @@ import {
 } from "@/lib/watches";
 import { validateStellarAddress } from "@/lib/stellarAddress";
 import { truncateAddress } from "@/lib/formatters";
+import { withNetwork } from "@/lib/network";
+import { useNetwork } from "@/lib/useNetwork";
 import {
   countActiveOperationFilters,
   operationFiltersToQueryString,
@@ -25,6 +27,7 @@ import WatchAlertSettings from "./WatchAlertSettings";
  * The watch list, with per-watch alert settings. Part of #9 / #80, #83, #84.
  */
 export default function WatchedAddressList() {
+  const { network } = useNetwork();
   const [entries, setEntries] = useState<WatchEntry[]>([]);
   const [draft, setDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -253,13 +256,13 @@ export default function WatchedAddressList() {
             >
               <div className="flex items-center gap-3 mb-3 flex-wrap">
                 <Link
-                  href={`/accounts/${entry.address}`}
+                  href={withNetwork(`/accounts/${entry.address}`, network)}
                   className="mono text-[13px] font-semibold text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline"
                 >
                   {truncateAddress(entry.address, 6)}
                 </Link>
                 <a
-                  href={filterHref(entry)}
+                  href={filterHref(entry, network)}
                   className="text-[12px] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:underline"
                 >
                   {`${countActiveOperationFilters(entry.filters)} ${
@@ -287,7 +290,15 @@ export default function WatchedAddressList() {
 }
 
 /** The account page with this watch's filter pre-selected, as a shareable link. */
-function filterHref(entry: WatchEntry): string {
+function filterHref(entry: WatchEntry, network: ReturnType<typeof useNetwork>['network']): string {
+  const baseHref = `/accounts/${entry.address}`;
+  const withNetworkHref = withNetwork(baseHref, network);
   const query = operationFiltersToQueryString(entry.filters);
-  return query ? `/accounts/${entry.address}?${query}` : `/accounts/${entry.address}`;
+  if (!query) return withNetworkHref;
+  const hashIdx = withNetworkHref.indexOf('#');
+  const queryIdx = withNetworkHref.indexOf('?');
+  if (queryIdx === -1) {
+    return `${withNetworkHref}${withNetworkHref.includes('?') ? '&' : '?'}${query}`;
+  }
+  return `${withNetworkHref.slice(0, queryIdx)}?${query}&${withNetworkHref.slice(queryIdx + 1)}`;
 }

@@ -51,7 +51,8 @@ Where a new piece of code belongs:
   address handling and the transaction state machine all live here.
 - **Interactivity** — a component in `components/`. Add `"use client"` only when
   the file needs state, effects, event handlers or browser APIs; a component that
-  only renders props stays a server component.
+  only renders props stays a server component. Naming, props, and the injection
+  pattern for tests are in [docs/COMPONENT_CONVENTIONS.md](docs/COMPONENT_CONVENTIONS.md).
 - **A shared data shape** — `lib/types.ts`.
 
 The dividing line worth keeping: no React imports in `lib/`, and no fetching,

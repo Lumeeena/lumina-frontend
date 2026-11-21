@@ -479,6 +479,93 @@ export async function getSlashes(
   return (scValToNative(retval) as SlashRecordScVal[]).map(toSlashRecord);
 }
 
+/**
+ * The registry build this frontend is written against: the first one whose
+ * `register_contract` takes the categories vector. Bump it together with the
+ * contract when its interface changes, so `get_version()` and this constant
+ * move as one.
+ */
+export const EXPECTED_REGISTRY_VERSION = 2;
+
+/** Thrown when the deployed registry is not the build this frontend targets. */
+export class RegistryVersionError extends Error {
+  name = "RegistryVersionError";
+}
+
+export type RegistryVersionStatus =
+  | { status: "match" }
+  | { status: "newer"; onChain: number; expected: number }
+  | { status: "older"; onChain: number; expected: number };
+
+/** The build number the deployed registry reports from `get_version()`. */
+export async function getRegistryVersion(
+  registryContractId: string = REGISTRY_CONTRACT_ID,
+  rpcUrl: string = SOROBAN_RPC_URL,
+  readAccount: string = DEFAULT_READ_ACCOUNT,
+  networkPassphrase: string = NETWORK_PASSPHRASE,
+): Promise<number> {
+  const retval = await simulate(
+    "get_version",
+    [],
+    registryContractId,
+    rpcUrl,
+    readAccount,
+    networkPassphrase,
+  );
+  return Number(scValToNative(retval));
+}
+
+/** Compare the on-chain build with the one this frontend expects. */
+export function checkRegistryVersion(
+  onChain: number,
+  expected: number = EXPECTED_REGISTRY_VERSION,
+): RegistryVersionStatus {
+  if (onChain === expected) return { status: "match" };
+  return onChain > expected
+    ? { status: "newer", onChain, expected }
+    : { status: "older", onChain, expected };
+}
+
+/**
+ * Refuse to build a write the deployed registry cannot accept.
+ *
+ * A mismatch is explained here rather than left to surface as an opaque
+ * simulation failure. A registry that predates `get_version()` fails the read
+ * itself, which is also reported as a mismatch: it is older than anything this
+ * frontend targets.
+ */
+export async function assertRegistryVersion(
+  registryContractId: string = REGISTRY_CONTRACT_ID,
+  rpcUrl: string = SOROBAN_RPC_URL,
+  readAccount: string = DEFAULT_READ_ACCOUNT,
+  networkPassphrase: string = NETWORK_PASSPHRASE,
+): Promise<void> {
+  let onChain: number;
+  try {
+    onChain = await getRegistryVersion(
+      registryContractId,
+      rpcUrl,
+      readAccount,
+      networkPassphrase,
+    );
+  } catch {
+    throw new RegistryVersionError(
+      `This registry does not report a version (get_version failed), so it is older than version ${EXPECTED_REGISTRY_VERSION}, which this frontend expects. Registering here would fail. Use a registry deployed at version ${EXPECTED_REGISTRY_VERSION} or later.`,
+    );
+  }
+
+  const result = checkRegistryVersion(onChain);
+  if (result.status === "match") return;
+  if (result.status === "newer") {
+    throw new RegistryVersionError(
+      `The registry contract is version ${onChain}, newer than the version ${EXPECTED_REGISTRY_VERSION} this frontend expects. Its interface may have changed, so registering could fail. Update the frontend before registering.`,
+    );
+  }
+  throw new RegistryVersionError(
+    `The registry contract is version ${onChain}, older than the version ${EXPECTED_REGISTRY_VERSION} this frontend expects. Registering would send a call this contract does not accept. Wait for the registry upgrade to deploy.`,
+  );
+}
+
 export function toRegistryEntry(e: ContractEntryScVal): RegistryEntry {
   return {
     contractId: e.contract_id,

@@ -29,6 +29,8 @@ import {
   type AssetsQuery,
 } from "@/lib/generated/graphql";
 import { gqlFetch, PUBLIC_GRAPHQL_URL } from "@/lib/graphql";
+import { withNetwork } from "@/lib/network";
+import { useNetwork } from "@/lib/useNetwork";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import LoadMoreFooter from "./LoadMoreFooter";
@@ -73,6 +75,7 @@ export default function AssetBrowser({
   initialHasNextPage: boolean;
   sort: AssetSort;
 }) {
+  const { network } = useNetwork();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -229,7 +232,7 @@ export default function AssetBrowser({
                   <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-primary)]">
                     {canOpen ? (
                       <Link
-                        href={`/assets/${encodeURIComponent(asset.code ?? asset.asset)}/${encodeURIComponent(asset.issuer ?? "")}`}
+                        href={withNetwork(`/assets/${encodeURIComponent(asset.code ?? asset.asset)}/${encodeURIComponent(asset.issuer ?? "")}`, network)}
                         className="text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline transition-colors"
                       >
                         {assetText}

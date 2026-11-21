@@ -342,7 +342,7 @@ export default function TransactionExplorer({
         <span
           role="status"
           aria-live="polite"
-          className="text-[var(--color-text-muted)] animate-pulse"
+          className="text-[var(--color-text-muted)] animate-pulse motion-reduce:animate-none"
         >
           {loading ? t("explorer.loading") : ""}
         </span>

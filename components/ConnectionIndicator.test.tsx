@@ -51,22 +51,27 @@ describe("ConnectionIndicator", () => {
     ["reconnecting", /existing data remains visible/i],
     ["disconnected", /up to 30 seconds old/i],
     ["unsupported", /up to 30 seconds old/i],
-  ] as const)("makes the %s freshness explanation reachable by keyboard", async (state, explanation) => {
-    render(<ConnectionIndicator state={state} />);
-    const disclosure = screen.getByRole("button", { name: /what does/i });
+  ] as const)(
+    "makes the %s freshness explanation reachable by keyboard",
+    async (state, explanation) => {
+      render(<ConnectionIndicator state={state} />);
+      const disclosure = screen.getByRole("button", { name: /what does/i });
 
-    disclosure.focus();
-    expect(document.activeElement).toBe(disclosure);
-    await userEvent.keyboard("{Enter}");
+      disclosure.focus();
+      expect(document.activeElement).toBe(disclosure);
+      await userEvent.keyboard("{Enter}");
 
-    expect(screen.getByText(explanation)).toBeTruthy();
-    expect(disclosure.getAttribute("aria-expanded")).toBe("true");
-  });
+      expect(screen.getByText(explanation)).toBeTruthy();
+      expect(disclosure.getAttribute("aria-expanded")).toBe("true");
+    },
+  );
 
   it("opens the freshness explanation with a pointer click", () => {
     render(<ConnectionIndicator state="connected" />);
 
-    fireEvent.click(screen.getByRole("button", { name: /what does live mean/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /what does live mean/i }),
+    );
 
     expect(screen.getByText(/server publishes them/i)).toBeTruthy();
   });
@@ -78,6 +83,13 @@ describe("ConnectionIndicator", () => {
 
     const settled = render(<ConnectionIndicator state="connected" />);
     expect(settled.container.querySelector(".animate-pulse")).toBeNull();
+  });
+
+  it("includes motion-reduce:animate-none when pulse is active", () => {
+    const { container } = render(<ConnectionIndicator state="connecting" />);
+    const dot = container.querySelector("span[aria-hidden]");
+    expect(dot).toHaveClass("motion-reduce:animate-none");
+    expect(dot).toHaveClass("animate-pulse");
   });
 
   it("says why the feed fell back and offers a retry", () => {
@@ -101,6 +113,8 @@ describe("ConnectionIndicator", () => {
     render(<ConnectionIndicator state="unsupported" onRetry={() => {}} />);
 
     expect(screen.getByTestId("connection-reason")).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Retry connection" })).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Retry connection" }),
+    ).toBeNull();
   });
 });
