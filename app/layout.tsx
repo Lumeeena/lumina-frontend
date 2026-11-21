@@ -12,6 +12,7 @@ import WatchActivityWatcher from "@/components/WatchActivityWatcher";
 import ErrorReporter from "@/components/ErrorReporter";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import PendingTransactions from "@/components/PendingTransactions";
+import { ToastProvider } from "@/components/ui/Toast";
 import { shareCard } from "@/lib/metadata";
 import { PUBLIC_GRAPHQL_URL } from "@/lib/graphql";
 import { preconnectOrigins } from "@/lib/preconnect";
@@ -80,24 +81,26 @@ export default function RootLayout({
         ))}
       </head>
       <body className="min-h-full flex flex-col bg-[var(--color-bg-base)] text-[var(--color-text-primary)]">
-        <DirectionSync />
-        <ErrorReporter />
-        <ServiceWorkerRegistration />
-        <SkipLink />
-        {/* Alerts for watched addresses have to keep arriving on every route,
-            which is the whole point of a watch. It subscribes and records; it
-            renders nothing. */}
-        <WatchActivityWatcher />
-        <Navbar />
-        <KeyboardShortcuts />
-        <CommandPalette />
-        <main id="main" className="flex-1">
-          {children}
-        </main>
-        {/* After the page in tab order, and fixed to the viewport, so it shows
-            on every route and does not interrupt the page's own focus order. */}
-        <PendingTransactions />
-        <Footer />
+        <ToastProvider>
+          <DirectionSync />
+          <ErrorReporter />
+          <ServiceWorkerRegistration />
+          <SkipLink />
+          {/* Alerts for watched addresses have to keep arriving on every route,
+              which is the whole point of a watch. It subscribes and records; it
+              renders nothing. */}
+          <WatchActivityWatcher />
+          <Navbar />
+          <KeyboardShortcuts />
+          <CommandPalette />
+          <main id="main" className="flex-1">
+            {children}
+          </main>
+          {/* After the page in tab order, and fixed to the viewport, so it shows
+              on every route and does not interrupt the page's own focus order. */}
+          <PendingTransactions />
+          <Footer />
+        </ToastProvider>
       </body>
     </html>
   );

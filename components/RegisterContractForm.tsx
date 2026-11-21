@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/Button';
 import { Fieldset, TextField, TextareaField } from '@/components/ui/FormField';
 import { t } from '@/lib/i18n';
 import { transactionRecovery } from '@/lib/errorRecovery';
+import { useToast } from '@/components/ui/Toast';
 
 
 export interface RegistrationInput {
@@ -127,6 +128,7 @@ export default function RegisterContractForm({
   transactionWait,
   onRegistered,
 }: RegisterContractFormProps) {
+  const { addToast } = useToast();
   const [contractId, setContractId] = useState('');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -193,6 +195,10 @@ export default function RegisterContractForm({
       }
       setPhase('success');
       setMessage(t('register.successMessage', { name: input.name }));
+      addToast({
+        type: 'success',
+        title: t('register.successMessage', { name: input.name }),
+      });
       setContractId('');
       setName('');
       setDescription('');
@@ -203,7 +209,13 @@ export default function RegisterContractForm({
     } catch (err) {
       setPhase('error');
       setRejected(err instanceof WalletRejectedError ? { key: inputKey, error: err } : null);
-      setMessage(err instanceof Error ? err.message : t('register.registrationFailed'));
+      const errorMessage = err instanceof Error ? err.message : t('register.registrationFailed');
+      setMessage(errorMessage);
+      addToast({
+        type: 'error',
+        title: t('register.registrationFailed'),
+        message: errorMessage,
+      });
       if (transactionHash) {
         sessionStorage.setItem(`tx-${Date.now()}`, transactionHash);
       }

@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { t } from "@/lib/i18n";
-
-type CopyState = "idle" | "copied" | "failed";
+import { useToast } from "@/components/ui/Toast";
 
 async function copyToClipboard(text: string): Promise<boolean> {
   // Secure context: Clipboard API available
@@ -40,44 +38,35 @@ export default function CopyAddressButton({
   address: string;
   variant?: "address" | "hash";
 }) {
-  const [state, setState] = useState<CopyState>("idle");
+  const { addToast } = useToast();
 
   const ariaLabel =
     variant === "hash" ? t("copy.copyHash") : t("copy.copyAddress");
 
   async function copyAddress() {
     const ok = await copyToClipboard(address);
-    setState(ok ? "copied" : "failed");
-    setTimeout(() => setState("idle"), 2000);
+    if (ok) {
+      addToast({
+        type: "success",
+        title: variant === "hash" ? t("copy.copiedHash") : t("copy.copiedAddress"),
+        duration: 2000,
+      });
+    } else {
+      addToast({
+        type: "error",
+        title: t("copy.failed"),
+        message: "Select and copy the address manually.",
+      });
+    }
   }
 
   return (
-    <>
-      <button
-        onClick={copyAddress}
-        aria-label={ariaLabel}
-        className="bg-[var(--color-bg-raised)] border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] font-semibold text-[11px] px-2.5 py-[5px] rounded-[7px] shrink-0 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-fill)] motion-reduce:transition-none"
-      >
-        {state === "copied"
-          ? t("copy.copied")
-          : state === "failed"
-            ? t("copy.failed")
-            : t("copy.copy")}
-      </button>
-      {state === "failed" && (
-        <span className="text-xs text-[var(--color-error-text)]">
-          Select and copy the {variant === "hash" ? "hash" : "address"} manually.
-        </span>
-      )}
-      <span role="status" aria-live="polite" className="sr-only">
-        {state === "copied"
-          ? variant === "hash"
-            ? t("copy.copiedHash")
-            : t("copy.copiedAddress")
-          : state === "failed"
-            ? "Clipboard access failed. Select and copy the address manually."
-            : ""}
-      </span>
-    </>
+    <button
+      onClick={copyAddress}
+      aria-label={ariaLabel}
+      className="bg-[var(--color-bg-raised)] border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] font-semibold text-[11px] px-2.5 py-[5px] rounded-[7px] shrink-0 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-fill)] motion-reduce:transition-none"
+    >
+      {t("copy.copy")}
+    </button>
   );
 }
