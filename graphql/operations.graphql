@@ -75,6 +75,34 @@ query ContractEvents($contractId: String!, $limit: Int, $cursor: String, $networ
   }
 }
 
+query AccountAsOfLedger(
+  $address: String!
+  $asOfLedger: Int!
+  $network: Network
+) {
+  account(address: $address, asOfLedger: $asOfLedger, network: $network) {
+    address
+    sequence
+    subentryCount
+    lastModifiedLedger
+    numSponsored
+    numSponsoring
+    balances {
+      assetType
+      assetCode
+      assetIssuer
+      balance
+      limit
+    }
+    flags {
+      authRequired
+      authRevocable
+      authImmutable
+      authClawbackEnabled
+    }
+  }
+}
+
 query Stats($opLimit: Int, $network: Network) {
   latestLedger(network: $network) {
     sequence

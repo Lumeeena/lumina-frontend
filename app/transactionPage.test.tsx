@@ -120,4 +120,30 @@ describe("TransactionPage", () => {
     const link = screen.getByRole("link", { name: SOURCE });
     expect(link).toHaveAttribute("href", `/accounts/${SOURCE}`);
   });
+
+  it("links to the source account as recorded at the transaction's ledger", async () => {
+    gqlFetch.mockResolvedValue({
+      transaction: {
+        hash: HASH,
+        ledger: 52000000,
+        createdAt: new Date().toISOString(),
+        sourceAccount: SOURCE,
+        feeCharged: "1000000",
+        operationCount: 0,
+        successful: true,
+        memoType: null,
+        memo: null,
+        operations: [],
+      },
+    });
+
+    await renderPage(
+      TransactionPage({ params: Promise.resolve({ hash: HASH }) }),
+    );
+
+    const link = screen.getByRole("link", {
+      name: "View source account at ledger 52,000,000",
+    });
+    expect(link).toHaveAttribute("href", `/accounts/${SOURCE}?ledger=52000000`);
+  });
 });

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
 import { routeMetadata } from "@/lib/metadata";
 import { SITE_NAME } from "@/lib/site";
+import { accountAtLedgerHref } from "@/lib/asOfLedger";
 import {
   formatOperationType,
   formatXLM,
@@ -167,6 +168,14 @@ export default async function TransactionPage({
                       className="mono text-xs text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline transition-colors"
                     >
                       {transaction.sourceAccount}
+                    </Link>
+                    {/* The account as recorded at this transaction's ledger:
+                        how a disputed payment's balances are checked. */}
+                    <Link
+                      href={accountAtLedgerHref(transaction.sourceAccount, transaction.ledger)}
+                      className="block mt-1 text-xs font-semibold text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline"
+                    >
+                      View source account at ledger {transaction.ledger.toLocaleString()}
                     </Link>
                   </td>
                 </tr>

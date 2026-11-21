@@ -868,6 +868,41 @@ export const AccountDetailDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<AccountDetailQuery, AccountDetailQueryVariables>;
+
+export type AccountAsOfLedgerQueryVariables = Exact<{
+  address: Scalars['String']['input'];
+  asOfLedger: Scalars['Int']['input'];
+  network?: InputMaybe<Network>;
+}>;
+
+
+export type AccountAsOfLedgerQuery = { account: { address: string, sequence: string, subentryCount: number, lastModifiedLedger: number, numSponsored: number, numSponsoring: number, balances: Array<{ assetType: string, assetCode: string | null, assetIssuer: string | null, balance: string, limit: string | null }>, flags: { authRequired: boolean, authRevocable: boolean, authImmutable: boolean, authClawbackEnabled: boolean } } | null };
+
+export const AccountAsOfLedgerDocument = new TypedDocumentString(`
+    query AccountAsOfLedger($address: String!, $asOfLedger: Int!, $network: Network) {
+  account(address: $address, asOfLedger: $asOfLedger, network: $network) {
+    address
+    sequence
+    subentryCount
+    lastModifiedLedger
+    numSponsored
+    numSponsoring
+    balances {
+      assetType
+      assetCode
+      assetIssuer
+      balance
+      limit
+    }
+    flags {
+      authRequired
+      authRevocable
+      authImmutable
+      authClawbackEnabled
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<AccountAsOfLedgerQuery, AccountAsOfLedgerQueryVariables>;
 export const ContractEventsDocument = new TypedDocumentString(`
     query ContractEvents($contractId: String!, $limit: Int, $cursor: String) {
   events(contractId: $contractId, limit: $limit, cursor: $cursor) {
