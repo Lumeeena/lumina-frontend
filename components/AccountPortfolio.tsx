@@ -3,10 +3,15 @@
 /**
  * Portfolio section for the account page.
  *
- * Shows a 30-day transfer-volume chart for each asset the account holds.
- * "Transfer volume" is the only time-series data the backend currently
- * exposes per asset — true balance-over-time snapshots are not yet in the
- * schema. Each chart bucket is one calendar day (86 400 s).
+ * For the selected asset, shows two charts:
+ *
+ * - Balance over the last 90 days, from `accountBalanceHistory` — see
+ *   `BalanceHistoryChart`. 90 days is the backend's maximum range.
+ * - Transfer volume over the last 30 days, from the asset's volume series.
+ *   Each bucket is one calendar day (86 400 s).
+ *
+ * The two load independently, so one failing or still loading does not hold
+ * up the other.
  *
  * Many-asset handling
  * -------------------
@@ -18,8 +23,9 @@
  * -----------
  * - Account has no balances  → section is hidden entirely (caller's
  *   responsibility; this component does not render when balances is empty).
+ * - No balance snapshots for the selected asset → "No balance" message.
  * - All buckets for the selected asset are zero → "No activity" message.
- * - Fetch failed → inline error with a retry button.
+ * - Fetch failed → inline error with a retry button, per chart.
  */
 
 import { useCallback, useEffect, useState, type ReactNode } from "react";
@@ -39,6 +45,7 @@ import {
 import type { Balance } from "@/lib/types";
 import { AreaChart } from "@/components/charts/AreaChart";
 import type { AreaChartPoint } from "@/components/charts/AreaChart";
+import BalanceHistoryChart from "@/components/BalanceHistoryChart";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { InlineError } from "@/components/ui/InlineError";
 
@@ -99,6 +106,8 @@ function ChartSkeleton({ height = 280 }: { height?: number }) {
 // ─── Main component ──────────────────────────────────────────────────────────
 
 export interface AccountPortfolioProps {
+  /** The account these balances belong to; the balance history is read for it. */
+  address: string;
   /** The account's current balances, passed down from the server component. */
   balances: Balance[];
 }
@@ -109,7 +118,10 @@ type FetchState =
   | { status: "error"; message: string }
   | { status: "done"; data: AssetVolumeQuery["asset"] };
 
-export default function AccountPortfolio({ balances }: AccountPortfolioProps) {
+export default function AccountPortfolio({
+  address,
+  balances,
+}: AccountPortfolioProps) {
   // Sort: native XLM first, then descending by current balance value —
   // mirrors the order of the balance table directly above.
   const sorted = [...balances].sort((a, b) => {
@@ -291,6 +303,15 @@ export default function AccountPortfolio({ balances }: AccountPortfolioProps) {
       <p role="status" className="sr-only">
         {fetchState.status === "loading" ? "Loading transfer volume" : ""}
       </p>
+
+      {/* Keyed on the asset, so switching assets starts a fresh history rather
+          than briefly showing the previous asset's line under the new name. */}
+      <BalanceHistoryChart
+        key={assetKey(selected)}
+        address={address}
+        asset={assetKey(selected)}
+        label={assetLabel(selected)}
+      />
 
       {/* Chart panel */}
       {chartContent}

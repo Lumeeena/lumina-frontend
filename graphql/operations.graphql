@@ -301,6 +301,29 @@ query AssetVolume($asset: String!, $from: String, $to: String, $bucketSeconds: I
   }
 }
 
+query AccountBalanceHistory(
+  $address: String!
+  $asset: String
+  $from: String
+  $to: String
+  $network: Network
+) {
+  accountBalanceHistory(
+    address: $address
+    asset: $asset
+    from: $from
+    to: $to
+    network: $network
+  ) {
+    from
+    to
+    snapshots {
+      timestamp
+      balance
+    }
+  }
+}
+
 query AccountTrustlineOps($address: String!, $limit: Int, $cursor: String, $network: Network) {
   operations(account: $address, type: CHANGE_TRUST, limit: $limit, cursor: $cursor, network: $network) {
     items {

@@ -1191,6 +1191,36 @@ export const AssetVolumeDocument = new TypedDocumentString(`
 }
     `) as unknown as TypedDocumentString<AssetVolumeQuery, AssetVolumeQueryVariables>;
 
+export type AccountBalanceHistoryQueryVariables = Exact<{
+  address: Scalars['String']['input'];
+  asset?: InputMaybe<Scalars['String']['input']>;
+  from?: InputMaybe<Scalars['String']['input']>;
+  to?: InputMaybe<Scalars['String']['input']>;
+  network?: InputMaybe<Network>;
+}>;
+
+
+export type AccountBalanceHistoryQuery = { accountBalanceHistory: { from: string, to: string, snapshots: Array<{ timestamp: string, balance: string }> } };
+
+export const AccountBalanceHistoryDocument = new TypedDocumentString(`
+    query AccountBalanceHistory($address: String!, $asset: String, $from: String, $to: String, $network: Network) {
+  accountBalanceHistory(
+    address: $address
+    asset: $asset
+    from: $from
+    to: $to
+    network: $network
+  ) {
+    from
+    to
+    snapshots {
+      timestamp
+      balance
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<AccountBalanceHistoryQuery, AccountBalanceHistoryQueryVariables>;
+
 export type AccountTrustlineOpsQueryVariables = Exact<{
   address: Scalars['String']['input'];
   limit?: InputMaybe<Scalars['Int']['input']>;

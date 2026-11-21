@@ -19,9 +19,21 @@ vi.mock("@/components/charts/AreaChart", () => ({
   AreaChart: () => null,
 }));
 
+// The balance history chart fetches on its own and has its own tests. Stubbed,
+// so the call counts below are the volume query's alone, and so these tests
+// can see which asset the portfolio hands it.
+const balanceChart = vi.hoisted(() => vi.fn());
+vi.mock("@/components/BalanceHistoryChart", () => ({
+  default: (props: { address: string; asset: string; label: string }) => {
+    balanceChart(props);
+    return <p>{`${props.label} balance history`}</p>;
+  },
+}));
+
 import AccountPortfolio from "./AccountPortfolio";
 
 const ISSUER = "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN";
+const ADDRESS = "GABCDEFGHIJKLMNOPQRSTUVWXYZ234567ABCDEFGHIJKLMNOPQRS";
 
 const NATIVE: Balance = {
   assetType: "native",
@@ -47,6 +59,7 @@ const SERIES = {
 
 beforeEach(() => {
   gqlFetch.mockReset();
+  balanceChart.mockReset();
   gqlFetch.mockResolvedValue(SERIES);
   // The volume cache is module state, so one case's answer would otherwise
   // satisfy the next case's read and skip the fetch it asserts on.
@@ -60,36 +73,36 @@ afterEach(() => {
 
 describe("AccountPortfolio", () => {
   it("serves a repeat visit from the cache without refetching", async () => {
-    const first = render(<AccountPortfolio balances={[NATIVE]} />);
+    const first = render(<AccountPortfolio address={ADDRESS} balances={[NATIVE]} />);
     await waitFor(() => expect(gqlFetch).toHaveBeenCalledTimes(1));
     first.unmount();
 
-    render(<AccountPortfolio balances={[NATIVE]} />);
+    render(<AccountPortfolio address={ADDRESS} balances={[NATIVE]} />);
 
     expect(gqlFetch).toHaveBeenCalledTimes(1);
   });
 
   it("refetches once the cached answer is past its freshness window", async () => {
     const now = vi.spyOn(Date, "now").mockReturnValue(1_000_000);
-    const first = render(<AccountPortfolio balances={[NATIVE]} />);
+    const first = render(<AccountPortfolio address={ADDRESS} balances={[NATIVE]} />);
     await waitFor(() => expect(gqlFetch).toHaveBeenCalledTimes(1));
     first.unmount();
 
     now.mockReturnValue(1_000_000 + 60_000);
-    render(<AccountPortfolio balances={[NATIVE]} />);
+    render(<AccountPortfolio address={ADDRESS} balances={[NATIVE]} />);
 
     expect(gqlFetch).toHaveBeenCalledTimes(2);
   });
 
   it("keeps showing a cached answer when its background refresh fails", async () => {
     const now = vi.spyOn(Date, "now").mockReturnValue(1_000_000);
-    const first = render(<AccountPortfolio balances={[NATIVE]} />);
+    const first = render(<AccountPortfolio address={ADDRESS} balances={[NATIVE]} />);
     await waitFor(() => expect(gqlFetch).toHaveBeenCalledTimes(1));
     first.unmount();
 
     now.mockReturnValue(1_000_000 + 60_000);
     gqlFetch.mockRejectedValueOnce(new Error("backend is down"));
-    render(<AccountPortfolio balances={[NATIVE]} />);
+    render(<AccountPortfolio address={ADDRESS} balances={[NATIVE]} />);
     await waitFor(() => expect(gqlFetch).toHaveBeenCalledTimes(2));
     // The failure is handled in a promise continuation; let it settle first.
     await new Promise((resolve) => setTimeout(resolve, 0));
@@ -99,14 +112,14 @@ describe("AccountPortfolio", () => {
 
   it("shows the error when a cold read fails with nothing cached to fall back on", async () => {
     gqlFetch.mockRejectedValueOnce(new Error("backend is down"));
-    render(<AccountPortfolio balances={[NATIVE]} />);
+    render(<AccountPortfolio address={ADDRESS} balances={[NATIVE]} />);
 
     expect(await screen.findByText("backend is down")).toBeTruthy();
   });
 
   it("has no WCAG A/AA violations once the chart has loaded", async () => {
     const { container } = render(
-      <AccountPortfolio balances={[NATIVE, credit("USDC", "7")]} />,
+      <AccountPortfolio address={ADDRESS} balances={[NATIVE, credit("USDC", "7")]} />,
     );
     await waitFor(() => expect(gqlFetch).toHaveBeenCalledTimes(1));
 
@@ -114,7 +127,7 @@ describe("AccountPortfolio", () => {
   });
 
   it("marks the selected asset with aria-pressed, starting from native XLM", () => {
-    render(<AccountPortfolio balances={[credit("USDC", "7"), NATIVE]} />);
+    render(<AccountPortfolio address={ADDRESS} balances={[credit("USDC", "7"), NATIVE]} />);
 
     expect(screen.getByRole("button", { name: "XLM" }).getAttribute("aria-pressed")).toBe(
       "true",
@@ -125,7 +138,7 @@ describe("AccountPortfolio", () => {
   });
 
   it("switches the chart's asset by keyboard: Tab to another asset, then Enter", async () => {
-    render(<AccountPortfolio balances={[NATIVE, credit("USDC", "7")]} />);
+    render(<AccountPortfolio address={ADDRESS} balances={[NATIVE, credit("USDC", "7")]} />);
     await waitFor(() => expect(gqlFetch).toHaveBeenCalledTimes(1));
 
     const usdc = screen.getByRole("button", { name: "USDC" });
@@ -141,10 +154,33 @@ describe("AccountPortfolio", () => {
     expect(usdc.getAttribute("aria-pressed")).toBe("true");
   });
 
+  it("shows the selected asset's balance history, following the selection", async () => {
+    render(
+      <AccountPortfolio address={ADDRESS} balances={[NATIVE, credit("USDC", "7")]} />,
+    );
+
+    expect(screen.getByText("XLM balance history")).toBeTruthy();
+    expect(balanceChart.mock.lastCall![0]).toEqual({
+      address: ADDRESS,
+      asset: "XLM",
+      label: "XLM",
+    });
+
+    await userEvent.click(screen.getByRole("button", { name: "USDC" }));
+
+    expect(screen.getByText("USDC balance history")).toBeTruthy();
+    expect(screen.queryByText("XLM balance history")).toBeNull();
+    expect(balanceChart.mock.lastCall![0]).toEqual({
+      address: ADDRESS,
+      asset: `USDC:${ISSUER}`,
+      label: "USDC",
+    });
+  });
+
   it("exposes the overflow toggle's state with aria-expanded", async () => {
     // Nine credit assets plus XLM is ten, so two are hidden behind "+2 more".
     const many = [NATIVE, ...Array.from({ length: 9 }, (_, i) => credit(`A${i}`, String(i)))];
-    render(<AccountPortfolio balances={many} />);
+    render(<AccountPortfolio address={ADDRESS} balances={many} />);
 
     const toggle = screen.getByRole("button", { name: "+2 more" });
     expect(toggle.getAttribute("aria-expanded")).toBe("false");
