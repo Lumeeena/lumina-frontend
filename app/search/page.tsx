@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 import { MemoSearchDocument as SEARCH_QUERY } from "@/lib/generated/graphql";
 import Link from "next/link";
@@ -7,6 +8,7 @@ import { SEARCH } from "@/lib/routes";
 import type { MemoSearchQuery } from "@/lib/generated/graphql";
 import BackendUnavailable from "@/components/BackendUnavailable";
 import TransactionRow from "@/components/TransactionRow";
+import { t } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +18,7 @@ export function generateMetadata(): Metadata {
 
 /**
  * The same selection set as the transactions table, so a result row is
- * directly renderable by the shared `TransactionRow`.
+ * directly renderable by the shared TransactionRow.
  */
 async function searchMemo(query: string): Promise<{
   items: MemoSearchQuery["search"]["items"];
@@ -41,19 +43,17 @@ export default async function SearchPage({
   const { q } = await searchParams;
   const query = q?.trim() ?? "";
 
-  // No query: the page doubles as documentation of what the one search box
-  // understands, so landing here without one explains the four shapes rather
-  // than showing an empty table.
   if (!query) {
     return (
       <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
         <h1 className="font-extrabold text-3xl mb-2 text-[var(--color-text-primary)]">
-          Search
+          {t("search.heading")}
         </h1>
+
         <p className="text-[var(--color-text-secondary)] mb-7">
-          One box for everything on the network. Type what you have — no need to
-          say what it is.
+          {t("search.description")}
         </p>
+
         <div className="rounded-xl border border-[var(--color-border-default)] overflow-hidden max-w-[640px]">
           <table className="w-full text-sm border-collapse">
             <tbody>
@@ -62,31 +62,34 @@ export default async function SearchPage({
                   G… (56 chars)
                 </td>
                 <td className="py-2.5 px-3 text-[var(--color-text-primary)]">
-                  Account address
+                  {t("search.accountAddress")}
                 </td>
               </tr>
+
               <tr className="border-b border-[var(--color-bg-overlay)]">
                 <td className="py-2.5 px-3 mono text-xs text-[var(--color-accent-text)]">
                   C… (56 chars)
                 </td>
                 <td className="py-2.5 px-3 text-[var(--color-text-primary)]">
-                  Contract id — its events
+                  {t("search.contractId")}
                 </td>
               </tr>
+
               <tr className="border-b border-[var(--color-bg-overlay)]">
                 <td className="py-2.5 px-3 mono text-xs text-[var(--color-accent-text)]">
                   64 hex chars
                 </td>
                 <td className="py-2.5 px-3 text-[var(--color-text-primary)]">
-                  Transaction hash
+                  {t("search.transactionHash")}
                 </td>
               </tr>
+
               <tr>
                 <td className="py-2.5 px-3 mono text-xs text-[var(--color-accent-text)]">
-                  anything else
+                  {t("common.search")}
                 </td>
                 <td className="py-2.5 px-3 text-[var(--color-text-primary)]">
-                  Memo search, ranked by the backend
+                  {t("search.memoSearch")}
                 </td>
               </tr>
             </tbody>
@@ -101,18 +104,19 @@ export default async function SearchPage({
   return (
     <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
       <h1 className="font-extrabold text-3xl mb-2 text-[var(--color-text-primary)]">
-        Search
+        {t("search.heading")}
       </h1>
+
       <p className="text-[var(--color-text-secondary)] mb-7">
-        {unavailable
-          ? "Searching the index…"
-          : `${items.length} transaction${items.length === 1 ? "" : "s"} matching `}
-        {!unavailable && (
+        {unavailable ? (
+          t("search.searching")
+        ) : (
           <>
+            {t("search.resultsCount", { count: items.length })}{" "}
             <span className="mono break-all text-[var(--color-text-primary)]">
               “{query}”
             </span>
-            , ranked by memo relevance.
+            {t("search.rankedByMemo")}
           </>
         )}
       </p>
@@ -122,42 +126,45 @@ export default async function SearchPage({
       ) : items.length === 0 ? (
         <div className="p-8 rounded-xl border border-[var(--color-border-default)] text-center">
           <p className="text-[var(--color-text-muted)] text-sm">
-            No transactions carry anything like this memo. Memo search matches
-            order references and short codes — try a few characters of it.
+            {t("search.noMemoMatch")}
           </p>
         </div>
       ) : (
         <div
           role="region"
-          aria-label="Search results"
+          aria-label={t("search.heading")}
           tabIndex={0}
           className="max-w-full rounded-xl border border-[var(--color-border-default)] overflow-x-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-fill)]"
         >
           <table className="w-full min-w-[720px] text-sm border-collapse">
-            <caption className="sr-only">Search results</caption>
+            <caption className="sr-only">
+              {t("search.heading")}
+            </caption>
+
             <thead>
               <tr>
                 <th scope="col" className={`${th} w-6`} />
                 <th scope="col" className={th}>
-                  Hash
+                  {t("table.hash")}
                 </th>
                 <th scope="col" className={th}>
-                  Ledger
+                  {t("table.ledger")}
                 </th>
                 <th scope="col" className={th}>
-                  Source
+                  {t("table.source")}
                 </th>
                 <th scope="col" className={th}>
-                  Ops
+                  {t("table.ops")}
                 </th>
                 <th scope="col" className={th}>
-                  Fee
+                  {t("table.fee")}
                 </th>
                 <th scope="col" className={th}>
-                  Time
+                  {t("table.time")}
                 </th>
               </tr>
             </thead>
+
             <tbody>
               {items.map((tx) => (
                 <TransactionRow key={tx.hash} tx={tx} />
@@ -168,14 +175,14 @@ export default async function SearchPage({
       )}
 
       <p className="text-[var(--color-text-muted)] text-xs mt-4">
-        Looking for an account or contract? Paste its full address —{" "}
+        {t("search.helpTextBeforeLink")}
         <Link
           href="/explorer"
           className="text-[var(--color-accent-text)] hover:underline"
         >
-          the explorer
-        </Link>{" "}
-        takes you straight there.
+          {t("search.explorerLink")}
+        </Link>
+        {t("search.helpTextAfterLink")}
       </p>
     </div>
   );
