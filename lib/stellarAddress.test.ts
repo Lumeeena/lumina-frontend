@@ -64,4 +64,43 @@ describe('validateStellarAddress', () => {
   it('trims whitespace before validating', () => {
     expect(validateStellarAddress(`  ${VALID_ACCOUNT}  `)).toEqual({ valid: true });
   });
+
+  it('accepts a lower-case address, because input is upper-cased before it is checked', () => {
+    expect(validateStellarAddress(VALID_ACCOUNT.toLowerCase())).toEqual({ valid: true });
+    expect(validateStellarAddress(VALID_CONTRACT.toLowerCase())).toEqual({ valid: true });
+  });
+
+  it('rejects an address that is too long, and says by how much', () => {
+    expect(validateStellarAddress(`${VALID_ACCOUNT}A`)).toEqual({
+      valid: false,
+      reason: 'malformed',
+      hint: 'must be 56 characters (got 57)',
+    });
+  });
+
+  it.each(['0', '1', '8', '9', '!'])(
+    'rejects an address containing %s, which is outside the base-32 alphabet',
+    (char) => {
+      const address = `G${char}${VALID_ACCOUNT.slice(2)}`;
+      expect(validateStellarAddress(address)).toEqual({
+        valid: false,
+        reason: 'malformed',
+        hint: `contains invalid characters: ${char}`,
+      });
+    },
+  );
+
+  it('rejects an address with a space inside it', () => {
+    const address = `${VALID_ACCOUNT.slice(0, 10)} ${VALID_ACCOUNT.slice(11)}`;
+    const result = validateStellarAddress(address);
+    expect(result.valid).toBe(false);
+    if (!result.valid) {
+      expect(result.reason).toBe('malformed');
+      if (result.reason === 'malformed') expect(result.hint).toContain('invalid characters');
+    }
+  });
+
+  it('rejects input that is only whitespace', () => {
+    expect(validateStellarAddress('   ').valid).toBe(false);
+  });
 });
