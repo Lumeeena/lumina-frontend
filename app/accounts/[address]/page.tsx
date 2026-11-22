@@ -91,9 +91,15 @@ async function getAccountAsOf(
   }
 }
 
-async function getTrustlineOps(address: string): Promise<{ items: TrustlineOp[]; unavailable: boolean }> {
+async function getTrustlineOps(
+  address: string,
+): Promise<{ items: TrustlineOp[]; unavailable: boolean }> {
   try {
-    const data = await gqlFetch(GRAPHQL_URL, TRUSTLINE_QUERY, { address, limit: 10, cursor: null });
+    const data = await gqlFetch(GRAPHQL_URL, TRUSTLINE_QUERY, {
+      address,
+      limit: 10,
+      cursor: null,
+    });
     return { items: data.operations?.items ?? [], unavailable: false };
   } catch {
     return { items: [], unavailable: true };
@@ -105,7 +111,9 @@ async function getAccountLifecycle(address: string): Promise<{
   unavailable: boolean;
 }> {
   try {
-    const data = await gqlFetch(GRAPHQL_URL, AccountLifecycleDocument, { address });
+    const data = await gqlFetch(GRAPHQL_URL, AccountLifecycleDocument, {
+      address,
+    });
     return { lifecycle: data.accountLifecycle, unavailable: false };
   } catch {
     return { lifecycle: null, unavailable: true };
@@ -147,12 +155,42 @@ export default async function AccountPage({
   }>;
 }) {
   const { address } = await params;
-  const [result, trustlineOps, lifecycleResult, tradesResult] = await Promise.all([
-    getAccount(address),
-    getTrustlineOps(address),
-    getAccountLifecycle(address),
-    getAccountTrades(address),
-  ]);
+  const search = searchParams ? await searchParams : {};
+  const network = Array.isArray(search.network)
+    ? search.network[0]
+    : search.network;
+  const asOf = parseAsOfLedger(search.ledger);
+  const isCurrent = asOf.kind === "current";
+
+  let live: { account: Account | null; unavailable: boolean } | null = null;
+  let pinned: { account: AccountSnapshot | null; unavailable: boolean } | null =
+    null;
+  let trustlineOps: { items: TrustlineOp[]; unavailable: boolean } | null =
+    null;
+  let lifecycleResult: {
+    lifecycle: AccountLifecycleQuery["accountLifecycle"];
+    unavailable: boolean;
+  } | null = null;
+  let tradesResult: {
+    trades: AccountTradesQuery["trades"]["items"];
+    unavailable: boolean;
+  } | null = null;
+
+  if (isCurrent) {
+    const [liveRes, trustlineRes, lifecycleRes, tradesRes] = await Promise.all([
+      getAccount(address),
+      getTrustlineOps(address),
+      getAccountLifecycle(address),
+      getAccountTrades(address),
+    ]);
+    live = liveRes;
+    trustlineOps = trustlineRes;
+    lifecycleResult = lifecycleRes;
+    tradesResult = tradesRes;
+  } else if (asOf.kind === "ledger") {
+    pinned = await getAccountAsOf(address, asOf.ledger);
+  }
+
   const result = live ?? pinned ?? { account: null, unavailable: false };
   const account: AccountSnapshot | null = result.account;
   // Only the live account carries its recent activity.
@@ -209,8 +247,9 @@ export default async function AccountPage({
               <span className="mono text-[var(--color-text-secondary)] break-all">
                 {address}
               </span>{" "}
-              does not exist on Stellar Mainnet, or has never been funded.
-              Check the address and network, or fund the account before looking it up again.
+              does not exist on Stellar Mainnet, or has never been funded. Check
+              the address and network, or fund the account before looking it up
+              again.
             </p>
           </div>
           {/* A merged account no longer exists, but its recorded past may. */}
@@ -232,8 +271,7 @@ export default async function AccountPage({
             )}
           </div>
           <p className="text-[var(--color-text-muted)] text-[13px] mb-6">
-            Last modified at ledger{" "}
-            {account.lastModifiedLedger.toLocaleString()}
+            {`Last modified at ledger ${account.lastModifiedLedger.toLocaleString("en-US")}`}
           </p>
 
           <AccountAsOfLedger
@@ -333,13 +371,15 @@ export default async function AccountPage({
             </table>
           </div>
 
-          {account.balances.length > 0 && (
+          {isCurrent && account.balances.length > 0 && (
             <AccountPortfolio
               address={account.address}
               balances={account.balances}
             />
           )}
 
+          {isCurrent && liveAccount && (
+            <>
               <AccountActivityFeed address={account.address} />
 
               <h2 className="font-extrabold text-base mb-3 text-[var(--color-text-primary)]">
@@ -350,43 +390,56 @@ export default async function AccountPage({
                 initial={liveAccount.transactions ?? []}
               />
 
-          <h2 className="font-extrabold text-base mt-9 mb-3 text-[var(--color-text-primary)]">
-            Trades
-          </h2>
-          {tradesResult.unavailable ? (
-            <p role="alert" className="text-sm text-[var(--color-error-text)]">
-              Trade history is unavailable. Check your connection and refresh this page to try again.
-            </p>
-          ) : (
-            <AccountTrades
-              key={account.address}
-              address={account.address}
-              initial={tradesResult.trades}
-            />
-          )}
+              <h2 className="font-extrabold text-base mt-9 mb-3 text-[var(--color-text-primary)]">
+                Trades
+              </h2>
+              {tradesResult?.unavailable ? (
+                <p
+                  role="alert"
+                  className="text-sm text-[var(--color-error-text)]"
+                >
+                  Trade history is unavailable. Check your connection and
+                  refresh this page to try again.
+                </p>
+              ) : (
+                <AccountTrades
+                  key={account.address}
+                  address={account.address}
+                  initial={tradesResult?.trades ?? []}
+                />
+              )}
 
-          <h2 className="font-extrabold text-base mt-9 mb-3 text-[var(--color-text-primary)]">
-            Recent Operations
-          </h2>
-          <AccountOperationList
-            address={account.address}
-            initial={account.operations ?? []}
-          />
+              <h2 className="font-extrabold text-base mt-9 mb-3 text-[var(--color-text-primary)]">
+                Recent Operations
+              </h2>
+              <AccountOperationList
+                address={account.address}
+                initial={liveAccount.operations ?? []}
+              />
 
               <h2 className="font-extrabold text-base mt-9 mb-3 text-[var(--color-text-primary)]">
                 Trustline History
               </h2>
               {trustlineOps?.unavailable ? (
-                <p role="alert" className="text-sm text-[var(--color-error-text)]">
-                  Trustline history is unavailable. Check your connection and refresh this page to try again.
+                <p
+                  role="alert"
+                  className="text-sm text-[var(--color-error-text)]"
+                >
+                  Trustline history is unavailable. Check your connection and
+                  refresh this page to try again.
                 </p>
               ) : (
-                <AccountTrustlineTimeline address={account.address} initial={trustlineOps?.items ?? []} />
+                <AccountTrustlineTimeline
+                  address={account.address}
+                  initial={trustlineOps?.items ?? []}
+                />
               )}
 
               {lifecycleResult?.lifecycle && (
                 <div className="mt-9">
-                  <AccountLifecycleSection lifecycle={lifecycleResult.lifecycle} />
+                  <AccountLifecycleSection
+                    lifecycle={lifecycleResult.lifecycle}
+                  />
                 </div>
               )}
             </>
