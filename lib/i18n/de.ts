@@ -92,6 +92,38 @@ const de: MessageCatalogue = {
     "Weitere Transaktionen konnten nicht geladen werden.",
   "accountTxs.endOfResults": "Ende der Ergebnisse",
 
+  // ── Account detail page ───────────────────────────────────────────────
+  "account.breadcrumbExplorer": "Explorer",
+  "account.breadcrumbAccounts": "Konten",
+  "account.notFoundTitle": "Konto nicht gefunden",
+  "account.notFoundBody":
+    "Die Adresse {address} existiert nicht im Stellar-Mainnet oder wurde noch nie aufgeladen. Überprüfen Sie die Adresse und das Netzwerk oder laden Sie das Konto auf, bevor Sie es erneut aufrufen.",
+  "account.merged": "Zusammengeführt",
+  "account.lastModifiedLedger": "Zuletzt geändert bei Ledger {ledger}",
+  "account.statSequence": "Sequenz",
+  "account.statSubentries": "Unterpositionen",
+  "account.statSponsoring": "Sponsoring",
+  "account.statSponsored": "Gesponsert",
+  "account.flagAuthRequired": "Authentifizierung erforderlich",
+  "account.flagAuthRevocable": "Authentifizierung widerrufbar",
+  "account.flagAuthImmutable": "Authentifizierung unveränderlich",
+  "account.flagAuthClawbackEnabled": "Clawback aktiviert",
+  "account.flagNone": "Keine besonderen Flags",
+  "account.balancesTitle": "Guthaben",
+  "account.balancesAriaLabel": "Kontoguthaben",
+  "account.balanceAsset": "Vermögenswert",
+  "account.balanceIssuer": "Emittent",
+  "account.balanceBalance": "Saldo",
+  "account.balanceLimit": "Limit",
+  "account.recentTransactions": "Letzte Transaktionen",
+  "account.tradesTitle": "Handel",
+  "account.tradesUnavailable":
+    "Handelsverlauf ist nicht verfügbar. Überprüfen Sie Ihre Verbindung und aktualisieren Sie diese Seite, um es erneut zu versuchen.",
+  "account.recentOperations": "Letzte Operationen",
+  "account.trustlinesTitle": "Trustline-Verlauf",
+  "account.trustlinesUnavailable":
+    "Trustline-Verlauf ist nicht verfügbar. Überprüfen Sie Ihre Verbindung und aktualisieren Sie diese Seite, um es erneut zu versuchen.",
+
   // ── Assets ────────────────────────────────────────────────────────────
   "assets.noAssetsYet":
     "Noch keine Assets indexiert. Sobald der Indexer einen Salzo oder eine Überweisung für ein Asset sieht, erscheint es hier.",
@@ -197,10 +229,13 @@ const de: MessageCatalogue = {
   // ── Soroban transaction pipeline ──────────────────────────────────────
   "soroban.couldNotPrepare": "Die Transaktion konnte nicht vorbereitet werden.",
   "soroban.signatureDeclined": "Die Signatur wurde in Ihrem Wallet abgelehnt.",
-  "soroban.couldNotSign": "Die Transaktion konnte nicht signiert werden. Prüfen Sie Ihr Wallet und versuchen Sie es erneut.",
+  "soroban.couldNotSign":
+    "Die Transaktion konnte nicht signiert werden. Prüfen Sie Ihr Wallet und versuchen Sie es erneut.",
   "soroban.retrySignature": "Signatur erneut anfordern",
-  "soroban.prepareAgain": "Die gespeicherte Transaktion ist nicht mehr gültig. Senden Sie erneut, um eine neue Transaktion vorzubereiten; Ihre Eingaben bleiben erhalten.",
-  "soroban.rejectionPreserved": "Signatur abgelehnt. Ihre Eingaben und die vorbereitete Transaktion bleiben gespeichert. Sie können es erneut versuchen, sobald Sie bereit sind.",
+  "soroban.prepareAgain":
+    "Die gespeicherte Transaktion ist nicht mehr gültig. Senden Sie erneut, um eine neue Transaktion vorzubereiten; Ihre Eingaben bleiben erhalten.",
+  "soroban.rejectionPreserved":
+    "Signatur abgelehnt. Ihre Eingaben und die vorbereitete Transaktion bleiben gespeichert. Sie können es erneut versuchen, sobald Sie bereit sind.",
   "soroban.networkRejected": "Das Netzwerk hat die Transaktion abgelehnt.",
   "soroban.pendingConfirmation":
     "Die Transaktion wurde gesendet, aber noch nicht bestätigt. Versuchen Sie es in einem Moment erneut.",

@@ -88,6 +88,38 @@ const en: MessageCatalogue = {
   "accountTxs.couldNotLoad": "Could not load more transactions.",
   "accountTxs.endOfResults": "End of results",
 
+  // ── Account detail page ───────────────────────────────────────────────
+  "account.breadcrumbExplorer": "Explorer",
+  "account.breadcrumbAccounts": "Accounts",
+  "account.notFoundTitle": "Account Not Found",
+  "account.notFoundBody":
+    "The address {address} does not exist on Stellar Mainnet, or has never been funded. Check the address and network, or fund the account before looking it up again.",
+  "account.merged": "Merged",
+  "account.lastModifiedLedger": "Last modified at ledger {ledger}",
+  "account.statSequence": "Sequence",
+  "account.statSubentries": "Subentries",
+  "account.statSponsoring": "Sponsoring",
+  "account.statSponsored": "Sponsored",
+  "account.flagAuthRequired": "Auth Required",
+  "account.flagAuthRevocable": "Auth Revocable",
+  "account.flagAuthImmutable": "Auth Immutable",
+  "account.flagAuthClawbackEnabled": "Clawback Enabled",
+  "account.flagNone": "No Special Flags",
+  "account.balancesTitle": "Balances",
+  "account.balancesAriaLabel": "Account balances",
+  "account.balanceAsset": "Asset",
+  "account.balanceIssuer": "Issuer",
+  "account.balanceBalance": "Balance",
+  "account.balanceLimit": "Limit",
+  "account.recentTransactions": "Recent Transactions",
+  "account.tradesTitle": "Trades",
+  "account.tradesUnavailable":
+    "Trade history is unavailable. Check your connection and refresh this page to try again.",
+  "account.recentOperations": "Recent Operations",
+  "account.trustlinesTitle": "Trustline History",
+  "account.trustlinesUnavailable":
+    "Trustline history is unavailable. Check your connection and refresh this page to try again.",
+
   // ── Assets ────────────────────────────────────────────────────────────
   "assets.noAssetsYet":
     "No assets indexed yet. Once the indexer sees a balance or a transfer for an asset, it appears here.",
@@ -161,7 +193,8 @@ const en: MessageCatalogue = {
   "owner.staking": "Staking\u2026",
   "owner.stake": "Stake",
   "owner.stakeAnyway": "Stake anyway",
-  "owner.reserveWarningTitle": "This stake would take your account below its minimum balance.",
+  "owner.reserveWarningTitle":
+    "This stake would take your account below its minimum balance.",
   "owner.reserveExplanation":
     "Stellar keeps a minimum amount of XLM in every account, called the reserve. It is 1 XLM for an account with nothing else in it, plus 0.5 XLM for each trustline, offer or other entry it owns, and that part cannot be spent. After this stake your account would hold {remaining} XLM, below the {minimum} XLM reserve. An account under its reserve can still receive XLM but cannot send transactions until it is topped up.",
   "owner.withdrawing": "Withdrawing\u2026",
@@ -190,10 +223,13 @@ const en: MessageCatalogue = {
   // ── Soroban transaction pipeline ──────────────────────────────────────
   "soroban.couldNotPrepare": "Could not prepare the transaction.",
   "soroban.signatureDeclined": "Signature was declined in your wallet.",
-  "soroban.couldNotSign": "Could not sign the transaction. Check your wallet and try again.",
+  "soroban.couldNotSign":
+    "Could not sign the transaction. Check your wallet and try again.",
   "soroban.retrySignature": "Retry signature",
-  "soroban.prepareAgain": "The saved transaction is no longer usable. Submit again to prepare a fresh transaction; your inputs are saved.",
-  "soroban.rejectionPreserved": "Signature declined. Your inputs and prepared transaction are saved. You can retry when ready.",
+  "soroban.prepareAgain":
+    "The saved transaction is no longer usable. Submit again to prepare a fresh transaction; your inputs are saved.",
+  "soroban.rejectionPreserved":
+    "Signature declined. Your inputs and prepared transaction are saved. You can retry when ready.",
   "soroban.networkRejected": "The network rejected the transaction.",
   "soroban.pendingConfirmation":
     "The transaction was submitted but has not confirmed yet. Check again in a moment.",
@@ -273,20 +309,24 @@ const en: MessageCatalogue = {
   "shortcuts.title": "Keyboard shortcuts",
   "shortcuts.search": "Search",
   "shortcuts.showList": "Show this list",
-  "shortcuts.description": "Shortcuts never use Ctrl, Cmd or Alt and are ignored while you type in a field.",
+  "shortcuts.description":
+    "Shortcuts never use Ctrl, Cmd or Alt and are ignored while you type in a field.",
   "shortcuts.enable": "Enable keyboard shortcuts",
 
   // ── Search page ───────────────────────────────────────────────────────
   "search.heading": "Search",
-  "search.description": "One box for everything on the network. Type what you have \u2014 no need to say what it is.",
+  "search.description":
+    "One box for everything on the network. Type what you have \u2014 no need to say what it is.",
   "search.accountAddress": "Account address",
   "search.contractId": "Contract id \u2014 its events",
   "search.transactionHash": "Transaction hash",
   "search.memoSearch": "Memo search, ranked by the backend",
   "search.searching": "Searching the index\u2026",
-  "search.resultsCount": "{count} transaction{count, plural, one {} other {s}} matching",
+  "search.resultsCount":
+    "{count} transaction{count, plural, one {} other {s}} matching",
   "search.rankedByMemo": ", ranked by memo relevance.",
-  "search.helpText": "Looking for an account or contract? Paste its full address \u2014 the explorer takes you straight there.",
+  "search.helpText":
+    "Looking for an account or contract? Paste its full address \u2014 the explorer takes you straight there.",
 
   // ── Transactions page ─────────────────────────────────────────────────
   "transactions.heading": "Transactions",
@@ -294,7 +334,8 @@ const en: MessageCatalogue = {
 
   // ── Stats page ────────────────────────────────────────────────────────
   "stats.heading": "Network Stats",
-  "stats.description": "Indexer health and Stellar network throughput at a glance.",
+  "stats.description":
+    "Indexer health and Stellar network throughput at a glance.",
   "stats.latestLedger": "Latest Ledger",
   "stats.stellarMainnet": "Stellar Mainnet",
   "stats.txsLastLedger": "Txs (last ledger)",
@@ -309,17 +350,20 @@ const en: MessageCatalogue = {
 
   // ── Registry page ─────────────────────────────────────────────────────
   "registry.heading": "Lumina Registry",
-  "registry.description": "An on-chain Soroban manifest of contracts Lumina indexes. Register your contract to opt into priority indexing \u2014 permissionless, on Stellar/Soroban testnet.",
+  "registry.description":
+    "An on-chain Soroban manifest of contracts Lumina indexes. Register your contract to opt into priority indexing \u2014 permissionless, on Stellar/Soroban testnet.",
   "registry.registerContract": "Register a Contract",
   "registry.connecting": "Connecting\u2026",
-  "registry.connectPrompt": "Connect a wallet to register and manage contracts.",
+  "registry.connectPrompt":
+    "Connect a wallet to register and manage contracts.",
   "registry.walletLocked": "Your wallet is locked",
   "registry.unlockHint": "Unlock your wallet extension and try again.",
   "registry.myContracts": "My Contracts",
   "registry.recentlyRegistered": "Recently Registered",
   "registry.all": "All",
   "registry.filterByCategory": "Filter by category",
-  "registry.connectToSee": "Connect a wallet to see the contracts you registered.",
+  "registry.connectToSee":
+    "Connect a wallet to see the contracts you registered.",
   "registry.loadingEntries": "Loading registry entries\u2026",
   "registry.noActiveContracts": "No active {category} contracts.",
   "registry.noContractsYet": "No contracts registered yet.",
@@ -339,30 +383,36 @@ const en: MessageCatalogue = {
 
   // ── Explorer page ─────────────────────────────────────────────────────
   "explorer.heading": "Explorer",
-  "explorer.description": "Search any Stellar account or browse recent transactions in real time.",
-  "explorer.searchPlaceholder": "Search an account, transaction, contract or memo\u2026",
+  "explorer.description":
+    "Search any Stellar account or browse recent transactions in real time.",
+  "explorer.searchPlaceholder":
+    "Search an account, transaction, contract or memo\u2026",
   "explorer.recentTransactions": "Recent Transactions",
 
   // ── Events page ───────────────────────────────────────────────────────
   "events.heading": "Contract Events",
-  "events.description": "Soroban contract events indexed via RPC, newest first.",
+  "events.description":
+    "Soroban contract events indexed via RPC, newest first.",
   "events.contractIdPlaceholder": "Contract ID (C...)",
   "events.filter": "Filter",
 
   // ── Assets page ───────────────────────────────────────────────────────
   "assets.heading": "Assets",
-  "assets.description": "Every asset Lumina indexes, with the supply and holder counts behind it.",
+  "assets.description":
+    "Every asset Lumina indexes, with the supply and holder counts behind it.",
 
   // ── Watch page ────────────────────────────────────────────────────────
   "watch.backgroundNotifications": "Background notifications",
-  "watch.notificationDescription": "In-app alerts work everywhere in Lumina. This is the separate opt-in for an operating-system notification when the tab is not in front of you.",
+  "watch.notificationDescription":
+    "In-app alerts work everywhere in Lumina. This is the separate opt-in for an operating-system notification when the tab is not in front of you.",
 
   // ── Footer ────────────────────────────────────────────────────────────
   "footer.version": "Lumina frontend v{version}",
   "footer.copyVersion": "Copy version for bug reports",
 
   // ── SearchBar ─────────────────────────────────────────────────────────
-  "searchBar.placeholder": "Search an account, transaction, contract or memo\u2026",
+  "searchBar.placeholder":
+    "Search an account, transaction, contract or memo\u2026",
 };
 
 export default en;
