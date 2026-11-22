@@ -5,6 +5,7 @@ import { truncateAddress, formatXLM } from "@/lib/formatters";
 import { withNetwork } from "@/lib/network";
 import { useNetwork } from "@/lib/useNetwork";
 import type { Transaction } from "@/lib/types";
+import LabeledAddress from "./LabeledAddress";
 
 interface InnerTransaction {
   hash: string;
@@ -30,12 +31,7 @@ export default function FeeBumpTransactionRow({
           <h3 className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--color-text-muted)] mb-2">
             Fee Payer
           </h3>
-          <Link
-            href={withNetwork(`/accounts/${feePayerTransaction.sourceAccount}`, network)}
-            className="mono text-xs text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline"
-          >
-            {feePayerTransaction.sourceAccount}
-          </Link>
+          <LabeledAddress address={feePayerTransaction.sourceAccount} linkTo={withNetwork(`/accounts/${feePayerTransaction.sourceAccount}`, network)} />
           <div className="text-xs text-[var(--color-text-secondary)] mt-1">
             Fee:{" "}
             {formatXLM(feePayerTransaction.feeCharged)}{" "}
@@ -57,12 +53,7 @@ export default function FeeBumpTransactionRow({
               </Link>
               <div className="text-xs text-[var(--color-text-secondary)]">
                 Source:{" "}
-                <Link
-                  href={withNetwork(`/accounts/${innerTransaction.sourceAccount}`, network)}
-                  className="text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline"
-                >
-                  {truncateAddress(innerTransaction.sourceAccount, 10)}
-                </Link>
+                <LabeledAddress address={innerTransaction.sourceAccount} linkTo={withNetwork(`/accounts/${innerTransaction.sourceAccount}`, network)} />
               </div>
               <div className="text-xs text-[var(--color-text-secondary)]">
                 Operations: {innerTransaction.operationCount}

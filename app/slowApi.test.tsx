@@ -14,11 +14,27 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
-import type { Account, ContractEvent, Ledger, Operation, Transaction } from "@/lib/types";
+import type {
+  Account,
+  ContractEvent,
+  Ledger,
+  Operation,
+  Transaction,
+} from "@/lib/types";
 
 const gqlFetch = vi.hoisted(() => vi.fn());
 const getActiveContracts = vi.hoisted(() => vi.fn());
 const getActiveProfiles = vi.hoisted(() => vi.fn());
+
+vi.mock("@/components/ui/Toast", () => ({
+  useToast: () => ({
+    addToast: vi.fn(),
+    removeToast: vi.fn(),
+    clearAll: vi.fn(),
+    toasts: [],
+  }),
+  ToastProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
 
 vi.mock("@/lib/graphql", () => ({
   gqlFetch,
@@ -27,7 +43,8 @@ vi.mock("@/lib/graphql", () => ({
 }));
 
 vi.mock("@/lib/registry", async () => {
-  const actual = await vi.importActual<typeof import("@/lib/registry")>("@/lib/registry");
+  const actual =
+    await vi.importActual<typeof import("@/lib/registry")>("@/lib/registry");
   return {
     ...actual,
     getActiveContracts,
@@ -67,7 +84,9 @@ import RegistryWorkspace from "@/components/RegistryWorkspace";
 import RegistryListing from "@/components/RegistryListing";
 import RegistryLoading from "./registry/loading";
 
-vi.mock("next/cache", () => ({ unstable_cache: (read: () => unknown) => read }));
+vi.mock("next/cache", () => ({
+  unstable_cache: (read: () => unknown) => read,
+}));
 vi.mock("@/app/registry/actions", () => ({ refreshRegistry: vi.fn() }));
 import HomeLoading from "./loading";
 import EventsLoading from "./events/loading";
@@ -142,7 +161,12 @@ function account(overrides: Partial<Account> = {}): Account {
     numSponsored: 0,
     numSponsoring: 0,
     balances: [],
-    flags: { authRequired: false, authRevocable: false, authImmutable: false, authClawbackEnabled: false },
+    flags: {
+      authRequired: false,
+      authRevocable: false,
+      authImmutable: false,
+      authClawbackEnabled: false,
+    },
     transactions: [],
     operations: [],
     ...overrides,
@@ -201,17 +225,26 @@ describe("loading states", () => {
     { route: "/", Loading: HomeLoading, label: /latest ledger/i },
     { route: "/events", Loading: EventsLoading, label: /contract events/i },
     { route: "/stats", Loading: StatsLoading, label: /network stats/i },
-    { route: "/accounts/[address]", Loading: AccountLoading, label: /account/i },
+    {
+      route: "/accounts/[address]",
+      Loading: AccountLoading,
+      label: /account/i,
+    },
   ];
 
-  it.each(serverRoutes)("$route announces what it is loading", ({ Loading, label }) => {
-    render(<Loading />);
+  it.each(serverRoutes)(
+    "$route announces what it is loading",
+    ({ Loading, label }) => {
+      render(<Loading />);
 
-    const status = screen.getByRole("status");
-    expect(status.getAttribute("aria-label")).toMatch(label);
-    // The blocks are decoration; announcing them would read as content.
-    expect(status.querySelectorAll('[aria-hidden="true"]').length).toBeGreaterThan(0);
-  });
+      const status = screen.getByRole("status");
+      expect(status.getAttribute("aria-label")).toMatch(label);
+      // The blocks are decoration; announcing them would read as content.
+      expect(
+        status.querySelectorAll('[aria-hidden="true"]').length,
+      ).toBeGreaterThan(0);
+    },
+  );
 
   it("keeps the loading state on screen for as long as the request is outstanding", async () => {
     const { promise, resolve } = deferred<{ latestLedger: Ledger }>();
@@ -255,7 +288,9 @@ describe("a response that takes too long", () => {
   });
 
   it("events: holds the page rather than rendering an empty list", async () => {
-    const { promise, resolve } = deferred<{ events: { items: ContractEvent[] } }>();
+    const { promise, resolve } = deferred<{
+      events: { items: ContractEvent[] };
+    }>();
     gqlFetch.mockReturnValue(promise);
 
     let page!: React.ReactElement;
@@ -271,8 +306,13 @@ describe("a response that takes too long", () => {
   });
 
   it("stats: falls back to a dash for the registry count when only it fails", async () => {
-    gqlFetch.mockResolvedValue({ latestLedger: ledger(), operations: { items: [] } });
-    getActiveContracts.mockRejectedValue(new Error("Registry simulation failed"));
+    gqlFetch.mockResolvedValue({
+      latestLedger: ledger(),
+      operations: { items: [] },
+    });
+    getActiveContracts.mockRejectedValue(
+      new Error("Registry simulation failed"),
+    );
 
     render(await StatsPage());
 
@@ -287,8 +327,15 @@ describe("a response that takes too long", () => {
 
     let page!: React.ReactElement;
     await act(async () => {
-      const pending = AccountPage({ params: Promise.resolve({ address: ADDRESS }) });
-      resolve({ account: account({ transactions: [transaction()], operations: [operation()] }) });
+      const pending = AccountPage({
+        params: Promise.resolve({ address: ADDRESS }),
+      });
+      resolve({
+        account: account({
+          transactions: [transaction()],
+          operations: [operation()],
+        }),
+      });
       page = await pending;
     });
 
@@ -320,7 +367,10 @@ describe("a response that only half arrived", () => {
   it("stats: keeps the ledger when the operations breakdown is missing", async () => {
     // The two halves of the stats page are independent reads; one failing must
     // not take the other down with it.
-    gqlFetch.mockResolvedValue({ latestLedger: ledger(), operations: { items: null } });
+    gqlFetch.mockResolvedValue({
+      latestLedger: ledger(),
+      operations: { items: null },
+    });
 
     render(await StatsPage());
 
@@ -328,20 +378,28 @@ describe("a response that only half arrived", () => {
   });
 
   it("account: shows what came back when the activity lists are empty", async () => {
-    gqlFetch.mockResolvedValue({ account: account({ balances: [], transactions: [], operations: [] }) });
+    gqlFetch.mockResolvedValue({
+      account: account({ balances: [], transactions: [], operations: [] }),
+    });
 
-    render(await AccountPage({ params: Promise.resolve({ address: ADDRESS }) }));
+    render(
+      await AccountPage({ params: Promise.resolve({ address: ADDRESS }) }),
+    );
 
     // The account exists and is rendered, with empty lists rather than a
     // not-found state.
     expect(screen.queryByText(/not found|couldn't|could not/i)).toBeNull();
-    expect(screen.getAllByText(new RegExp(ADDRESS.slice(0, 6))).length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText(new RegExp(ADDRESS.slice(0, 6))).length,
+    ).toBeGreaterThan(0);
   });
 
   it("account: reports an unknown account as such, not as a crash", async () => {
     gqlFetch.mockResolvedValue({ account: null });
 
-    render(await AccountPage({ params: Promise.resolve({ address: ADDRESS }) }));
+    render(
+      await AccountPage({ params: Promise.resolve({ address: ADDRESS }) }),
+    );
 
     expect(screen.getByText(/not found|couldn't|could not/i)).toBeTruthy();
   });
@@ -353,24 +411,36 @@ describe("a response that only half arrived", () => {
     // Each of these is the fallback that ships whenever the indexer is down:
     // the route still has to render its own state rather than a 500.
     const routes = [
-      { page: HomePage(), expect: () => expect(screen.getByRole("heading", { level: 1 })).toBeTruthy() },
+      {
+        page: HomePage(),
+        expect: () =>
+          expect(screen.getByRole("heading", { level: 1 })).toBeTruthy(),
+      },
       {
         page: EventsPage({ searchParams: Promise.resolve({}) }),
         // A rejected read is a failure, not an empty list — the two are told
         // apart above, so this is the fallback rather than the empty state.
-        expect: () => expect(screen.getByRole("alert").textContent).toMatch(/temporarily unavailable/i),
+        expect: () =>
+          expect(screen.getByRole("alert").textContent).toMatch(
+            /temporarily unavailable/i,
+          ),
       },
       {
         page: StatsPage(),
         expect: () => {
-          expect(screen.getByRole("heading", { name: /network stats/i })).toBeTruthy();
+          expect(
+            screen.getByRole("heading", { name: /network stats/i }),
+          ).toBeTruthy();
           // Every figure is an honest unknown rather than a fabricated zero.
           expect(screen.getAllByText("—").length).toBeGreaterThan(0);
         },
       },
       {
         page: AccountPage({ params: Promise.resolve({ address: ADDRESS }) }),
-        expect: () => expect(screen.getByText(/not found|couldn't|could not/i)).toBeTruthy(),
+        expect: () =>
+          expect(
+            screen.getByText(/not found|couldn't|could not/i),
+          ).toBeTruthy(),
       },
     ];
 
@@ -386,33 +456,49 @@ describe("a response that only half arrived", () => {
 describe("routes that fetch on the client", () => {
   it("shows a loading state and then the list once the client read lands", async () => {
     const { promise, resolve } = deferred<{
-      transactions: { items: Transaction[]; pageInfo: { hasNextPage: boolean; cursor: string | null } };
+      transactions: {
+        items: Transaction[];
+        pageInfo: { hasNextPage: boolean; cursor: string | null };
+      };
     }>();
     gqlFetch.mockReturnValue(promise);
 
-    const TransactionExplorer = (await import("@/components/TransactionExplorer")).default;
+    const TransactionExplorer = (
+      await import("@/components/TransactionExplorer")
+    ).default;
     const { Suspense } = await import("react");
 
     render(
       <Suspense fallback={<p>Boundary fallback</p>}>
         <TransactionExplorer />
-      </Suspense>
+      </Suspense>,
     );
 
     // The client read is in flight, so the list says so rather than showing an
     // empty result set — an empty table during a fetch reads as "no results".
-    await waitFor(() => expect(screen.getAllByText(/loading/i).length).toBeGreaterThan(0));
+    await waitFor(() =>
+      expect(screen.getAllByText(/loading/i).length).toBeGreaterThan(0),
+    );
 
     await act(async () => {
-      resolve({ transactions: { items: [transaction()], pageInfo: { hasNextPage: false, cursor: null } } });
+      resolve({
+        transactions: {
+          items: [transaction()],
+          pageInfo: { hasNextPage: false, cursor: null },
+        },
+      });
       await promise;
     });
 
-    await waitFor(() => expect(screen.queryAllByText(/loading/i)).toHaveLength(0));
+    await waitFor(() =>
+      expect(screen.queryAllByText(/loading/i)).toHaveLength(0),
+    );
     // The Suspense boundary is there for `useSearchParams`, not for the fetch —
     // so the loading state is the component's own.
     expect(screen.queryByText("Boundary fallback")).toBeNull();
-    expect((screen.getByTestId("result-count") as HTMLElement).textContent).toBe("1 loaded");
+    expect(
+      (screen.getByTestId("result-count") as HTMLElement).textContent,
+    ).toBe("1 loaded");
   });
 
   it("registry: says it is loading rather than showing an empty registry", async () => {
@@ -422,13 +508,15 @@ describe("routes that fetch on the client", () => {
 
     const pending = RegistryListing({ category: null });
     const view = render(<RegistryLoading />);
-    expect(screen.getByRole('status').getAttribute('aria-label')).toBe('Loading registry');
+    expect(screen.getByRole("status").getAttribute("aria-label")).toBe(
+      "Loading registry",
+    );
 
     resolve([registryProfile("Late Protocol")]);
     const listing = await pending;
     view.rerender(<RegistryWorkspace listing={listing} />);
-    expect(await screen.findByText('Late Protocol')).toBeTruthy();
-    expect(screen.queryByLabelText('Loading registry')).toBeNull();
+    expect(await screen.findByText("Late Protocol")).toBeTruthy();
+    expect(screen.queryByLabelText("Loading registry")).toBeNull();
   });
 
   it("registry: keeps the rows it can when one entry is malformed", async () => {
@@ -438,15 +526,22 @@ describe("routes that fetch on the client", () => {
       registryProfile("Good Protocol"),
       // No name, no contract: whatever the page can honestly show for this, it
       // must not throw over the rows beside it.
-      { ...registryProfile("Broken Protocol"), name: undefined as unknown as string },
+      {
+        ...registryProfile("Broken Protocol"),
+        name: undefined as unknown as string,
+      },
     ] satisfies RegistryProfile[]);
     nav.query = "";
 
-    render(<RegistryWorkspace listing={await RegistryListing({ category: null })} />);
+    render(
+      <RegistryWorkspace listing={await RegistryListing({ category: null })} />,
+    );
 
     await waitFor(() => expect(screen.getByText("Good Protocol")).toBeTruthy());
     // The page survived the bad entry, and is still showing what did come back
     // rather than replacing the whole list with an error.
-    expect(screen.getByRole("button", { name: /connect wallet/i })).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: /connect wallet/i }),
+    ).toBeTruthy();
   });
 });

@@ -17,6 +17,8 @@ import { shareCard } from "@/lib/metadata";
 import { PUBLIC_GRAPHQL_URL } from "@/lib/graphql";
 import { preconnectOrigins } from "@/lib/preconnect";
 import { SOROBAN_RPC_URL } from "@/lib/registry";
+import { getDirection } from "@/lib/i18n";
+import { getRequestLocale } from "@/lib/i18n/server";
 import {
   DEFAULT_DESCRIPTION,
   SITE_NAME,
@@ -63,12 +65,16 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const locale = await getRequestLocale();
+  const dir = getDirection(locale);
+
   return (
     <html
-      lang="en"
+      lang={locale}
+      dir={dir}
       className={`${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <head>
@@ -76,9 +82,16 @@ export default function RootLayout({
         {/* The fetches these origins serve send no credentials, so the browser
             only reuses a preconnected socket when it was opened the same way.
             Without `crossOrigin` the hint warms a pool the requests never use. */}
-        {preconnectOrigins([PUBLIC_GRAPHQL_URL, SOROBAN_RPC_URL]).map((origin) => (
-          <link key={origin} rel="preconnect" href={origin} crossOrigin="anonymous" />
-        ))}
+        {preconnectOrigins([PUBLIC_GRAPHQL_URL, SOROBAN_RPC_URL]).map(
+          (origin) => (
+            <link
+              key={origin}
+              rel="preconnect"
+              href={origin}
+              crossOrigin="anonymous"
+            />
+          ),
+        )}
       </head>
       <body className="min-h-full flex flex-col bg-[var(--color-bg-base)] text-[var(--color-text-primary)]">
         <ToastProvider>

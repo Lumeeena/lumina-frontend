@@ -5,7 +5,14 @@ import en from "./en";
 // Discover locale files, including newly added catalogues, without importing
 // the runtime's English fallback (which would conceal a missing translation).
 const catalogues = import.meta.glob<Record<string, string>>(
-  ["./*.ts", "!./*.test.ts", "!./index.ts", "!./types.ts", "!./direction.ts"],
+  [
+    "./*.ts",
+    "!./*.test.ts",
+    "!./index.ts",
+    "!./types.ts",
+    "!./direction.ts",
+    "!./server.ts",
+  ],
   { eager: true, import: "default" },
 );
 
@@ -115,6 +122,34 @@ describe("translation catalogues", () => {
   it("allows argument reordering and repetition", () => {
     expect(
       errors({ hello: "{first} {last}" }, { hello: "{last}, {first} {first}" }),
+    ).toEqual([]);
+  });
+
+  it("accepts zero, one, two, few, many, other plural categories", () => {
+    const template =
+      "{count, plural, zero {none} one {one} two {two} few {few} many {many} other {other}}";
+    expect(placeholders(template)).toEqual(["count:plural"]);
+  });
+
+  it("extracts nested interpolation placeholders across all plural categories", () => {
+    const template =
+      "{count, plural, zero {none} one {{name} singular} two {pair {name}} few {{name} few} many {{name} many} other {{name} and {extra}}}";
+    expect(placeholders(template)).toEqual([
+      "count:plural",
+      "extra:value",
+      "name:value",
+    ]);
+  });
+
+  it("allows target catalogue to use few and many plural forms when reference uses one and other", () => {
+    expect(
+      errors(
+        { count: "{count, plural, one {item} other {items}}" },
+        {
+          count:
+            "{count, plural, one {element} few {elementy} many {elementów} other {elementu}}",
+        },
+      ),
     ).toEqual([]);
   });
 

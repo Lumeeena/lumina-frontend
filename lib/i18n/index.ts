@@ -18,9 +18,14 @@
 import type { MessageCatalogue, MessageKey } from "./types";
 import en from "./en";
 import de from "./de";
-import { getDirection, isRtl, RTL_LANGUAGES, type Direction } from "./direction";
+import {
+  getDirection,
+  isRtl,
+  RTL_LANGUAGES,
+  type Direction,
+} from "./direction";
 
-const CATALOGUES: Record<string, MessageCatalogue> = { en, de };
+export const CATALOGUES: Record<string, MessageCatalogue> = { en, de };
 
 let activeCatalogue: MessageCatalogue = en;
 let activeLocale = "en";
@@ -39,9 +44,13 @@ function baseLanguage(locale: string): string {
  * switches the app away from English.
  */
 export function isSupportedLocale(locale: string): boolean {
-  return locale in CATALOGUES || RTL_LANGUAGES.has(baseLanguage(locale)) || [
-    "en", "zh", "ja", "ko", "ru", "ar", "he", "es", "pt"
-  ].includes(baseLanguage(locale));
+  return (
+    locale in CATALOGUES ||
+    RTL_LANGUAGES.has(baseLanguage(locale)) ||
+    ["en", "zh", "ja", "ko", "ru", "ar", "he", "es", "pt"].includes(
+      baseLanguage(locale),
+    )
+  );
 }
 
 /**
@@ -111,30 +120,29 @@ export function t(
  * Plural blocks use a brace-counting scan so nested `{…}` in the branch
  * text is handled correctly.
  */
-function interpolate(
+export function interpolate(
   template: string,
   values: Record<string, string | number | bigint>,
+  locale: string = activeLocale,
 ): string {
   // First pass: expand plural blocks, which contain nested braces.
-  let result = expandPlurals(template, values);
+  let result = expandPlurals(template, values, locale);
   // Second pass: simple {name} placeholders.
-  result = result.replace(
-    /\{(\w+)\}/g,
-    (_match, name: string) => {
-      const val = values[name];
-      return val !== undefined ? String(val) : `{${name}}`;
-    },
-  );
+  result = result.replace(/\{(\w+)\}/g, (_match, name: string) => {
+    const val = values[name];
+    return val !== undefined ? String(val) : `{${name}}`;
+  });
   return result;
 }
 
 /**
  * Find `{name, plural, one {…} other {…}}` and replace each with the
- * correct branch.
+ * correct branch using Intl.PluralRules for the active locale.
  */
 function expandPlurals(
   template: string,
   values: Record<string, string | number | bigint>,
+  locale: string = activeLocale,
 ): string {
   const re = /\{(\w+),\s*plural,\s*/g;
   let match: RegExpExecArray | null;
@@ -154,7 +162,7 @@ function expandPlurals(
       // Skip whitespace.
       while (pos < template.length && /\s/.test(template[pos])) pos++;
       if (template[pos] === "}") break;
-      // Read branch name (e.g. "one", "other").
+      // Read branch name (e.g. "zero", "one", "two", "few", "many", "other").
       const branchStart = pos;
       while (pos < template.length && /\w/.test(template[pos])) pos++;
       const branchName = template.slice(branchStart, pos);
@@ -175,7 +183,10 @@ function expandPlurals(
     // Skip the outer closing }.
     if (pos < template.length && template[pos] === "}") pos++;
 
-    out += n === 1 && branches["one"] ? branches["one"] : (branches["other"] ?? String(n));
+    out +=
+      n === 1 && branches["one"]
+        ? branches["one"]
+        : (branches["other"] ?? String(n));
     last = pos;
     re.lastIndex = pos;
   }
@@ -186,3 +197,41 @@ function expandPlurals(
 
 export type { MessageCatalogue, MessageKey };
 export { getDirection, isRtl, type Direction } from "./direction";
+
+/**
+ * Resolve a requested locale string to a supported canonical locale.
+ */
+export function resolveLocale(locale?: string | null): string {
+  if (!locale || typeof locale !== "string") return "en";
+  const norm = locale.trim().toLowerCase();
+  if (norm in CATALOGUES) return norm;
+  const base = baseLanguage(norm);
+  if (base in CATALOGUES) return base;
+  if (isSupportedLocale(norm)) return norm;
+  if (isSupportedLocale(base)) return base;
+  return "en";
+}
+
+/**
+ * Create a stateless translator instance bound to the given locale.
+ * Does not mutate module-level state.
+ */
+export function createTranslator(requestedLocale: string = "en") {
+  const locale = resolveLocale(requestedLocale);
+  const catalogue =
+    CATALOGUES[locale] ?? CATALOGUES[baseLanguage(locale)] ?? en;
+  const direction = getDirection(locale);
+
+  return {
+    locale,
+    direction,
+    t: (
+      key: MessageKey,
+      values?: Record<string, string | number | bigint>,
+    ): string => {
+      const template = catalogue[key] ?? en[key] ?? key;
+      if (!values) return template;
+      return interpolate(template, values);
+    },
+  };
+}

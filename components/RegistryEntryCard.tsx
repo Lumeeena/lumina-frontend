@@ -24,10 +24,18 @@ export default function RegistryEntryCard({ profile }: RegistryEntryCardProps) {
   return (
     <div className="min-h-36 border border-[var(--color-border-default)] rounded-[10px] p-3.5 px-4">
       <div className="flex items-center justify-between gap-2 mb-1">
-        <span className="font-bold text-sm text-[var(--color-text-primary)]">{profile.name}</span>
-        <ContractLink contractId={profile.contractId} truncate={5} className="text-[11px]" />
+        <span className="font-bold text-sm text-[var(--color-text-primary)]">
+          {profile.name}
+        </span>
+        <ContractLink
+          contractId={profile.contractId}
+          truncate={5}
+          className="text-[11px]"
+        />
       </div>
-      <p className="text-xs text-[var(--color-text-secondary)] m-0">{profile.description}</p>
+      <p className="text-xs text-[var(--color-text-secondary)] m-0">
+        {profile.description}
+      </p>
       {profile.categories && profile.categories.length > 0 && (
         <ul className="flex flex-wrap gap-1.5 mt-2 list-none p-0 m-0" aria-label={t("registryEntryCard.categories")}>
           {profile.categories.map(category => (

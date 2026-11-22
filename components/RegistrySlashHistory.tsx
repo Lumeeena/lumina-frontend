@@ -15,9 +15,7 @@ export default function RegistrySlashHistory({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
-  async function toggle() {
-    setOpen(!open);
-    if (open || slashes !== null || loading) return;
+  async function loadHistory() {
     setLoading(true);
     setError(false);
     try {
@@ -28,6 +26,14 @@ export default function RegistrySlashHistory({
       setError(true);
     } finally {
       setLoading(false);
+    }
+  }
+
+  function toggle() {
+    const next = !open;
+    setOpen(next);
+    if (next && slashes === null) {
+      void loadHistory();
     }
   }
 
