@@ -5,7 +5,14 @@ import en from "./en";
 // Discover locale files, including newly added catalogues, without importing
 // the runtime's English fallback (which would conceal a missing translation).
 const catalogues = import.meta.glob<Record<string, string>>(
-  ["./*.ts", "!./*.test.ts", "!./index.ts", "!./types.ts", "!./direction.ts"],
+  [
+    "./*.ts",
+    "!./*.test.ts",
+    "!./index.ts",
+    "!./types.ts",
+    "!./direction.ts",
+    "!./server.ts",
+  ],
   { eager: true, import: "default" },
 );
 
