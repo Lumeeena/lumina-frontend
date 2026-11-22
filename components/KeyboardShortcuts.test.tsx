@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { setLocale } from "@/lib/i18n";
 
 const push = vi.hoisted(() => vi.fn());
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
@@ -11,7 +12,36 @@ beforeEach(() => {
   push.mockClear();
   window.localStorage.clear();
 });
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  setLocale("en");
+});
+
+describe("KeyboardShortcuts translations", () => {
+  it("renders the German catalogue when the locale is German", () => {
+    setLocale("de");
+    render(<KeyboardShortcuts />);
+    fireEvent.click(screen.getByRole("button", { name: "Tastaturkürzel" }));
+    expect(screen.getByRole("dialog", { name: "Tastaturkürzel" })).toBeTruthy();
+    expect(screen.getByText("Startseite")).toBeTruthy();
+    expect(screen.getByText("g, danach h")).toBeTruthy();
+    expect(screen.getByLabelText("Tastaturkürzel aktivieren")).toBeTruthy();
+  });
+
+  it("re-renders in the new locale when the locale changes after mount", () => {
+    render(<KeyboardShortcuts />);
+    expect(screen.getByRole("button", { name: "Keyboard shortcuts" })).toBeTruthy();
+    act(() => setLocale("de"));
+    expect(screen.getByRole("button", { name: "Tastaturkürzel" })).toBeTruthy();
+  });
+
+  it("names the English route labels and the g-then sequence by default", () => {
+    render(<KeyboardShortcuts />);
+    fireEvent.click(screen.getByRole("button", { name: "Keyboard shortcuts" }));
+    expect(screen.getByText("Contract Events")).toBeTruthy();
+    expect(screen.getByText("g then c")).toBeTruthy();
+  });
+});
 
 describe("KeyboardShortcuts", () => {
   it("navigates on a g-then-letter sequence", () => {

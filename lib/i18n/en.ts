@@ -322,6 +322,14 @@ const en: MessageCatalogue = {
   "shortcuts.description":
     "Shortcuts never use Ctrl, Cmd or Alt and are ignored while you type in a field.",
   "shortcuts.enable": "Enable keyboard shortcuts",
+  "shortcuts.sequence": "{start} then {key}",
+  "shortcuts.route.home": "Home",
+  "shortcuts.route.explorer": "Explorer",
+  "shortcuts.route.transactions": "Transactions",
+  "shortcuts.route.events": "Contract Events",
+  "shortcuts.route.graphql": "GraphQL",
+  "shortcuts.route.registry": "Registry",
+  "shortcuts.route.stats": "Stats",
 
   // ── Search page ───────────────────────────────────────────────────────
   "search.heading": "Search",

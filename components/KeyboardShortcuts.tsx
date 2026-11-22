@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { useRouter } from "next/navigation";
 import {
   GO_KEY,
@@ -11,6 +17,7 @@ import {
   SEQUENCE_TIMEOUT_MS,
   SHORTCUTS_STORAGE_KEY,
 } from "@/lib/shortcuts";
+import { getLocale, subscribeLocale, t } from "@/lib/i18n";
 import { Dialog } from "@/components/ui/Dialog";
 
 function readEnabled(): boolean {
@@ -28,6 +35,11 @@ export default function KeyboardShortcuts() {
   const awaitingGo = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const triggerRef = useRef<HTMLButtonElement>(null);
+
+  // t() reads the active catalogue at render time, and DirectionSync switches
+  // the locale after hydration. Without this subscription, a locale applied
+  // after mount would leave the button in the language it first rendered in.
+  useSyncExternalStore(subscribeLocale, getLocale, getLocale);
 
   // localStorage does not exist during the server pass.
   useEffect(() => {
@@ -110,30 +122,29 @@ export default function KeyboardShortcuts() {
         aria-haspopup="dialog"
         className="fixed bottom-4 end-4 z-20 border border-[var(--color-border-default)] bg-[var(--color-bg-base)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] text-xs font-bold px-3 py-2 rounded-lg shadow-sm"
       >
-        Keyboard shortcuts
+        {t("shortcuts.title")}
       </button>
 
       <Dialog
         open={open}
         onClose={closeHelp}
-        title="Keyboard shortcuts"
+        title={t("shortcuts.title")}
         triggerRef={triggerRef}
         maxWidth="sm"
       >
         <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm mb-4">
-          <Row keys={SEARCH_KEY} label="Search" />
-          <Row keys={HELP_KEY} label="Show this list" />
+          <Row keys={SEARCH_KEY} label={t("shortcuts.search")} />
+          <Row keys={HELP_KEY} label={t("shortcuts.showList")} />
           {ROUTE_SHORTCUTS.map((r) => (
             <Row
               key={r.key}
-              keys={`${GO_KEY} then ${r.key}`}
-              label={r.label}
+              keys={t("shortcuts.sequence", { start: GO_KEY, key: r.key })}
+              label={t(r.labelKey)}
             />
           ))}
         </dl>
         <p className="text-xs text-[var(--color-text-secondary)] mb-3">
-          Shortcuts never use Ctrl, Cmd or Alt and are ignored while you
-          type in a field.
+          {t("shortcuts.description")}
         </p>
         <label className="flex items-center gap-2 text-xs text-[var(--color-text-primary)] mb-4">
           <input
@@ -141,7 +152,7 @@ export default function KeyboardShortcuts() {
             checked={enabled}
             onChange={(e) => toggleEnabled(e.target.checked)}
           />
-          Enable keyboard shortcuts
+          {t("shortcuts.enable")}
         </label>
       </Dialog>
     </>

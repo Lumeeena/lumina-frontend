@@ -286,6 +286,14 @@ export interface MessageCatalogue {
   "shortcuts.showList": string;
   "shortcuts.description": string;
   "shortcuts.enable": string;
+  "shortcuts.sequence": string;
+  "shortcuts.route.home": string;
+  "shortcuts.route.explorer": string;
+  "shortcuts.route.transactions": string;
+  "shortcuts.route.events": string;
+  "shortcuts.route.graphql": string;
+  "shortcuts.route.registry": string;
+  "shortcuts.route.stats": string;
 
   // ── Search page ───────────────────────────────────────────────────────
   "search.heading": string;

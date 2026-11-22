@@ -329,6 +329,14 @@ const de: MessageCatalogue = {
   "shortcuts.description":
     "Tastaturkürzel verwenden nie Ctrl, Cmd oder Alt und werden ignoriert, während Sie in einem Feld tippen.",
   "shortcuts.enable": "Tastaturkürzel aktivieren",
+  "shortcuts.sequence": "{start}, danach {key}",
+  "shortcuts.route.home": "Startseite",
+  "shortcuts.route.explorer": "Explorer",
+  "shortcuts.route.transactions": "Transaktionen",
+  "shortcuts.route.events": "Vertragsereignisse",
+  "shortcuts.route.graphql": "GraphQL",
+  "shortcuts.route.registry": "Registry",
+  "shortcuts.route.stats": "Statistiken",
 
   // ── Search page ───────────────────────────────────────────────────────
   "search.heading": "Suche",

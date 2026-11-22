@@ -5,10 +5,13 @@
  * on its own, and nothing here uses a modifier: Ctrl/Cmd/Alt combinations belong
  * to the browser, the OS and assistive technology.
  */
+import type { MessageKey } from "@/lib/i18n/types";
+
 export interface RouteShortcut {
   key: string;
   href: string;
-  label: string;
+  /** Catalogue key for the page name shown in the help dialog. */
+  labelKey: MessageKey;
 }
 
 export const GO_KEY = "g";
@@ -16,13 +19,13 @@ export const GO_KEY = "g";
 export const SEQUENCE_TIMEOUT_MS = 1000;
 
 export const ROUTE_SHORTCUTS: RouteShortcut[] = [
-  { key: "h", href: "/", label: "Home" },
-  { key: "e", href: "/explorer", label: "Explorer" },
-  { key: "t", href: "/transactions", label: "Transactions" },
-  { key: "c", href: "/events", label: "Contract Events" },
-  { key: "q", href: "/graphql", label: "GraphQL" },
-  { key: "r", href: "/registry", label: "Registry" },
-  { key: "s", href: "/stats", label: "Stats" },
+  { key: "h", href: "/", labelKey: "shortcuts.route.home" },
+  { key: "e", href: "/explorer", labelKey: "shortcuts.route.explorer" },
+  { key: "t", href: "/transactions", labelKey: "shortcuts.route.transactions" },
+  { key: "c", href: "/events", labelKey: "shortcuts.route.events" },
+  { key: "q", href: "/graphql", labelKey: "shortcuts.route.graphql" },
+  { key: "r", href: "/registry", labelKey: "shortcuts.route.registry" },
+  { key: "s", href: "/stats", labelKey: "shortcuts.route.stats" },
 ];
 
 export const SEARCH_KEY = "/";
