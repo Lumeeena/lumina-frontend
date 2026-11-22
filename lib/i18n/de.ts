@@ -383,6 +383,39 @@ const de: MessageCatalogue = {
   // ── Footer ────────────────────────────────────────────────────────────
   "footer.version": "Lumina Frontend v{version}",
   "footer.copyVersion": "Version für Fehlerberichte kopieren",
+  "footer.copied": "Kopiert!",
+  "footer.copy": "Kopieren",
+  "footer.reportProblem": "Problem melden",
+  "footer.statusChangelog": "Status & Änderungsprotokoll",
+
+  // ── WatchAlertSettings ────────────────────────────────────────────────
+  "watchAlertSettings.alertFilter": "Benachrichtigungsfilter für {address}",
+  "watchAlertSettings.operation": "Operation",
+  "watchAlertSettings.anyOperation": "Jede Operation",
+  "watchAlertSettings.minimumAmount": "Mindestbetrag",
+  "watchAlertSettings.any": "Beliebig",
+  "watchAlertSettings.asset": "Asset",
+  "watchAlertSettings.noFilter": "Kein Filter — jede Operation löst eine Benachrichtigung aus.",
+  "watchAlertSettings.filtersActive": "{count} {count, plural, one {Filter} other {Filter}} aktiv.",
+  "watchAlertSettings.resetDefault": "Auf Standard zurücksetzen",
+
+  // ── RegistrySlashHistory ──────────────────────────────────────────────
+  "registrySlashHistory.slashHistory": "Slash-Verlauf",
+  "registrySlashHistory.hideSlashHistory": "Slash-Verlauf ausblenden",
+  "registrySlashHistory.loadingSlashHistory": "Slash-Verlauf wird geladen…",
+  "registrySlashHistory.couldNotReadHistory": "Slash-Verlauf konnte nicht gelesen werden. Schließen und erneut öffnen, um es zu wiederholen.",
+  "registrySlashHistory.noSlashes": "Keine Slashes aufgezeichnet.",
+  "registrySlashHistory.ledger": "Ledger {ledger}",
+
+  // ── RegistryEntryCard ─────────────────────────────────────────────────
+  "registryEntryCard.categories": "Kategorien",
+  "registryEntryCard.hideSlashHistory": "Slash-Verlauf ausblenden",
+  "registryEntryCard.slashHistory": "Slash-Verlauf",
+  "registryEntryCard.loadingSlashHistory": "Slash-Verlauf wird geladen…",
+  "registryEntryCard.couldNotReadHistory": "Slash-Verlauf konnte nicht gelesen werden. Überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+  "registryEntryCard.retryHistory": "Verlauf erneut versuchen",
+  "registryEntryCard.noSlashes": "Keine Slashes aufgezeichnet.",
+  "registryEntryCard.ledger": "Ledger {ledger}",
 
   // ── SearchBar ─────────────────────────────────────────────────────────
   "searchBar.placeholder": "Konto, Transaktion, Vertrag oder Memo suchen\u2026",

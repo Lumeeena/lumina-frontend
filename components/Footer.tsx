@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { buildFeedbackUrl } from "@/lib/feedback";
+import { t } from "@/lib/i18n";
 
 /**
  * The build's own version, inlined at build time from package.json (see
@@ -15,7 +16,7 @@ export const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? "unknown";
 export default function Footer() {
   const [copied, setCopied] = useState(false);
   const pathname = usePathname();
-  const text = `Lumina frontend v${APP_VERSION}`;
+  const text = t("footer.version", { version: APP_VERSION });
 
   function copyVersion() {
     navigator.clipboard.writeText(text);
@@ -32,10 +33,10 @@ export default function Footer() {
         <button
           type="button"
           onClick={copyVersion}
-          aria-label="Copy version for bug reports"
+          aria-label={t("footer.copyVersion")}
           className="bg-[var(--color-bg-raised)] border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] font-semibold text-[11px] px-2 py-[3px] rounded-[7px] text-[var(--color-text-primary)] transition-colors"
         >
-          {copied ? "Copied!" : "Copy"}
+          {copied ? t("footer.copied") : t("footer.copy")}
         </button>
       </div>
       <div className="flex items-center justify-center gap-4 text-[11px]">
@@ -45,13 +46,13 @@ export default function Footer() {
           rel="noopener noreferrer"
           className="text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] transition-colors"
         >
-          Report a problem
+          {t("footer.reportProblem")}
         </a>
         <Link
           href="/status"
           className="text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] transition-colors"
         >
-          Status & Changelog
+          {t("footer.statusChangelog")}
         </Link>
       </div>
     </footer>

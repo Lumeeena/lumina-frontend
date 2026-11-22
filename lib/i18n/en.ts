@@ -360,6 +360,39 @@ const en: MessageCatalogue = {
   // ── Footer ────────────────────────────────────────────────────────────
   "footer.version": "Lumina frontend v{version}",
   "footer.copyVersion": "Copy version for bug reports",
+  "footer.copied": "Copied!",
+  "footer.copy": "Copy",
+  "footer.reportProblem": "Report a problem",
+  "footer.statusChangelog": "Status & Changelog",
+
+  // ── WatchAlertSettings ────────────────────────────────────────────────
+  "watchAlertSettings.alertFilter": "Alert filter for {address}",
+  "watchAlertSettings.operation": "Operation",
+  "watchAlertSettings.anyOperation": "Any operation",
+  "watchAlertSettings.minimumAmount": "Minimum amount",
+  "watchAlertSettings.any": "Any",
+  "watchAlertSettings.asset": "Asset",
+  "watchAlertSettings.noFilter": "No filter — every operation alerts.",
+  "watchAlertSettings.filtersActive": "{count} {count, plural, one {filter} other {filters}} active.",
+  "watchAlertSettings.resetDefault": "Reset to default",
+
+  // ── RegistrySlashHistory ──────────────────────────────────────────────
+  "registrySlashHistory.slashHistory": "Slash history",
+  "registrySlashHistory.hideSlashHistory": "Hide slash history",
+  "registrySlashHistory.loadingSlashHistory": "Loading slash history…",
+  "registrySlashHistory.couldNotReadHistory": "Couldn't read the slash history. Close and reopen to retry.",
+  "registrySlashHistory.noSlashes": "No slashes recorded.",
+  "registrySlashHistory.ledger": "ledger {ledger}",
+
+  // ── RegistryEntryCard ─────────────────────────────────────────────────
+  "registryEntryCard.categories": "Categories",
+  "registryEntryCard.hideSlashHistory": "Hide slash history",
+  "registryEntryCard.slashHistory": "Slash history",
+  "registryEntryCard.loadingSlashHistory": "Loading slash history…",
+  "registryEntryCard.couldNotReadHistory": "Couldn't read the slash history. Check your connection, then try again.",
+  "registryEntryCard.retryHistory": "Retry history",
+  "registryEntryCard.noSlashes": "No slashes recorded.",
+  "registryEntryCard.ledger": "ledger {ledger}",
 
   // ── SearchBar ─────────────────────────────────────────────────────────
   "searchBar.placeholder": "Search an account, transaction, contract or memo\u2026",
