@@ -1,10 +1,11 @@
-'use client';
+"use client";
 
 /**
  * WalletInfo — shows the connected wallet's name, icon, and truncated address,
  * plus a disconnect button.
  */
-import { truncateAddress } from '@/lib/formatters';
+import { t } from "@/lib/i18n";
+import { truncateAddress } from "@/lib/formatters";
 
 export interface WalletInfoProps {
   address: string;
@@ -25,6 +26,7 @@ export default function WalletInfo({
     <div className="flex items-center justify-between gap-2 bg-[var(--color-bg-base)] border border-[var(--color-border-default)] rounded-lg px-3 py-2">
       <div className="flex items-center gap-2 min-w-0">
         {walletIcon ? (
+          // eslint-disable-next-line @next/next/no-img-element -- wallet icons come from arbitrary extension URLs
           <img
             src={walletIcon}
             alt={walletName}
@@ -56,11 +58,13 @@ export default function WalletInfo({
       <button
         onClick={onDisconnect}
         disabled={disconnecting}
-        title="Disconnect wallet"
-        aria-label="Disconnect wallet"
+        title={t("walletInfo.disconnectLabel")}
+        aria-label={t("walletInfo.disconnectLabel")}
         className="text-[11px] font-semibold text-[var(--color-error-text)] hover:text-[var(--color-error-dark)] disabled:opacity-50 shrink-0 transition-colors"
       >
-        {disconnecting ? 'Disconnecting…' : 'Disconnect'}
+        {disconnecting
+          ? t("walletInfo.disconnecting")
+          : t("walletInfo.disconnect")}
       </button>
     </div>
   );

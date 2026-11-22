@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_ROUTES } from "@/lib/routes";
@@ -13,6 +13,22 @@ import TimezoneToggle from "@/components/TimezoneToggle";
 import AddressLabelManager from "./AddressLabelManager";
 import ActivityBell from "./ActivityBell";
 import { loadWatches, subscribeToWatches } from "@/lib/watches";
+import { t, type MessageKey } from "@/lib/i18n";
+
+/** Nav labels live in the message catalogue; paths without a key fall back to the route inventory's label. */
+const NAV_LABEL_KEYS: Partial<Record<string, MessageKey>> = {
+  "/explorer": "navbar.explorer",
+  "/transactions": "navbar.transactions",
+  "/ledgers": "navbar.ledgers",
+  "/search": "navbar.search",
+  "/events": "navbar.contractEvents",
+  "/assets": "navbar.assets",
+  "/graphql": "navbar.graphql",
+  "/developers": "navbar.developers",
+  "/registry": "navbar.registry",
+  "/stats": "navbar.stats",
+  "/watch": "navbar.watch",
+};
 
 /**
  * The nav for one network: the wordmark, the section links, and optionally the
@@ -38,22 +54,43 @@ function NavContent({
     <>
       <Link
         href={withNetwork("/", network)}
-        aria-label="Lumina home"
+        aria-label={t("navbar.home")}
         className="flex items-center gap-2 me-4 sm:me-7 shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-fill)]"
       >
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <circle cx="12" cy="12" r="9" className="stroke-[var(--color-accent-text)]" strokeWidth="2" />
-          <circle cx="17" cy="7" r="3.4" className="fill-[var(--color-accent-fill)]" />
+        <svg
+          width="26"
+          height="26"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden="true"
+        >
+          <circle
+            cx="12"
+            cy="12"
+            r="9"
+            className="stroke-[var(--color-accent-text)]"
+            strokeWidth="2"
+          />
+          <circle
+            cx="17"
+            cy="7"
+            r="3.4"
+            className="fill-[var(--color-accent-fill)]"
+          />
         </svg>
-        <span className="font-extrabold text-[17px] tracking-tight text-[var(--color-text-primary)]">Lumina</span>
+        <span className="font-extrabold text-[17px] tracking-tight text-[var(--color-text-primary)]">
+          Lumina
+        </span>
       </Link>
 
       {switcher}
 
       {/* Labels come from the route inventory, which the sitemap is built from,
           so the nav and the sitemap cannot disagree about what exists. */}
-      {NAV_ROUTES.map(route => {
-        const active = pathname === route.path || pathname.startsWith(`${route.path}/`);
+      {NAV_ROUTES.map((route) => {
+        const active =
+          pathname === route.path || pathname.startsWith(`${route.path}/`);
+        const labelKey = NAV_LABEL_KEYS[route.path];
         return (
           <Link
             key={route.path}
@@ -66,7 +103,7 @@ function NavContent({
                 : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
             }`}
           >
-            {route.label}
+            {labelKey ? t(labelKey) : route.label}
           </Link>
         );
       })}
@@ -77,33 +114,36 @@ function NavContent({
 /** The nav once the network in the URL has been read. */
 function RoutedNavContent({ pathname }: { pathname: string }) {
   const { network } = useNetwork();
-  return <NavContent network={network} pathname={pathname} switcher={<NetworkSwitcher />} />;
+  return (
+    <NavContent
+      network={network}
+      pathname={pathname}
+      switcher={<NetworkSwitcher />}
+    />
+  );
 }
 
 export default function Navbar() {
   const pathname = usePathname();
-  const [hasWatches, setHasWatches] = useState(false);
-
-  useEffect(() => {
-    // Check if there are any watches on mount
-    setHasWatches(loadWatches().length > 0);
-
-    // Re-check when watches change
-    const unsubscribe = subscribeToWatches(() => {
-      setHasWatches(loadWatches().length > 0);
-    });
-
-    return unsubscribe;
-  }, []);
+  const hasWatches = useSyncExternalStore(
+    subscribeToWatches,
+    () => loadWatches().length > 0,
+    () => false,
+  );
 
   return (
-    <nav aria-label="Main navigation" className="flex items-center gap-1 px-4 sm:px-7 h-[60px] border-b border-[var(--color-border-default)] bg-[var(--color-bg-base)]/90 backdrop-blur sticky top-0 z-20 overflow-x-auto">
+    <nav
+      aria-label={t("navbar.mainNav")}
+      className="flex items-center gap-1 px-4 sm:px-7 h-[60px] border-b border-[var(--color-border-default)] bg-[var(--color-bg-base)]/90 backdrop-blur sticky top-0 z-20 overflow-x-auto"
+    >
       {/* The links and the switcher both read the network from the URL, and
           `useSearchParams` suspends while the URL is being read, so reading
           happens behind one boundary. The fallback is the same nav on the
           default network — the server HTML is a complete, working nav rather
           than an empty one that fills in after hydration. */}
-      <Suspense fallback={<NavContent network={DEFAULT_NETWORK} pathname={pathname} />}>
+      <Suspense
+        fallback={<NavContent network={DEFAULT_NETWORK} pathname={pathname} />}
+      >
         <RoutedNavContent pathname={pathname} />
       </Suspense>
 
@@ -118,4 +158,3 @@ export default function Navbar() {
     </nav>
   );
 }
-

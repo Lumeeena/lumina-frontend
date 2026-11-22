@@ -1,43 +1,44 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { X } from "lucide-react";
+import { t, type MessageKey } from "@/lib/i18n";
 
 interface TourStep {
   id: string;
-  title: string;
-  description: string;
+  titleKey: MessageKey;
+  bodyKey: MessageKey;
 }
 
 const TOUR_STEPS: TourStep[] = [
   {
-    id: 'explorer',
-    title: 'Account Explorer',
-    description: 'Search and analyze any Stellar account. View balances, transaction history, and assets in detail.',
+    id: "explorer",
+    titleKey: "onTour.stepExplorerTitle",
+    bodyKey: "onTour.stepExplorerBody",
   },
   {
-    id: 'transactions',
-    title: 'All Transactions',
-    description: 'Browse all transactions on the network in real-time. Filter by account, asset, or operation type.',
+    id: "transactions",
+    titleKey: "onTour.stepTransactionsTitle",
+    bodyKey: "onTour.stepTransactionsBody",
   },
   {
-    id: 'events',
-    title: 'Contract Events',
-    description: 'Monitor Soroban contract events. Track smart contract executions and their effects.',
+    id: "events",
+    titleKey: "onTour.stepEventsTitle",
+    bodyKey: "onTour.stepEventsBody",
   },
   {
-    id: 'graphql',
-    title: 'GraphQL Playground',
-    description: 'Query the Lumina API directly. Build custom queries to extract exactly the data you need.',
+    id: "graphql",
+    titleKey: "onTour.stepGraphqlTitle",
+    bodyKey: "onTour.stepGraphqlBody",
   },
   {
-    id: 'registry',
-    title: 'Registry',
-    description: 'Register your Soroban contracts for indexing. Make your contracts discoverable to the network.',
+    id: "registry",
+    titleKey: "onTour.stepRegistryTitle",
+    bodyKey: "onTour.stepRegistryBody",
   },
 ];
 
-const STORAGE_KEY = 'lumina_onboarding_completed';
+const STORAGE_KEY = "lumina_onboarding_completed";
 
 export default function OnboardingTour() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -46,6 +47,7 @@ export default function OnboardingTour() {
   useEffect(() => {
     const hasCompleted = localStorage.getItem(STORAGE_KEY);
     if (!hasCompleted) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- post-hydration restore from localStorage
       setIsVisible(true);
     }
   }, []);
@@ -59,12 +61,12 @@ export default function OnboardingTour() {
   };
 
   const handleComplete = () => {
-    localStorage.setItem(STORAGE_KEY, 'true');
+    localStorage.setItem(STORAGE_KEY, "true");
     setIsVisible(false);
   };
 
   const handleSkip = () => {
-    localStorage.setItem(STORAGE_KEY, 'true');
+    localStorage.setItem(STORAGE_KEY, "true");
     setIsVisible(false);
   };
 
@@ -79,16 +81,16 @@ export default function OnboardingTour() {
         <div className="flex items-start justify-between mb-6">
           <div className="flex-1">
             <h2 className="text-xl font-bold text-[var(--color-text-primary)] mb-2">
-              Welcome to Lumina
+              {t("onTour.welcomeTitle")}
             </h2>
             <p className="text-sm text-[var(--color-text-secondary)]">
-              Let's explore what makes Lumina unique
+              {t("onTour.welcomeSubtitle")}
             </p>
           </div>
           <button
             onClick={handleSkip}
             className="p-1 hover:bg-[var(--color-bg-subtle)] rounded-lg transition-colors flex-shrink-0"
-            aria-label="Close tour"
+            aria-label={t("onTour.closeTour")}
           >
             <X className="w-5 h-5 text-[var(--color-text-secondary)]" />
           </button>
@@ -96,10 +98,10 @@ export default function OnboardingTour() {
 
         <div className="mb-6">
           <div className="text-lg font-bold text-[var(--color-text-primary)] mb-3">
-            {step.title}
+            {t(step.titleKey)}
           </div>
           <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
-            {step.description}
+            {t(step.bodyKey)}
           </p>
         </div>
 
@@ -112,20 +114,25 @@ export default function OnboardingTour() {
 
         <div className="flex items-center justify-between">
           <span className="text-xs text-[var(--color-text-secondary)]">
-            {currentStep + 1} of {TOUR_STEPS.length}
+            {t("onTour.stepPosition", {
+              current: currentStep + 1,
+              total: TOUR_STEPS.length,
+            })}
           </span>
           <div className="flex gap-2">
             <button
               onClick={handleSkip}
               className="px-4 py-2 text-sm font-semibold text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)] rounded-lg transition-colors"
             >
-              Skip
+              {t("onTour.skip")}
             </button>
             <button
               onClick={handleNext}
               className="px-4 py-2 text-sm font-semibold bg-[var(--color-accent-fill)] hover:bg-[var(--color-accent-fill-hover)] text-white rounded-lg transition-colors"
             >
-              {currentStep === TOUR_STEPS.length - 1 ? 'Done' : 'Next'}
+              {currentStep === TOUR_STEPS.length - 1
+                ? t("onTour.done")
+                : t("onTour.next")}
             </button>
           </div>
         </div>

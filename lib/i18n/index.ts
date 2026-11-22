@@ -27,6 +27,21 @@ import {
 
 export const CATALOGUES: Record<string, MessageCatalogue> = { en, de };
 
+const pluralRulesCache = new Map<string, Intl.PluralRules>();
+
+function getPluralRules(locale: string): Intl.PluralRules {
+  let rules = pluralRulesCache.get(locale);
+  if (!rules) {
+    try {
+      rules = new Intl.PluralRules(locale);
+    } catch {
+      rules = new Intl.PluralRules("en");
+    }
+    pluralRulesCache.set(locale, rules);
+  }
+  return rules;
+}
+
 let activeCatalogue: MessageCatalogue = en;
 let activeLocale = "en";
 
@@ -120,12 +135,13 @@ export function t(
  * Plural blocks use a brace-counting scan so nested `{…}` in the branch
  * text is handled correctly.
  */
-function interpolate(
+export function interpolate(
   template: string,
   values: Record<string, string | number | bigint>,
+  locale: string = activeLocale,
 ): string {
   // First pass: expand plural blocks, which contain nested braces.
-  let result = expandPlurals(template, values);
+  let result = expandPlurals(template, values, locale);
   // Second pass: simple {name} placeholders.
   result = result.replace(/\{(\w+)\}/g, (_match, name: string) => {
     const val = values[name];
@@ -136,11 +152,12 @@ function interpolate(
 
 /**
  * Find `{name, plural, one {…} other {…}}` and replace each with the
- * correct branch.
+ * correct branch using Intl.PluralRules for the active locale.
  */
 function expandPlurals(
   template: string,
   values: Record<string, string | number | bigint>,
+  locale: string = activeLocale,
 ): string {
   const re = /\{(\w+),\s*plural,\s*/g;
   let match: RegExpExecArray | null;
@@ -160,7 +177,7 @@ function expandPlurals(
       // Skip whitespace.
       while (pos < template.length && /\s/.test(template[pos])) pos++;
       if (template[pos] === "}") break;
-      // Read branch name (e.g. "one", "other").
+      // Read branch name (e.g. "zero", "one", "two", "few", "many", "other").
       const branchStart = pos;
       while (pos < template.length && /\w/.test(template[pos])) pos++;
       const branchName = template.slice(branchStart, pos);

@@ -161,7 +161,8 @@ const en: MessageCatalogue = {
   "owner.staking": "Staking\u2026",
   "owner.stake": "Stake",
   "owner.stakeAnyway": "Stake anyway",
-  "owner.reserveWarningTitle": "This stake would take your account below its minimum balance.",
+  "owner.reserveWarningTitle":
+    "This stake would take your account below its minimum balance.",
   "owner.reserveExplanation":
     "Stellar keeps a minimum amount of XLM in every account, called the reserve. It is 1 XLM for an account with nothing else in it, plus 0.5 XLM for each trustline, offer or other entry it owns, and that part cannot be spent. After this stake your account would hold {remaining} XLM, below the {minimum} XLM reserve. An account under its reserve can still receive XLM but cannot send transactions until it is topped up.",
   "owner.withdrawing": "Withdrawing\u2026",
@@ -186,14 +187,28 @@ const en: MessageCatalogue = {
   "owner.withdrawBlockerLocked":
     "A slash landed recently, so withdrawal is locked until ledger {until} (currently {current}, {remaining} to go).",
   "owner.withdrawBlockerNoStake": "There is no stake to withdraw.",
+  "owner.staked": "Staked",
+  "owner.ledgerPrefix": "ledger",
+  "owner.slashHistoryRetryHint": "Check your connection, then retry.",
+  "owner.retrySlashHistory": "Retry slash history",
+
+  // ── Registry event labels ─────────────────────────────────────────────
+  "registryEvent.registered": "Registered",
+  "registryEvent.deactivated": "Deactivated",
+  "registryEvent.metadataUpdated": "Metadata updated",
+  "registryEvent.ownershipTransferred": "Ownership transferred",
+  "registryEvent.unknown": "Registry event",
 
   // ── Soroban transaction pipeline ──────────────────────────────────────
   "soroban.couldNotPrepare": "Could not prepare the transaction.",
   "soroban.signatureDeclined": "Signature was declined in your wallet.",
-  "soroban.couldNotSign": "Could not sign the transaction. Check your wallet and try again.",
+  "soroban.couldNotSign":
+    "Could not sign the transaction. Check your wallet and try again.",
   "soroban.retrySignature": "Retry signature",
-  "soroban.prepareAgain": "The saved transaction is no longer usable. Submit again to prepare a fresh transaction; your inputs are saved.",
-  "soroban.rejectionPreserved": "Signature declined. Your inputs and prepared transaction are saved. You can retry when ready.",
+  "soroban.prepareAgain":
+    "The saved transaction is no longer usable. Submit again to prepare a fresh transaction; your inputs are saved.",
+  "soroban.rejectionPreserved":
+    "Signature declined. Your inputs and prepared transaction are saved. You can retry when ready.",
   "soroban.networkRejected": "The network rejected the transaction.",
   "soroban.pendingConfirmation":
     "The transaction was submitted but has not confirmed yet. Check again in a moment.",
@@ -273,20 +288,24 @@ const en: MessageCatalogue = {
   "shortcuts.title": "Keyboard shortcuts",
   "shortcuts.search": "Search",
   "shortcuts.showList": "Show this list",
-  "shortcuts.description": "Shortcuts never use Ctrl, Cmd or Alt and are ignored while you type in a field.",
+  "shortcuts.description":
+    "Shortcuts never use Ctrl, Cmd or Alt and are ignored while you type in a field.",
   "shortcuts.enable": "Enable keyboard shortcuts",
 
   // ── Search page ───────────────────────────────────────────────────────
   "search.heading": "Search",
-  "search.description": "One box for everything on the network. Type what you have \u2014 no need to say what it is.",
+  "search.description":
+    "One box for everything on the network. Type what you have \u2014 no need to say what it is.",
   "search.accountAddress": "Account address",
   "search.contractId": "Contract id \u2014 its events",
   "search.transactionHash": "Transaction hash",
   "search.memoSearch": "Memo search, ranked by the backend",
   "search.searching": "Searching the index\u2026",
-  "search.resultsCount": "{count} transaction{count, plural, one {} other {s}} matching",
+  "search.resultsCount":
+    "{count} transaction{count, plural, one {} other {s}} matching",
   "search.rankedByMemo": ", ranked by memo relevance.",
-  "search.helpText": "Looking for an account or contract? Paste its full address \u2014 the explorer takes you straight there.",
+  "search.helpText":
+    "Looking for an account or contract? Paste its full address \u2014 the explorer takes you straight there.",
 
   // ── Transactions page ─────────────────────────────────────────────────
   "transactions.heading": "Transactions",
@@ -294,7 +313,8 @@ const en: MessageCatalogue = {
 
   // ── Stats page ────────────────────────────────────────────────────────
   "stats.heading": "Network Stats",
-  "stats.description": "Indexer health and Stellar network throughput at a glance.",
+  "stats.description":
+    "Indexer health and Stellar network throughput at a glance.",
   "stats.latestLedger": "Latest Ledger",
   "stats.stellarMainnet": "Stellar Mainnet",
   "stats.txsLastLedger": "Txs (last ledger)",
@@ -309,17 +329,20 @@ const en: MessageCatalogue = {
 
   // ── Registry page ─────────────────────────────────────────────────────
   "registry.heading": "Lumina Registry",
-  "registry.description": "An on-chain Soroban manifest of contracts Lumina indexes. Register your contract to opt into priority indexing \u2014 permissionless, on Stellar/Soroban testnet.",
+  "registry.description":
+    "An on-chain Soroban manifest of contracts Lumina indexes. Register your contract to opt into priority indexing \u2014 permissionless, on Stellar/Soroban testnet.",
   "registry.registerContract": "Register a Contract",
   "registry.connecting": "Connecting\u2026",
-  "registry.connectPrompt": "Connect a wallet to register and manage contracts.",
+  "registry.connectPrompt":
+    "Connect a wallet to register and manage contracts.",
   "registry.walletLocked": "Your wallet is locked",
   "registry.unlockHint": "Unlock your wallet extension and try again.",
   "registry.myContracts": "My Contracts",
   "registry.recentlyRegistered": "Recently Registered",
   "registry.all": "All",
   "registry.filterByCategory": "Filter by category",
-  "registry.connectToSee": "Connect a wallet to see the contracts you registered.",
+  "registry.connectToSee":
+    "Connect a wallet to see the contracts you registered.",
   "registry.loadingEntries": "Loading registry entries\u2026",
   "registry.noActiveContracts": "No active {category} contracts.",
   "registry.noContractsYet": "No contracts registered yet.",
@@ -339,30 +362,137 @@ const en: MessageCatalogue = {
 
   // ── Explorer page ─────────────────────────────────────────────────────
   "explorer.heading": "Explorer",
-  "explorer.description": "Search any Stellar account or browse recent transactions in real time.",
-  "explorer.searchPlaceholder": "Search an account, transaction, contract or memo\u2026",
+  "explorer.description":
+    "Search any Stellar account or browse recent transactions in real time.",
+  "explorer.searchPlaceholder":
+    "Search an account, transaction, contract or memo\u2026",
   "explorer.recentTransactions": "Recent Transactions",
 
   // ── Events page ───────────────────────────────────────────────────────
   "events.heading": "Contract Events",
-  "events.description": "Soroban contract events indexed via RPC, newest first.",
+  "events.description":
+    "Soroban contract events indexed via RPC, newest first.",
   "events.contractIdPlaceholder": "Contract ID (C...)",
   "events.filter": "Filter",
 
   // ── Assets page ───────────────────────────────────────────────────────
   "assets.heading": "Assets",
-  "assets.description": "Every asset Lumina indexes, with the supply and holder counts behind it.",
+  "assets.description":
+    "Every asset Lumina indexes, with the supply and holder counts behind it.",
 
   // ── Watch page ────────────────────────────────────────────────────────
   "watch.backgroundNotifications": "Background notifications",
-  "watch.notificationDescription": "In-app alerts work everywhere in Lumina. This is the separate opt-in for an operating-system notification when the tab is not in front of you.",
+  "watch.notificationDescription":
+    "In-app alerts work everywhere in Lumina. This is the separate opt-in for an operating-system notification when the tab is not in front of you.",
 
   // ── Footer ────────────────────────────────────────────────────────────
   "footer.version": "Lumina frontend v{version}",
   "footer.copyVersion": "Copy version for bug reports",
 
   // ── SearchBar ─────────────────────────────────────────────────────────
-  "searchBar.placeholder": "Search an account, transaction, contract or memo\u2026",
+  "searchBar.placeholder":
+    "Search an account, transaction, contract or memo\u2026",
+
+  // ── WalletInfo ────────────────────────────────────────────────────────
+  "walletInfo.disconnect": "Disconnect",
+  "walletInfo.disconnecting": "Disconnecting…",
+  "walletInfo.disconnectLabel": "Disconnect wallet",
+
+  // ── WatchedAddressList ────────────────────────────────────────────────
+  "watchList.heading": "Watched addresses",
+  "watchList.exportList": "Export List",
+  "watchList.importList": "Import List",
+  "watchList.importFileLabel": "Import watch list file",
+  "watchList.importTitle": "Import Watch List",
+  "watchList.importPrompt":
+    "Choose how to apply the imported addresses to your current watch list:",
+  "watchList.mergeOption": "Merge (combine with existing)",
+  "watchList.replaceOption": "Replace (overwrite current list)",
+  "watchList.confirmImport": "Confirm Import",
+  "watchList.cancel": "Cancel",
+  "watchList.addressLabel": "Stellar address to watch",
+  "watchList.addWatch": "Add watch",
+  "watchList.errorEmpty": "Enter an address to watch.",
+  "watchList.errorInvalid": "That is not a Stellar account ID: {hint}.",
+  "watchList.errorDuplicate":
+    "That address is already on your watch list. Choose a different address or remove the existing one first.",
+  "watchList.importFailed":
+    "{error} Check the file format and select a valid watch list to try again.",
+  "watchList.importFailedFallback": "Failed to import watch list.",
+  "watchList.listFull":
+    "The list is capped at {count} addresses. Remove one to add another.",
+  "watchList.emptyState":
+    "Nothing watched yet. Add an address above, or use the bookmark icon next to any account on the site.",
+  "watchList.filtersCount":
+    "{count} {count, plural, one {filter} other {filters}}",
+  "watchList.unwatch": "Unwatch {address}",
+  "watchList.remove": "Remove",
+
+  // ── OnboardingTour ────────────────────────────────────────────────────
+  "onTour.welcomeTitle": "Welcome to Lumina",
+  "onTour.welcomeSubtitle": "Let's explore what makes Lumina unique",
+  "onTour.closeTour": "Close tour",
+  "onTour.stepPosition": "{current} of {total}",
+  "onTour.skip": "Skip",
+  "onTour.next": "Next",
+  "onTour.done": "Done",
+  "onTour.stepExplorerTitle": "Account Explorer",
+  "onTour.stepExplorerBody":
+    "Search and analyze any Stellar account. View balances, transaction history, and assets in detail.",
+  "onTour.stepTransactionsTitle": "All Transactions",
+  "onTour.stepTransactionsBody":
+    "Browse all transactions on the network in real-time. Filter by account, asset, or operation type.",
+  "onTour.stepEventsTitle": "Contract Events",
+  "onTour.stepEventsBody":
+    "Monitor Soroban contract events. Track smart contract executions and their effects.",
+  "onTour.stepGraphqlTitle": "GraphQL Playground",
+  "onTour.stepGraphqlBody":
+    "Query the Lumina API directly. Build custom queries to extract exactly the data you need.",
+  "onTour.stepRegistryTitle": "Registry",
+  "onTour.stepRegistryBody":
+    "Register your Soroban contracts for indexing. Make your contracts discoverable to the network.",
+
+  // ── CommandPalette ────────────────────────────────────────────────────
+  "commandPalette.placeholder": "Search routes and actions...",
+  "commandPalette.noResults": "No results found",
+  "commandPalette.selectHint": "Select",
+  "commandPalette.navigateHint": "Navigate",
+  "commandPalette.searchAction": "Search",
+  "commandPalette.searchActionDescription":
+    "Search Stellar addresses and transactions",
+  "commandPalette.route.explorer.label": "Explorer",
+  "commandPalette.route.explorer.description":
+    "Search any Stellar account or browse recent transactions, updated live over a GraphQL subscription.",
+  "commandPalette.route.transactions.label": "Transactions",
+  "commandPalette.route.transactions.description":
+    "Every indexed Stellar transaction, with filters, saved presets and cursor pagination.",
+  "commandPalette.route.ledgers.label": "Ledgers",
+  "commandPalette.route.ledgers.description":
+    "Indexed Stellar ledgers, newest first: close time, transaction and operation counts, and any gaps in the index.",
+  "commandPalette.route.search.label": "Search",
+  "commandPalette.route.search.description":
+    "Memo search across every indexed transaction — order references and short codes, ranked by the backend's trigram similarity.",
+  "commandPalette.route.events.label": "Contract Events",
+  "commandPalette.route.events.description":
+    "Soroban contract events indexed by Lumina, filterable by contract id.",
+  "commandPalette.route.assets.label": "Assets",
+  "commandPalette.route.assets.description":
+    "Every Stellar asset Lumina indexes — supply and holder counts, ordered by holders or by transfer volume.",
+  "commandPalette.route.graphql.label": "GraphQL",
+  "commandPalette.route.graphql.description":
+    "Run queries against the Lumina GraphQL API from the browser, with worked examples.",
+  "commandPalette.route.developers.label": "Developers",
+  "commandPalette.route.developers.description":
+    "API documentation, getting-started guide, and usage dashboard for developers building with Lumina.",
+  "commandPalette.route.registry.label": "Registry",
+  "commandPalette.route.registry.description":
+    "An on-chain Soroban manifest of contracts Lumina indexes — register a contract to opt into indexing.",
+  "commandPalette.route.stats.label": "Stats",
+  "commandPalette.route.stats.description":
+    "Indexer health and Stellar network throughput: latest ledger, transaction volume and the mix of operation types.",
+  "commandPalette.route.watch.label": "Watch",
+  "commandPalette.route.watch.description":
+    "Follow Stellar addresses: one live feed of activity across everything you watch, with per-address alert filters.",
 };
 
 export default en;
