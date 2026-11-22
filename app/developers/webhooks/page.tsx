@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { WebhookList, type Webhook } from "@/components/WebhookList";
 import { WebhookForm, type WebhookFormData } from "@/components/WebhookForm";
+import { isEnabled } from "@/lib/features";
 
 /**
  * Webhook management page for the developer dashboard.
@@ -11,25 +12,24 @@ import { WebhookForm, type WebhookFormData } from "@/components/WebhookForm";
  * Shows recent delivery attempts and failures.
  *
  * Note: This is a UI-only implementation. Backend webhook endpoints
- * need to be implemented separately (issue #214 dependency).
+ * need to be implemented separately. See:
+ * https://github.com/Lumeeena/lumina-backend/issues/377
  */
 export default function WebhooksPage() {
-  // Mock data for demonstration
-  const [webhooks, setWebhooks] = useState<Webhook[]>([
-    {
-      id: "wh_1",
-      url: "https://api.example.com/webhooks/stellar",
-      events: ["transaction.created", "transaction.verified", "payment.received"],
-      active: true,
-      createdAt: new Date().toISOString(),
-      lastDelivery: {
-        status: "success",
-        timestamp: new Date(Date.now() - 3600000).toISOString(),
-        statusCode: 200,
-      },
-    },
-  ]);
+  if (!isEnabled("webhooks")) {
+    return (
+      <div className="max-w-5xl mx-auto p-6">
+        <div className="rounded-lg border border-[var(--color-border-default)] p-8 bg-[var(--color-bg-subtle)] text-center">
+          <h1 className="text-2xl font-bold mb-4">Feature Not Available</h1>
+          <p className="text-[var(--color-text-muted)]">
+            Webhook management is currently under development and not yet available.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
+  const [webhooks, setWebhooks] = useState<Webhook[]>([]);
   const [showForm, setShowForm] = useState(false);
 
   // Available webhook events (will come from API)
