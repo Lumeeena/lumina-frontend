@@ -92,6 +92,38 @@ const de: MessageCatalogue = {
     "Weitere Transaktionen konnten nicht geladen werden.",
   "accountTxs.endOfResults": "Ende der Ergebnisse",
 
+  // ── Account detail page ───────────────────────────────────────────────
+  "account.breadcrumbExplorer": "Explorer",
+  "account.breadcrumbAccounts": "Konten",
+  "account.notFoundTitle": "Konto nicht gefunden",
+  "account.notFoundBody":
+    "Die Adresse {address} existiert nicht im Stellar-Mainnet oder wurde noch nie aufgeladen. Überprüfen Sie die Adresse und das Netzwerk oder laden Sie das Konto auf, bevor Sie es erneut aufrufen.",
+  "account.merged": "Zusammengeführt",
+  "account.lastModifiedLedger": "Zuletzt geändert bei Ledger {ledger}",
+  "account.statSequence": "Sequenz",
+  "account.statSubentries": "Unterpositionen",
+  "account.statSponsoring": "Sponsoring",
+  "account.statSponsored": "Gesponsert",
+  "account.flagAuthRequired": "Authentifizierung erforderlich",
+  "account.flagAuthRevocable": "Authentifizierung widerrufbar",
+  "account.flagAuthImmutable": "Authentifizierung unveränderlich",
+  "account.flagAuthClawbackEnabled": "Clawback aktiviert",
+  "account.flagNone": "Keine besonderen Flags",
+  "account.balancesTitle": "Guthaben",
+  "account.balancesAriaLabel": "Kontoguthaben",
+  "account.balanceAsset": "Vermögenswert",
+  "account.balanceIssuer": "Emittent",
+  "account.balanceBalance": "Saldo",
+  "account.balanceLimit": "Limit",
+  "account.recentTransactions": "Letzte Transaktionen",
+  "account.tradesTitle": "Handel",
+  "account.tradesUnavailable":
+    "Handelsverlauf ist nicht verfügbar. Überprüfen Sie Ihre Verbindung und aktualisieren Sie diese Seite, um es erneut zu versuchen.",
+  "account.recentOperations": "Letzte Operationen",
+  "account.trustlinesTitle": "Trustline-Verlauf",
+  "account.trustlinesUnavailable":
+    "Trustline-Verlauf ist nicht verfügbar. Überprüfen Sie Ihre Verbindung und aktualisieren Sie diese Seite, um es erneut zu versuchen.",
+
   // ── Assets ────────────────────────────────────────────────────────────
   "assets.noAssetsYet":
     "Noch keine Assets indexiert. Sobald der Indexer einen Salzo oder eine Überweisung für ein Asset sieht, erscheint es hier.",
@@ -193,6 +225,18 @@ const de: MessageCatalogue = {
   "owner.withdrawBlockerLocked":
     "Ein Slash ist kürzlich gelandet, daher ist die Auszahlung bis zu Ledger {until} gesperrt (aktuell {current}, noch {remaining}).",
   "owner.withdrawBlockerNoStake": "Es gibt keinen Einsatz zum Abheben.",
+  "owner.staked": "Eingesetzt",
+  "owner.ledgerPrefix": "Ledger",
+  "owner.slashHistoryRetryHint":
+    "Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+  "owner.retrySlashHistory": "Slash-Verlauf erneut laden",
+
+  // ── Registry event labels ─────────────────────────────────────────────
+  "registryEvent.registered": "Registriert",
+  "registryEvent.deactivated": "Deaktiviert",
+  "registryEvent.metadataUpdated": "Metadaten aktualisiert",
+  "registryEvent.ownershipTransferred": "Eigentum übertragen",
+  "registryEvent.unknown": "Registry-Ereignis",
 
   // ── Soroban transaction pipeline ──────────────────────────────────────
   "soroban.couldNotPrepare": "Die Transaktion konnte nicht vorbereitet werden.",

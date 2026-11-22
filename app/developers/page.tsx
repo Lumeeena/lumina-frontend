@@ -127,8 +127,8 @@ export default function DevelopersPage() {
                 {t("devPortal.webhooks.cta")}
               </div>
             </div>
-          </div>
-        </Link>
+          </Link>
+        )}
       </div>
 
       {/* Quick Start Section */}

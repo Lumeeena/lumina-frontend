@@ -1,21 +1,27 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import type { RegistryEntry } from '@/lib/registry';
-import { parseRegistryEvents } from '@/lib/registryHistory';
-import type { ContractEvent } from '@/lib/types';
-import { ContractCallError, WalletRejectedError } from '@/lib/sorobanTx';
-import OwnerContracts from './OwnerContracts';
+import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+  cleanup,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import type { RegistryEntry } from "@/lib/registry";
+import { parseRegistryEvents } from "@/lib/registryHistory";
+import type { ContractEvent } from "@/lib/types";
+import { ContractCallError, WalletRejectedError } from "@/lib/sorobanTx";
+import OwnerContracts from "./OwnerContracts";
 
 // The error branch renders `BackendUnavailable`, which reads the app router.
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: vi.fn(), replace: vi.fn(), push: vi.fn() }),
 }));
 
-const OWNER = 'GOWNERAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
-const C1 = 'CCONTRACTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
-const C2 = 'CCONTRACTBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB';
+const OWNER = "GOWNERAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+const C1 = "CCONTRACTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+const C2 = "CCONTRACTBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB";
 
 function entry(overrides: Partial<RegistryEntry> = {}): RegistryEntry {
   return {
@@ -62,7 +68,10 @@ function renderDashboard(
         currentLedger: 100,
       })}
       deactivate={async () => {}}
-      loadBalance={async () => ({ balance: BigInt(100_000_000_000), subentryCount: 0 })}
+      loadBalance={async () => ({
+        balance: BigInt(100_000_000_000),
+        subentryCount: 0,
+      })}
       {...props}
     />,
   );
@@ -71,18 +80,20 @@ function renderDashboard(
 afterEach(cleanup);
 
 describe("OwnerContracts", () => {
-  it('preserves the stake amount and retries a rejected signature without calling stake again', async () => {
-    const retry = vi.fn(async () => ({ hash: 'HASH' }));
-    const stake = vi.fn(async () => { throw new WalletRejectedError(retry); });
+  it("preserves the stake amount and retries a rejected signature without calling stake again", async () => {
+    const retry = vi.fn(async () => ({ hash: "HASH" }));
+    const stake = vi.fn(async () => {
+      throw new WalletRejectedError(retry);
+    });
     const user = userEvent.setup();
     renderDashboard({ stake });
-    const input = await screen.findByRole('textbox', { name: /stake amount/i });
-    await user.type(input, '123');
-    await user.click(screen.getByRole('button', { name: 'Stake' }));
-    await screen.findByRole('button', { name: /retry signature/i });
-    expect((input as HTMLInputElement).value).toBe('123');
-    await user.click(screen.getByRole('button', { name: /retry signature/i }));
-    await waitFor(() => expect((input as HTMLInputElement).value).toBe(''));
+    const input = await screen.findByRole("textbox", { name: /stake amount/i });
+    await user.type(input, "123");
+    await user.click(screen.getByRole("button", { name: "Stake" }));
+    await screen.findByRole("button", { name: /retry signature/i });
+    expect((input as HTMLInputElement).value).toBe("123");
+    await user.click(screen.getByRole("button", { name: /retry signature/i }));
+    await waitFor(() => expect((input as HTMLInputElement).value).toBe(""));
     expect(stake).toHaveBeenCalledTimes(1);
     expect(retry).toHaveBeenCalledTimes(1);
   });
@@ -110,7 +121,7 @@ describe("OwnerContracts", () => {
     renderDashboard({ loadContracts: async () => [] });
 
     expect(
-      await screen.findByText(/no contracts registered yet/i),
+      await screen.findByText(/haven't registered any contracts yet/i),
     ).toBeTruthy();
   });
 
@@ -137,14 +148,20 @@ describe("OwnerContracts", () => {
     // changes. The component must not depend on it.
     const stake = vi.fn(async () => {});
     renderDashboard({
-      loadContracts: async () => [entry({ owner: 'GSOMEONEELSEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' })],
+      loadContracts: async () => [
+        entry({
+          owner: "GSOMEONEELSEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        }),
+      ],
       stake,
     });
 
     await screen.findByText("My Protocol");
     expect(screen.queryByRole("button", { name: /^deactivate$/i })).toBeNull();
     expect(screen.queryByRole("button", { name: /^stake$/i })).toBeNull();
-    expect(screen.queryByRole("button", { name: /withdraw stake/i })).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: /withdraw stake/i }),
+    ).toBeNull();
     expect(screen.queryByLabelText(/stake amount for my protocol/i)).toBeNull();
     // The entry itself still shows, read-only.
     expect(screen.getByText("Active")).toBeTruthy();
@@ -255,9 +272,11 @@ describe("OwnerContracts", () => {
 
     // Scoped to the history panel: the withdrawal blockers are a list of their
     // own, and they sit above this one.
-    const items = within(screen.getByTestId('history-list')).getAllByRole('listitem');
-    expect(items[0].textContent).toContain('Deactivated');
-    expect(items[1].textContent).toContain('Registered');
+    const items = within(screen.getByTestId("history-list")).getAllByRole(
+      "listitem",
+    );
+    expect(items[0].textContent).toContain("Deactivated");
+    expect(items[1].textContent).toContain("Registered");
   });
 
   it("says so when a contract has no indexed registry events", async () => {
@@ -330,7 +349,12 @@ describe("OwnerContracts", () => {
     await userEvent.click(screen.getByRole("button", { name: /^stake$/i }));
 
     await waitFor(() =>
-      expect(stake).toHaveBeenCalledWith(C1, OWNER, BigInt(250), expect.any(Function)),
+      expect(stake).toHaveBeenCalledWith(
+        C1,
+        OWNER,
+        BigInt(250),
+        expect.any(Function),
+      ),
     );
   });
 
@@ -339,7 +363,10 @@ describe("OwnerContracts", () => {
     renderDashboard({
       stake,
       // 1 XLM balance with nothing else owned: the 1 XLM reserve leaves no room.
-      loadBalance: async () => ({ balance: BigInt(10_000_000), subentryCount: 0 }),
+      loadBalance: async () => ({
+        balance: BigInt(10_000_000),
+        subentryCount: 0,
+      }),
     });
 
     await screen.findByText("My Protocol");
@@ -354,9 +381,16 @@ describe("OwnerContracts", () => {
     ).toBeTruthy();
     expect(stake).not.toHaveBeenCalled();
 
-    await userEvent.click(screen.getByRole("button", { name: /stake anyway/i }));
+    await userEvent.click(
+      screen.getByRole("button", { name: /stake anyway/i }),
+    );
     await waitFor(() =>
-      expect(stake).toHaveBeenCalledWith(C1, OWNER, BigInt(10_000_000), expect.any(Function)),
+      expect(stake).toHaveBeenCalledWith(
+        C1,
+        OWNER,
+        BigInt(10_000_000),
+        expect.any(Function),
+      ),
     );
   });
 
@@ -446,6 +480,8 @@ describe("OwnerContracts", () => {
     await waitFor(() => expect(button.hasAttribute("disabled")).toBe(false));
     await userEvent.click(button);
 
-    await waitFor(() => expect(withdraw).toHaveBeenCalledWith(C1, OWNER, expect.any(Function)));
+    await waitFor(() =>
+      expect(withdraw).toHaveBeenCalledWith(C1, OWNER, expect.any(Function)),
+    );
   });
 });

@@ -74,6 +74,35 @@ export interface MessageCatalogue {
   "accountTxs.couldNotLoad": string;
   "accountTxs.endOfResults": string;
 
+  // ── Account detail page ───────────────────────────────────────────────
+  "account.breadcrumbExplorer": string;
+  "account.breadcrumbAccounts": string;
+  "account.notFoundTitle": string;
+  "account.notFoundBody": string;
+  "account.merged": string;
+  "account.lastModifiedLedger": string;
+  "account.statSequence": string;
+  "account.statSubentries": string;
+  "account.statSponsoring": string;
+  "account.statSponsored": string;
+  "account.flagAuthRequired": string;
+  "account.flagAuthRevocable": string;
+  "account.flagAuthImmutable": string;
+  "account.flagAuthClawbackEnabled": string;
+  "account.flagNone": string;
+  "account.balancesTitle": string;
+  "account.balancesAriaLabel": string;
+  "account.balanceAsset": string;
+  "account.balanceIssuer": string;
+  "account.balanceBalance": string;
+  "account.balanceLimit": string;
+  "account.recentTransactions": string;
+  "account.tradesTitle": string;
+  "account.tradesUnavailable": string;
+  "account.recentOperations": string;
+  "account.trustlinesTitle": string;
+  "account.trustlinesUnavailable": string;
+
   // ── Assets ────────────────────────────────────────────────────────────
   "assets.noAssetsYet": string;
   "assets.searchPlaceholder": string;
@@ -161,6 +190,17 @@ export interface MessageCatalogue {
   "owner.withdrawBlockerActive": string;
   "owner.withdrawBlockerLocked": string;
   "owner.withdrawBlockerNoStake": string;
+  "owner.staked": string;
+  "owner.ledgerPrefix": string;
+  "owner.slashHistoryRetryHint": string;
+  "owner.retrySlashHistory": string;
+
+  // ── Registry event labels ─────────────────────────────────────────────
+  "registryEvent.registered": string;
+  "registryEvent.deactivated": string;
+  "registryEvent.metadataUpdated": string;
+  "registryEvent.ownershipTransferred": string;
+  "registryEvent.unknown": string;
 
   // ── Soroban transaction pipeline ──────────────────────────────────────
   "soroban.couldNotPrepare": string;

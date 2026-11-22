@@ -9,6 +9,7 @@ import TimeAgo from "./TimeAgo";
 import WatchIndicator from "./WatchIndicator";
 import { TableCell, TableRow } from "./Table";
 import FeeBumpTransactionRow from "./FeeBumpTransactionRow";
+import LabeledAddress from "./LabeledAddress";
 
 interface InnerTransaction {
   hash: string;
@@ -83,9 +84,7 @@ export default function TransactionRow({ tx, visibleColumns }: TransactionRowPro
       {columns.includes("source") && (
         <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-secondary)]">
           <span className="inline-flex items-center gap-1">
-            <Link href={withNetwork(`/accounts/${tx.sourceAccount}`, network)} className="hover:text-[var(--color-accent-text)] hover:underline transition-colors">
-              {truncateAddress(tx.sourceAccount)}
-            </Link>
+            <LabeledAddress address={tx.sourceAccount} linkTo={withNetwork(`/accounts/${tx.sourceAccount}`, network)} />
             <WatchIndicator address={tx.sourceAccount} />
           </span>
         </td>

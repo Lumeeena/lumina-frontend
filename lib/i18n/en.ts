@@ -88,6 +88,38 @@ const en: MessageCatalogue = {
   "accountTxs.couldNotLoad": "Could not load more transactions.",
   "accountTxs.endOfResults": "End of results",
 
+  // ── Account detail page ───────────────────────────────────────────────
+  "account.breadcrumbExplorer": "Explorer",
+  "account.breadcrumbAccounts": "Accounts",
+  "account.notFoundTitle": "Account Not Found",
+  "account.notFoundBody":
+    "The address {address} does not exist on Stellar Mainnet, or has never been funded. Check the address and network, or fund the account before looking it up again.",
+  "account.merged": "Merged",
+  "account.lastModifiedLedger": "Last modified at ledger {ledger}",
+  "account.statSequence": "Sequence",
+  "account.statSubentries": "Subentries",
+  "account.statSponsoring": "Sponsoring",
+  "account.statSponsored": "Sponsored",
+  "account.flagAuthRequired": "Auth Required",
+  "account.flagAuthRevocable": "Auth Revocable",
+  "account.flagAuthImmutable": "Auth Immutable",
+  "account.flagAuthClawbackEnabled": "Clawback Enabled",
+  "account.flagNone": "No Special Flags",
+  "account.balancesTitle": "Balances",
+  "account.balancesAriaLabel": "Account balances",
+  "account.balanceAsset": "Asset",
+  "account.balanceIssuer": "Issuer",
+  "account.balanceBalance": "Balance",
+  "account.balanceLimit": "Limit",
+  "account.recentTransactions": "Recent Transactions",
+  "account.tradesTitle": "Trades",
+  "account.tradesUnavailable":
+    "Trade history is unavailable. Check your connection and refresh this page to try again.",
+  "account.recentOperations": "Recent Operations",
+  "account.trustlinesTitle": "Trustline History",
+  "account.trustlinesUnavailable":
+    "Trustline history is unavailable. Check your connection and refresh this page to try again.",
+
   // ── Assets ────────────────────────────────────────────────────────────
   "assets.noAssetsYet":
     "No assets indexed yet. Once the indexer sees a balance or a transfer for an asset, it appears here.",
@@ -187,6 +219,17 @@ const en: MessageCatalogue = {
   "owner.withdrawBlockerLocked":
     "A slash landed recently, so withdrawal is locked until ledger {until} (currently {current}, {remaining} to go).",
   "owner.withdrawBlockerNoStake": "There is no stake to withdraw.",
+  "owner.staked": "Staked",
+  "owner.ledgerPrefix": "ledger",
+  "owner.slashHistoryRetryHint": "Check your connection, then retry.",
+  "owner.retrySlashHistory": "Retry slash history",
+
+  // ── Registry event labels ─────────────────────────────────────────────
+  "registryEvent.registered": "Registered",
+  "registryEvent.deactivated": "Deactivated",
+  "registryEvent.metadataUpdated": "Metadata updated",
+  "registryEvent.ownershipTransferred": "Ownership transferred",
+  "registryEvent.unknown": "Registry event",
 
   // ── Soroban transaction pipeline ──────────────────────────────────────
   "soroban.couldNotPrepare": "Could not prepare the transaction.",

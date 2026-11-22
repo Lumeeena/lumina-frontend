@@ -13,10 +13,13 @@ import { gqlFetch, PUBLIC_GRAPHQL_URL } from "@/lib/graphql";
 import { useAbortScope } from "@/lib/useAbortScope";
 import type { Operation } from "@/lib/types";
 import { formatOperationType, truncateAddress } from "@/lib/formatters";
+import { withNetwork } from "@/lib/network";
+import { useNetwork } from "@/lib/useNetwork";
 import TimeAgo from "./TimeAgo";
 import LoadMoreFooter from "./LoadMoreFooter";
 import { t } from "@/lib/i18n";
 import { EmptyState } from "@/components/ui/EmptyState";
+import LabeledAddress from "./LabeledAddress";
 
 const PAGE_SIZE = 25;
 /** Matches the seed the server component renders. */
@@ -32,6 +35,7 @@ export default function AccountOperationList({
   address: string;
   initial: Operation[];
 }) {
+  const { network } = useNetwork();
   const [rows, setRows] = useState(initial);
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasNextPage, setHasNextPage] = useState(initial.length >= SEED_LIMIT);
@@ -145,12 +149,12 @@ export default function AccountOperationList({
                     </span>
                   ) : op.from && op.to ? (
                     <span className="mono text-[var(--color-text-secondary)]">
-                      {truncateAddress(op.from, 4)} →{" "}
-                      {truncateAddress(op.to, 4)}
+                      <LabeledAddress address={op.from} linkTo={withNetwork(`/accounts/${op.from}`, network)} /> →{" "}
+                      <LabeledAddress address={op.to} linkTo={withNetwork(`/accounts/${op.to}`, network)} />
                     </span>
                   ) : op.from || op.to ? (
                     <span className="mono text-[var(--color-text-secondary)]">
-                      {truncateAddress(op.from ?? op.to ?? "", 4)}
+                      <LabeledAddress address={op.from ?? op.to ?? ""} linkTo={withNetwork(`/accounts/${op.from ?? op.to ?? ""}`, network)} />
                     </span>
                   ) : (
                     <span className="text-[var(--color-text-muted)]">—</span>
