@@ -193,14 +193,29 @@ const de: MessageCatalogue = {
   "owner.withdrawBlockerLocked":
     "Ein Slash ist kürzlich gelandet, daher ist die Auszahlung bis zu Ledger {until} gesperrt (aktuell {current}, noch {remaining}).",
   "owner.withdrawBlockerNoStake": "Es gibt keinen Einsatz zum Abheben.",
+  "owner.staked": "Eingesetzt",
+  "owner.ledgerPrefix": "Ledger",
+  "owner.slashHistoryRetryHint":
+    "Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+  "owner.retrySlashHistory": "Slash-Verlauf erneut laden",
+
+  // ── Registry event labels ─────────────────────────────────────────────
+  "registryEvent.registered": "Registriert",
+  "registryEvent.deactivated": "Deaktiviert",
+  "registryEvent.metadataUpdated": "Metadaten aktualisiert",
+  "registryEvent.ownershipTransferred": "Eigentum übertragen",
+  "registryEvent.unknown": "Registry-Ereignis",
 
   // ── Soroban transaction pipeline ──────────────────────────────────────
   "soroban.couldNotPrepare": "Die Transaktion konnte nicht vorbereitet werden.",
   "soroban.signatureDeclined": "Die Signatur wurde in Ihrem Wallet abgelehnt.",
-  "soroban.couldNotSign": "Die Transaktion konnte nicht signiert werden. Prüfen Sie Ihr Wallet und versuchen Sie es erneut.",
+  "soroban.couldNotSign":
+    "Die Transaktion konnte nicht signiert werden. Prüfen Sie Ihr Wallet und versuchen Sie es erneut.",
   "soroban.retrySignature": "Signatur erneut anfordern",
-  "soroban.prepareAgain": "Die gespeicherte Transaktion ist nicht mehr gültig. Senden Sie erneut, um eine neue Transaktion vorzubereiten; Ihre Eingaben bleiben erhalten.",
-  "soroban.rejectionPreserved": "Signatur abgelehnt. Ihre Eingaben und die vorbereitete Transaktion bleiben gespeichert. Sie können es erneut versuchen, sobald Sie bereit sind.",
+  "soroban.prepareAgain":
+    "Die gespeicherte Transaktion ist nicht mehr gültig. Senden Sie erneut, um eine neue Transaktion vorzubereiten; Ihre Eingaben bleiben erhalten.",
+  "soroban.rejectionPreserved":
+    "Signatur abgelehnt. Ihre Eingaben und die vorbereitete Transaktion bleiben gespeichert. Sie können es erneut versuchen, sobald Sie bereit sind.",
   "soroban.networkRejected": "Das Netzwerk hat die Transaktion abgelehnt.",
   "soroban.pendingConfirmation":
     "Die Transaktion wurde gesendet, aber noch nicht bestätigt. Versuchen Sie es in einem Moment erneut.",
@@ -386,6 +401,62 @@ const de: MessageCatalogue = {
 
   // ── SearchBar ─────────────────────────────────────────────────────────
   "searchBar.placeholder": "Konto, Transaktion, Vertrag oder Memo suchen\u2026",
+  // ── Navbar ────────────────────────────────────────────────────────────
+  "navbar.home": "Lumina Startseite",
+  "navbar.mainNav": "Hauptnavigation",
+  "navbar.explorer": "Explorer",
+  "navbar.transactions": "Transaktionen",
+  "navbar.ledgers": "Ledgers",
+  "navbar.search": "Suche",
+  "navbar.contractEvents": "Vertragsereignisse",
+  "navbar.assets": "Assets",
+  "navbar.graphql": "GraphQL",
+  "navbar.developers": "Entwickler",
+  "navbar.registry": "Registry",
+  "navbar.stats": "Statistiken",
+  "navbar.watch": "Beobachten",
+
+  // ── Transaction filters ───────────────────────────────────────────────
+  "transactionFilters.statusFilter": "Transaktionsstatus-Filter",
+  "transactionFilters.statusAll": "Alle",
+  "transactionFilters.statusSuccessful": "Erfolgreich",
+  "transactionFilters.statusFailed": "Fehlgeschlagen",
+  "transactionFilters.from": "Von",
+  "transactionFilters.to": "Bis",
+  "transactionFilters.sourceAccount": "Quellkonto",
+  "transactionFilters.minOperations": "Min. Operationen",
+  "transactionFilters.maxFee": "Max. Gebühr (XLM)",
+  "transactionFilters.presetNamePlaceholder": "Namen für diesen Filter",
+  "transactionFilters.presetNameLabel": "Vorlagenname",
+  "transactionFilters.savePreset": "Vorlage speichern",
+  "transactionFilters.clearFilters":
+    "{count} {count, plural, one {Filter} other {Filter}} löschen",
+  "transactionFilters.savedPresets": "Gespeicherte Filtervorlagen",
+  "transactionFilters.applyPreset": "Vorlage {name} anwenden",
+  "transactionFilters.deletePreset": "Vorlage {name} löschen",
+
+  // ── Network stats dashboard ───────────────────────────────────────────
+  "networkStats.activeAccounts": "Aktive Konten",
+  "networkStats.inSampledData": "In den Stichproben",
+  "networkStats.sampledTransactions": "Stichproben-Transaktionen",
+  "networkStats.mostRecent": "Neueste",
+  "networkStats.sampledOperations": "Stichproben-Operationen",
+  "networkStats.successRate": "Erfolgsquote",
+  "networkStats.inSampledTransactions": "In den Stichproben-Transaktionen",
+  "networkStats.operationsOverTime": "Operationen im Zeitverlauf",
+  "networkStats.operationsDescription":
+    "Stündliches Operationsvolumen aus aktuellen indexierten Daten",
+  "networkStats.operationsUnit": " Ops",
+  "networkStats.operationsCaption":
+    "Basierend auf den neuesten indexierten Operationen",
+  "networkStats.noOperationData": "Keine Operationsdaten verfügbar",
+  "networkStats.transactionsOverTime": "Transaktionen im Zeitverlauf",
+  "networkStats.transactionsDescription":
+    "Stündliches Transaktionsvolumen aus aktuellen indexierten Daten",
+  "networkStats.transactionsUnit": " Txs",
+  "networkStats.transactionsCaption":
+    "Basierend auf den neuesten indexierten Transaktionen",
+  "networkStats.noTransactionData": "Keine Transaktionsdaten verfügbar",
 };
 
 export default de;

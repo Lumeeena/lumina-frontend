@@ -161,6 +161,17 @@ export interface MessageCatalogue {
   "owner.withdrawBlockerActive": string;
   "owner.withdrawBlockerLocked": string;
   "owner.withdrawBlockerNoStake": string;
+  "owner.staked": string;
+  "owner.ledgerPrefix": string;
+  "owner.slashHistoryRetryHint": string;
+  "owner.retrySlashHistory": string;
+
+  // ── Registry event labels ─────────────────────────────────────────────
+  "registryEvent.registered": string;
+  "registryEvent.deactivated": string;
+  "registryEvent.metadataUpdated": string;
+  "registryEvent.ownershipTransferred": string;
+  "registryEvent.unknown": string;
 
   // ── Soroban transaction pipeline ──────────────────────────────────────
   "soroban.couldNotPrepare": string;
@@ -334,6 +345,58 @@ export interface MessageCatalogue {
 
   // ── SearchBar ─────────────────────────────────────────────────────────
   "searchBar.placeholder": string;
+
+  // ── Navbar ────────────────────────────────────────────────────────────
+  "navbar.home": string;
+  "navbar.mainNav": string;
+  "navbar.explorer": string;
+  "navbar.transactions": string;
+  "navbar.ledgers": string;
+  "navbar.search": string;
+  "navbar.contractEvents": string;
+  "navbar.assets": string;
+  "navbar.graphql": string;
+  "navbar.developers": string;
+  "navbar.registry": string;
+  "navbar.stats": string;
+  "navbar.watch": string;
+
+  // ── Transaction filters ───────────────────────────────────────────────
+  "transactionFilters.statusFilter": string;
+  "transactionFilters.statusAll": string;
+  "transactionFilters.statusSuccessful": string;
+  "transactionFilters.statusFailed": string;
+  "transactionFilters.from": string;
+  "transactionFilters.to": string;
+  "transactionFilters.sourceAccount": string;
+  "transactionFilters.minOperations": string;
+  "transactionFilters.maxFee": string;
+  "transactionFilters.presetNamePlaceholder": string;
+  "transactionFilters.presetNameLabel": string;
+  "transactionFilters.savePreset": string;
+  "transactionFilters.clearFilters": string;
+  "transactionFilters.savedPresets": string;
+  "transactionFilters.applyPreset": string;
+  "transactionFilters.deletePreset": string;
+
+  // ── Network stats dashboard ───────────────────────────────────────────
+  "networkStats.activeAccounts": string;
+  "networkStats.inSampledData": string;
+  "networkStats.sampledTransactions": string;
+  "networkStats.mostRecent": string;
+  "networkStats.sampledOperations": string;
+  "networkStats.successRate": string;
+  "networkStats.inSampledTransactions": string;
+  "networkStats.operationsOverTime": string;
+  "networkStats.operationsDescription": string;
+  "networkStats.operationsUnit": string;
+  "networkStats.operationsCaption": string;
+  "networkStats.noOperationData": string;
+  "networkStats.transactionsOverTime": string;
+  "networkStats.transactionsDescription": string;
+  "networkStats.transactionsUnit": string;
+  "networkStats.transactionsCaption": string;
+  "networkStats.noTransactionData": string;
 }
 
 export type MessageKey = keyof MessageCatalogue;

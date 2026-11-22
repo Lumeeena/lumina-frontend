@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { AreaChart, type AreaChartPoint } from "@/components/charts/AreaChart";
 import StatCard from "@/components/StatCard";
 import type { Operation, Transaction } from "@/lib/types";
+import { getLocale, t } from "@/lib/i18n";
 
 interface NetworkStatsDashboardProps {
   latestLedger: {
@@ -16,19 +17,15 @@ interface NetworkStatsDashboardProps {
 }
 
 export default function NetworkStatsDashboard({
-  latestLedger,
   operations,
   transactions,
 }: NetworkStatsDashboardProps) {
   const stats = useMemo(() => {
-    const activeAccounts = new Set(
-      transactions.map((tx) => tx.sourceAccount)
-    );
+    const activeAccounts = new Set(transactions.map((tx) => tx.sourceAccount));
 
     const operationsByHour = new Map<string, number>();
     const transactionsByHour = new Map<string, number>();
     let totalSuccessful = 0;
-    let totalFailed = 0;
 
     for (const op of operations) {
       const date = new Date(op.createdAt);
@@ -36,7 +33,7 @@ export default function NetworkStatsDashboard({
         date.getFullYear(),
         date.getMonth(),
         date.getDate(),
-        date.getHours()
+        date.getHours(),
       ).toISOString();
 
       operationsByHour.set(hourKey, (operationsByHour.get(hourKey) ?? 0) + 1);
@@ -48,21 +45,22 @@ export default function NetworkStatsDashboard({
         date.getFullYear(),
         date.getMonth(),
         date.getDate(),
-        date.getHours()
+        date.getHours(),
       ).toISOString();
 
-      transactionsByHour.set(hourKey, (transactionsByHour.get(hourKey) ?? 0) + 1);
+      transactionsByHour.set(
+        hourKey,
+        (transactionsByHour.get(hourKey) ?? 0) + 1,
+      );
       if (tx.successful) {
         totalSuccessful += 1;
-      } else {
-        totalFailed += 1;
       }
     }
 
     const opsChartData: AreaChartPoint[] = Array.from(operationsByHour)
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([timestamp, count]) => ({
-        label: new Date(timestamp).toLocaleString(undefined, {
+        label: new Date(timestamp).toLocaleString(getLocale(), {
           month: "short",
           day: "numeric",
           hour: "2-digit",
@@ -74,7 +72,7 @@ export default function NetworkStatsDashboard({
     const txChartData: AreaChartPoint[] = Array.from(transactionsByHour)
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([timestamp, count]) => ({
-        label: new Date(timestamp).toLocaleString(undefined, {
+        label: new Date(timestamp).toLocaleString(getLocale(), {
           month: "short",
           day: "numeric",
           hour: "2-digit",
@@ -100,47 +98,47 @@ export default function NetworkStatsDashboard({
     <div className="space-y-8">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
-          title="Active Accounts"
+          title={t("networkStats.activeAccounts")}
           value={stats.activeAccounts}
-          subtitle="In sampled data"
+          subtitle={t("networkStats.inSampledData")}
         />
         <StatCard
-          title="Sampled Transactions"
+          title={t("networkStats.sampledTransactions")}
           value={stats.totalTransactions}
-          subtitle="Most recent"
+          subtitle={t("networkStats.mostRecent")}
         />
         <StatCard
-          title="Sampled Operations"
+          title={t("networkStats.sampledOperations")}
           value={stats.totalOperations}
-          subtitle="Most recent"
+          subtitle={t("networkStats.mostRecent")}
         />
         <StatCard
-          title="Success Rate"
+          title={t("networkStats.successRate")}
           value={`${stats.successRate}%`}
-          subtitle="In sampled transactions"
+          subtitle={t("networkStats.inSampledTransactions")}
         />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {stats.opsChartData.length > 0 && (
           <AreaChart
-            title="Operations Over Time"
-            description="Hourly operation volume from recent indexed data"
+            title={t("networkStats.operationsOverTime")}
+            description={t("networkStats.operationsDescription")}
             data={stats.opsChartData}
-            unit=" ops"
-            caption="Based on the most recent indexed operations"
-            emptyMessage="No operation data available"
+            unit={t("networkStats.operationsUnit")}
+            caption={t("networkStats.operationsCaption")}
+            emptyMessage={t("networkStats.noOperationData")}
           />
         )}
 
         {stats.txChartData.length > 0 && (
           <AreaChart
-            title="Transactions Over Time"
-            description="Hourly transaction volume from recent indexed data"
+            title={t("networkStats.transactionsOverTime")}
+            description={t("networkStats.transactionsDescription")}
             data={stats.txChartData}
-            unit=" txs"
-            caption="Based on the most recent indexed transactions"
-            emptyMessage="No transaction data available"
+            unit={t("networkStats.transactionsUnit")}
+            caption={t("networkStats.transactionsCaption")}
+            emptyMessage={t("networkStats.noTransactionData")}
           />
         )}
       </div>
