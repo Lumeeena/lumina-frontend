@@ -42,12 +42,19 @@ export default function RegistryWorkspace({ listing }: { listing: ReactNode }) {
     const session = readPersistedSession()
       ? getConnectedWallet()
       : Promise.resolve(null);
-    session.then((session) => {
-      if (cancelled) return;
-      setWallet(session);
-      if (session) setTab("mine");
-      setWalletResolving(false);
-    });
+    session.then(
+      (session) => {
+        if (cancelled) return;
+        setWallet(session);
+        if (session) setTab("mine");
+        setWalletResolving(false);
+      },
+      () => {
+        if (cancelled) return;
+        setWalletResolving(false);
+        setConnectError("Your saved wallet session could not be restored.");
+      },
+    );
 
     return () => {
       cancelled = true;
@@ -58,36 +65,45 @@ export default function RegistryWorkspace({ listing }: { listing: ReactNode }) {
     setConnecting(true);
     setConnectError(null);
     setWalletLocked(false);
-    const result = await connectWallet();
-    if ("error" in result) {
-      setConnectError(result.error);
-      setWalletLocked(result.isLocked ?? false);
-    } else {
-      // Check for network mismatch after successful connection
-      const mismatch = await checkNetworkMismatch();
-      if (mismatch) {
-        setConnectError(mismatch.error);
-        // Still set the wallet session so user can see their wallet info
-        const session = await getConnectedWallet();
-        setWallet(session);
+    try {
+      const result = await connectWallet();
+      if ("error" in result) {
+        setConnectError(result.error);
+        setWalletLocked(result.isLocked ?? false);
       } else {
-        // Re-fetch full session so we get name + icon too (#88).
+        // Check for network mismatch after successful connection
+        const mismatch = await checkNetworkMismatch();
         const session = await getConnectedWallet();
         setWallet(session);
-        setTab("mine");
-        setWalletLocked(false);
+        if (mismatch) {
+          setConnectError(
+            `${mismatch.error} Switch your wallet to the Stellar testnet before trying again.`,
+          );
+        } else {
+          // Re-fetch full session so we get name + icon too (#88).
+          setTab("mine");
+          setWalletLocked(false);
+        }
       }
+    } catch {
+      setConnectError("Could not connect to your wallet.");
+    } finally {
+      setConnecting(false);
     }
-    setConnecting(false);
   }
 
   async function handleDisconnect() {
     setDisconnecting(true);
     try {
       await disconnectWallet();
-    } finally {
       setWallet(null);
       setTab("all");
+      setConnectError(null);
+    } catch {
+      setConnectError(
+        "Could not disconnect your wallet. Disconnect in the wallet extension, then refresh this page.",
+      );
+    } finally {
       setDisconnecting(false);
     }
   }
@@ -150,6 +166,23 @@ export default function RegistryWorkspace({ listing }: { listing: ReactNode }) {
           </div>
         ) : (
           <div className="flex flex-col gap-3">
+            {connectError && (
+              <div
+                role="alert"
+                className="text-xs text-[var(--color-error-text)] bg-[var(--color-error-bg)] rounded-lg px-3 py-2"
+              >
+                {connectError.includes("Network mismatch") ? (
+                  <div>
+                    <p className="font-semibold mb-1">Network Mismatch</p>
+                    <p className="text-[var(--color-error-dark)]">
+                      {connectError}
+                    </p>
+                  </div>
+                ) : (
+                  connectError
+                )}
+              </div>
+            )}
             <WalletInfo
               address={wallet!.address}
               walletName={wallet!.walletName}
@@ -179,21 +212,25 @@ export default function RegistryWorkspace({ listing }: { listing: ReactNode }) {
           </TabButton>
         </div>
 
-        {tab === "mine" ? (
-          walletAddress ? (
-            <OwnerContracts
-              key={`${walletAddress}:${ownerRefresh}`}
-              walletAddress={walletAddress}
-              onChanged={() => void refreshRegistry()}
-            />
-          ) : (
-            <p className="text-sm text-[var(--color-text-muted)]">
-              Connect a wallet to see the contracts you registered.
-            </p>
-          )
-        ) : (
-          listing
-        )}
+        <div className="overflow-x-auto -mx-4 sm:mx-0">
+          <div className="min-w-full px-4 sm:px-0">
+            {tab === "mine" ? (
+              walletAddress ? (
+                <OwnerContracts
+                  key={`${walletAddress}:${ownerRefresh}`}
+                  walletAddress={walletAddress}
+                  onChanged={() => void refreshRegistry()}
+                />
+              ) : (
+                <p className="text-sm text-[var(--color-text-muted)]">
+                  Connect a wallet to see the contracts you registered.
+                </p>
+              )
+            ) : (
+              listing
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
