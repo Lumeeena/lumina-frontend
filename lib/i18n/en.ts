@@ -517,6 +517,48 @@ const en: MessageCatalogue = {
   "pushOptIn.noVapidKey": "Browser notifications need a VAPID public key. Set NEXT_PUBLIC_VAPID_PUBLIC_KEY to enable them — the in-app alerts work without it.",
   "pushOptIn.enable": "Enable notifications",
   "pushOptIn.enabling": "Enabling…",
+
+  // \u2500\u2500 CommandPalette \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  "commandPalette.placeholder": "Search routes and actions...",
+  "commandPalette.noResults": "No results found",
+  "commandPalette.selectHint": "Select",
+  "commandPalette.navigateHint": "Navigate",
+  "commandPalette.searchAction": "Search",
+  "commandPalette.searchActionDescription":
+    "Search Stellar addresses and transactions",
+  "commandPalette.route.explorer.label": "Explorer",
+  "commandPalette.route.explorer.description":
+    "Search any Stellar account or browse recent transactions, updated live over a GraphQL subscription.",
+  "commandPalette.route.transactions.label": "Transactions",
+  "commandPalette.route.transactions.description":
+    "Every indexed Stellar transaction, with filters, saved presets and cursor pagination.",
+  "commandPalette.route.ledgers.label": "Ledgers",
+  "commandPalette.route.ledgers.description":
+    "Indexed Stellar ledgers, newest first: close time, transaction and operation counts, and any gaps in the index.",
+  "commandPalette.route.search.label": "Search",
+  "commandPalette.route.search.description":
+    "Memo search across every indexed transaction \u2014 order references and short codes, ranked by the backend's trigram similarity.",
+  "commandPalette.route.events.label": "Contract Events",
+  "commandPalette.route.events.description":
+    "Soroban contract events indexed by Lumina, filterable by contract id.",
+  "commandPalette.route.assets.label": "Assets",
+  "commandPalette.route.assets.description":
+    "Every Stellar asset Lumina indexes \u2014 supply and holder counts, ordered by holders or by transfer volume.",
+  "commandPalette.route.graphql.label": "GraphQL",
+  "commandPalette.route.graphql.description":
+    "Run queries against the Lumina GraphQL API from the browser, with worked examples.",
+  "commandPalette.route.developers.label": "Developers",
+  "commandPalette.route.developers.description":
+    "API documentation, getting-started guide, and usage dashboard for developers building with Lumina.",
+  "commandPalette.route.registry.label": "Registry",
+  "commandPalette.route.registry.description":
+    "An on-chain Soroban manifest of contracts Lumina indexes \u2014 register a contract to opt into indexing.",
+  "commandPalette.route.stats.label": "Stats",
+  "commandPalette.route.stats.description":
+    "Indexer health and Stellar network throughput: latest ledger, transaction volume and the mix of operation types.",
+  "commandPalette.route.watch.label": "Watch",
+  "commandPalette.route.watch.description":
+    "Follow Stellar addresses: one live feed of activity across everything you watch, with per-address alert filters.",
 };
 
 export default en;
