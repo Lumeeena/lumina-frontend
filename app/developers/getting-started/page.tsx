@@ -1,8 +1,12 @@
-import CodeSnippet from '@/components/CodeSnippet';
-import { ExampleLanguageProvider, ExampleLanguageSelector, QueryExample } from '@/components/GettingStartedExamples';
+import CodeSnippet from "@/components/CodeSnippet";
+import {
+  ExampleLanguageProvider,
+  ExampleLanguageSelector,
+  QueryExample,
+} from "@/components/GettingStartedExamples";
+import { t } from "@/lib/i18n";
 
 export default function GettingStartedPage() {
-
   const SIMPLE_QUERY = `
 query GetLatestLedger {
   latestLedger {
@@ -32,143 +36,147 @@ query GetTransactions {
 `.trim();
 
   return (
-    <ExampleLanguageProvider><div>
-      <div className="mb-12">
-        <h1 className="text-4xl font-bold text-[var(--color-text-primary)] mb-4">
-          Getting Started with Lumina
-        </h1>
-        <p className="text-lg text-[var(--color-text-secondary)]">
-          Learn how to make your first GraphQL query in just a few minutes.
-        </p>
-      </div>
-
-      {/* Step 1 */}
-      <section className="mb-16 scroll-mt-24" id="step-1">
-        <div className="flex items-baseline gap-4 mb-6">
-          <div className="text-5xl font-bold text-[var(--color-accent-fill)]">1</div>
-          <h2 className="text-3xl font-bold text-[var(--color-text-primary)]">
-            Make Your First Request
-          </h2>
-        </div>
-        <p className="text-[var(--color-text-secondary)] mb-6 max-w-2xl">
-          The Lumina GraphQL API is available at{" "}
-          <code className="bg-[var(--color-bg-raised)] px-2 py-1 rounded mono text-sm">
-            https://graphql.lumina.app/graphql
-          </code>
-          . Start with this simple query that fetches the latest ledger:
-        </p>
-
-        <div className="mb-6">
-          <ExampleLanguageSelector />
-        </div>
-
-        <QueryExample
-          query={SIMPLE_QUERY}
-          title="First Request"
-        />
-
-        <p className="text-sm text-[var(--color-text-muted)] mt-4">
-          Copy the code above and run it in your terminal. You should see the latest Stellar ledger information.
-        </p>
-      </section>
-
-      {/* Step 2 */}
-      <section className="mb-16 scroll-mt-24" id="step-2">
-        <div className="flex items-baseline gap-4 mb-6">
-          <div className="text-5xl font-bold text-[var(--color-accent-fill)]">2</div>
-          <h2 className="text-3xl font-bold text-[var(--color-text-primary)]">
-            Work with Pagination
-          </h2>
-        </div>
-        <p className="text-[var(--color-text-secondary)] mb-6 max-w-2xl">
-          For queries that return multiple items, we use cursor-based pagination.
-          The response includes a{" "}
-          <code className="bg-[var(--color-bg-raised)] px-2 py-1 rounded mono text-sm">
-            pageInfo
-          </code>
-          {" "}object with{" "}
-          <code className="bg-[var(--color-bg-raised)] px-2 py-1 rounded mono text-sm">
-            hasNextPage
-          </code>
-          {" "}and{" "}
-          <code className="bg-[var(--color-bg-raised)] px-2 py-1 rounded mono text-sm">
-            cursor
-          </code>
-          {" "}fields:
-        </p>
-
-        <QueryExample
-          query={PAGINATED_QUERY}
-          title="Query with Pagination"
-        />
-
-        <div className="mt-6 p-4 bg-[var(--color-bg-subtle)] rounded-lg">
-          <h3 className="font-semibold text-[var(--color-text-primary)] mb-2">
-            How to fetch the next page:
-          </h3>
-          <p className="text-sm text-[var(--color-text-secondary)] mb-3">
-            To get the next page of results, pass the{" "}
-            <code className="bg-[var(--color-bg-raised)] px-1 rounded mono text-sm">cursor</code>
-            {" "}from the previous response to the next query:
+    <ExampleLanguageProvider>
+      <div>
+        <div className="mb-12">
+          <h1 className="text-4xl font-bold text-[var(--color-text-primary)] mb-4">
+            {t("guide.heading")}
+          </h1>
+          <p className="text-lg text-[var(--color-text-secondary)]">
+            {t("guide.subtitle")}
           </p>
-          <code className="bg-[var(--color-bg-raised)] px-3 py-2 rounded mono text-sm block text-[var(--color-text-primary)]">
-            {`query GetMoreTransactions {
-  transactions(limit: 5, cursor: "CURSOR_FROM_PREVIOUS_RESPONSE") { ... }
-}`}
-          </code>
         </div>
-      </section>
 
-      {/* Step 3 */}
-      <section className="mb-16 scroll-mt-24" id="step-3">
-        <div className="flex items-baseline gap-4 mb-6">
-          <div className="text-5xl font-bold text-[var(--color-accent-fill)]">3</div>
-          <h2 className="text-3xl font-bold text-[var(--color-text-primary)]">
-            Handle Errors Gracefully
-          </h2>
-        </div>
-        <p className="text-[var(--color-text-secondary)] mb-6 max-w-2xl">
-          The GraphQL API returns HTTP 200 even when there are errors — check the{" "}
-          <code className="bg-[var(--color-bg-raised)] px-2 py-1 rounded mono text-sm">
-            errors
-          </code>
-          {" "}array in the response:
-        </p>
+        {/* Step 1 */}
+        <section className="mb-16 scroll-mt-24" id="step-1">
+          <div className="flex items-baseline gap-4 mb-6">
+            <div className="text-5xl font-bold text-[var(--color-accent-fill)]">
+              1
+            </div>
+            <h2 className="text-3xl font-bold text-[var(--color-text-primary)]">
+              {t("guide.step1.title")}
+            </h2>
+          </div>
+          <p className="text-[var(--color-text-secondary)] mb-6 max-w-2xl">
+            {t("guide.step1.before")}{" "}
+            <code className="bg-[var(--color-bg-raised)] px-2 py-1 rounded mono text-sm">
+              https://graphql.lumina.app/graphql
+            </code>
+            {t("guide.step1.after")}
+          </p>
 
-        <div className="space-y-4">
-          <div className="p-4 bg-[var(--color-bg-subtle)] rounded-lg border border-[var(--color-border-default)]">
-            <h3 className="font-semibold text-[var(--color-text-primary)] mb-3">Common Errors:</h3>
-            <dl className="space-y-3 text-sm">
-              <div>
-                <dt className="font-semibold text-[var(--color-text-primary)]">Invalid Query</dt>
-                <dd className="text-[var(--color-text-secondary)] text-xs mt-1">
-                  Your GraphQL syntax is invalid. Check the{" "}
-                  <a
-                    href="/graphql"
-                    className="text-[var(--color-accent-fill)] hover:underline"
-                  >
-                    playground
-                  </a>
-                  {" "}for the correct schema.
-                </dd>
-              </div>
-              <div>
-                <dt className="font-semibold text-[var(--color-text-primary)]">Not Found</dt>
-                <dd className="text-[var(--color-text-secondary)] text-xs mt-1">
-                  The resource doesn&apos;t exist (e.g., an account that hasn&apos;t been funded on Stellar).
-                </dd>
-              </div>
-              <div>
-                <dt className="font-semibold text-[var(--color-text-primary)]">Server Error</dt>
-                <dd className="text-[var(--color-text-secondary)] text-xs mt-1">
-                  Our backend is temporarily unavailable. Retry with exponential backoff.
-                </dd>
-              </div>
-            </dl>
+          <div className="mb-6">
+            <ExampleLanguageSelector />
           </div>
 
-          <CodeSnippet
-            code={`// Always check for errors in the response
+          <QueryExample
+            query={SIMPLE_QUERY}
+            title={t("guide.example.firstRequest")}
+          />
+
+          <p className="text-sm text-[var(--color-text-muted)] mt-4">
+            {t("guide.step1.hint")}
+          </p>
+        </section>
+
+        {/* Step 2 */}
+        <section className="mb-16 scroll-mt-24" id="step-2">
+          <div className="flex items-baseline gap-4 mb-6">
+            <div className="text-5xl font-bold text-[var(--color-accent-fill)]">
+              2
+            </div>
+            <h2 className="text-3xl font-bold text-[var(--color-text-primary)]">
+              {t("guide.step2.title")}
+            </h2>
+          </div>
+          <p className="text-[var(--color-text-secondary)] mb-6 max-w-2xl">
+            {t("guide.step2.intro")} {t("guide.step2.response")}
+          </p>
+
+          <QueryExample
+            query={PAGINATED_QUERY}
+            title={t("guide.example.pagination")}
+          />
+
+          <div className="mt-6 p-4 bg-[var(--color-bg-subtle)] rounded-lg">
+            <h3 className="font-semibold text-[var(--color-text-primary)] mb-2">
+              {t("guide.step2.nextTitle")}
+            </h3>
+            <p className="text-sm text-[var(--color-text-secondary)] mb-3">
+              {t("guide.step2.nextBefore")}{" "}
+              <code className="bg-[var(--color-bg-raised)] px-1 rounded mono text-sm">
+                cursor
+              </code>{" "}
+              {t("guide.step2.nextAfter")}
+            </p>
+            <code className="bg-[var(--color-bg-raised)] px-3 py-2 rounded mono text-sm block text-[var(--color-text-primary)]">
+              {`query GetMoreTransactions {
+  transactions(limit: 5, cursor: "CURSOR_FROM_PREVIOUS_RESPONSE") { ... }
+}`}
+            </code>
+          </div>
+        </section>
+
+        {/* Step 3 */}
+        <section className="mb-16 scroll-mt-24" id="step-3">
+          <div className="flex items-baseline gap-4 mb-6">
+            <div className="text-5xl font-bold text-[var(--color-accent-fill)]">
+              3
+            </div>
+            <h2 className="text-3xl font-bold text-[var(--color-text-primary)]">
+              {t("guide.step3.title")}
+            </h2>
+          </div>
+          <p className="text-[var(--color-text-secondary)] mb-6 max-w-2xl">
+            {t("guide.step3.before")}{" "}
+            <code className="bg-[var(--color-bg-raised)] px-2 py-1 rounded mono text-sm">
+              errors
+            </code>{" "}
+            {t("guide.step3.after")}
+          </p>
+
+          <div className="space-y-4">
+            <div className="p-4 bg-[var(--color-bg-subtle)] rounded-lg border border-[var(--color-border-default)]">
+              <h3 className="font-semibold text-[var(--color-text-primary)] mb-3">
+                {t("guide.errors.title")}
+              </h3>
+              <dl className="space-y-3 text-sm">
+                <div>
+                  <dt className="font-semibold text-[var(--color-text-primary)]">
+                    {t("guide.errors.invalidQuery")}
+                  </dt>
+                  <dd className="text-[var(--color-text-secondary)] text-xs mt-1">
+                    {t("guide.errors.invalidQueryBefore")}{" "}
+                    <a
+                      href="/graphql"
+                      className="text-[var(--color-accent-fill)] hover:underline"
+                    >
+                      {t("guide.errors.invalidQueryLink")}
+                    </a>{" "}
+                    {t("guide.errors.invalidQueryAfter")}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="font-semibold text-[var(--color-text-primary)]">
+                    {t("guide.errors.notFound")}
+                  </dt>
+                  <dd className="text-[var(--color-text-secondary)] text-xs mt-1">
+                    {t("guide.errors.notFoundDesc")}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="font-semibold text-[var(--color-text-primary)]">
+                    {t("guide.errors.serverError")}
+                  </dt>
+                  <dd className="text-[var(--color-text-secondary)] text-xs mt-1">
+                    {t("guide.errors.serverErrorDesc")}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+
+            <CodeSnippet
+              code={`// Always check for errors in the response
 if (data.errors) {
   console.error("GraphQL Error:", data.errors);
   // Handle the error - retry, log, notify user, etc.
@@ -178,82 +186,101 @@ if (data.errors) {
 if (data.data) {
   console.log("Success:", data.data);
 }`}
-            language="javascript"
-            title="Error Handling Pattern"
-          />
-        </div>
-      </section>
+              language="javascript"
+              title={t("guide.errorHandling.title")}
+            />
+          </div>
+        </section>
 
-      {/* Step 4 */}
-      <section className="mb-16 scroll-mt-24" id="step-4">
-        <div className="flex items-baseline gap-4 mb-6">
-          <div className="text-5xl font-bold text-[var(--color-accent-fill)]">4</div>
-          <h2 className="text-3xl font-bold text-[var(--color-text-primary)]">
-            Explore the Schema
-          </h2>
-        </div>
-        <p className="text-[var(--color-text-secondary)] mb-6 max-w-2xl">
-          Visit the{" "}
-          <a
-            href="/graphql"
-            className="text-[var(--color-accent-fill)] hover:underline font-semibold"
-          >
-            GraphQL Playground
-          </a>
-          {" "}to explore all available queries and data types. The playground includes
-          worked examples you can run live against the API.
-        </p>
-
-        <div className="p-6 bg-[var(--color-bg-subtle)] rounded-lg border border-[var(--color-accent-fill)]/20">
-          <p className="text-sm text-[var(--color-text-secondary)]">
-            <strong>Popular queries:</strong> Recent transactions, Account balances, Contract events,
-            Asset information, Payment history
+        {/* Step 4 */}
+        <section className="mb-16 scroll-mt-24" id="step-4">
+          <div className="flex items-baseline gap-4 mb-6">
+            <div className="text-5xl font-bold text-[var(--color-accent-fill)]">
+              4
+            </div>
+            <h2 className="text-3xl font-bold text-[var(--color-text-primary)]">
+              {t("guide.step4.title")}
+            </h2>
+          </div>
+          <p className="text-[var(--color-text-secondary)] mb-6 max-w-2xl">
+            {t("guide.step4.before")}{" "}
+            <a
+              href="/graphql"
+              className="text-[var(--color-accent-fill)] hover:underline font-semibold"
+            >
+              {t("guide.step4.link")}
+            </a>{" "}
+            {t("guide.step4.after")}
           </p>
-        </div>
-      </section>
 
-      {/* Next Steps */}
-      <section className="mt-16 p-8 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-subtle)]">
-        <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-4">
-          What&apos;s Next?
-        </h2>
-        <ul className="space-y-3 text-[var(--color-text-secondary)]">
-          <li className="flex gap-3">
-            <span className="text-[var(--color-accent-fill)] font-bold">→</span>
-            <span>
-              <strong>Try the playground:</strong>{" "}
-              <a href="/graphql" className="text-[var(--color-accent-fill)] hover:underline">
-                Run live queries
-              </a>
-            </span>
-          </li>
-          <li className="flex gap-3">
-            <span className="text-[var(--color-accent-fill)] font-bold">→</span>
-            <span>
-              <strong>Read the docs:</strong>{" "}
-              <a href="/developers/interactive-docs" className="text-[var(--color-accent-fill)] hover:underline">
-                Dive deeper into pagination and error handling
-              </a>
-            </span>
-          </li>
-          <li className="flex gap-3">
-            <span className="text-[var(--color-accent-fill)] font-bold">→</span>
-            <span>
-              <strong>Generate code:</strong> Use the playground to write a query, then generate
-              production-ready code in JavaScript or Python
-            </span>
-          </li>
-          <li className="flex gap-3">
-            <span className="text-[var(--color-accent-fill)] font-bold">→</span>
-            <span>
-              <strong>Monitor usage:</strong>{" "}
-              <a href="/developers/usage" className="text-[var(--color-accent-fill)] hover:underline">
-                Track your API consumption
-              </a>
-            </span>
-          </li>
-        </ul>
-      </section>
-    </div></ExampleLanguageProvider>
+          <div className="p-6 bg-[var(--color-bg-subtle)] rounded-lg border border-[var(--color-accent-fill)]/20">
+            <p className="text-sm text-[var(--color-text-secondary)]">
+              <strong>{t("guide.step4.popularLabel")}</strong>{" "}
+              {t("guide.step4.popularItems")}
+            </p>
+          </div>
+        </section>
+
+        {/* Next Steps */}
+        <section className="mt-16 p-8 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-subtle)]">
+          <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-4">
+            {t("guide.next.title")}
+          </h2>
+          <ul className="space-y-3 text-[var(--color-text-secondary)]">
+            <li className="flex gap-3">
+              <span className="text-[var(--color-accent-fill)] font-bold">
+                →
+              </span>
+              <span>
+                <strong>{t("guide.next.tryPlayground.label")}</strong>{" "}
+                <a
+                  href="/graphql"
+                  className="text-[var(--color-accent-fill)] hover:underline"
+                >
+                  {t("guide.next.tryPlayground.link")}
+                </a>
+              </span>
+            </li>
+            <li className="flex gap-3">
+              <span className="text-[var(--color-accent-fill)] font-bold">
+                →
+              </span>
+              <span>
+                <strong>{t("guide.next.readDocs.label")}</strong>{" "}
+                <a
+                  href="/developers/interactive-docs"
+                  className="text-[var(--color-accent-fill)] hover:underline"
+                >
+                  {t("guide.next.readDocs.link")}
+                </a>
+              </span>
+            </li>
+            <li className="flex gap-3">
+              <span className="text-[var(--color-accent-fill)] font-bold">
+                →
+              </span>
+              <span>
+                <strong>{t("guide.next.generateCode.label")}</strong>{" "}
+                {t("guide.next.generateCode.text")}
+              </span>
+            </li>
+            <li className="flex gap-3">
+              <span className="text-[var(--color-accent-fill)] font-bold">
+                →
+              </span>
+              <span>
+                <strong>{t("guide.next.monitorUsage.label")}</strong>{" "}
+                <a
+                  href="/developers/usage"
+                  className="text-[var(--color-accent-fill)] hover:underline"
+                >
+                  {t("guide.next.monitorUsage.link")}
+                </a>
+              </span>
+            </li>
+          </ul>
+        </section>
+      </div>
+    </ExampleLanguageProvider>
   );
 }

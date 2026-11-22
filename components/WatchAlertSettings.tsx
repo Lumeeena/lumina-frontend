@@ -8,6 +8,7 @@ import {
   type OperationFilters,
 } from "@/lib/operationFilters";
 import { setWatchFilters } from "@/lib/watches";
+import { t } from "@/lib/i18n";
 
 /** `SET_OPTIONS` and the rest read better in title case than as enum values. */
 function labelFor(value: string): string {
@@ -57,14 +58,14 @@ export default function WatchAlertSettings({ address, filters }: WatchAlertSetti
       data-address={address}
       className="grid gap-3 sm:grid-cols-3"
     >
-      <legend className="sr-only">{`Alert filter for ${address}`}</legend>
+      <legend className="sr-only">{t("watchAlertSettings.alertFilter", { address })}</legend>
 
       <div>
         <label
           htmlFor={`watch-type-${address}`}
           className="block text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--color-text-muted)] mb-1"
         >
-          Operation
+          {t("watchAlertSettings.operation")}
         </label>
         <select
           id={`watch-type-${address}`}
@@ -80,7 +81,7 @@ export default function WatchAlertSettings({ address, filters }: WatchAlertSetti
         >
           {OPERATION_TYPE_FILTERS.map((value) => (
             <option key={value} value={value}>
-              {value === "all" ? "Any operation" : labelFor(value)}
+              {value === "all" ? t("watchAlertSettings.anyOperation") : labelFor(value)}
             </option>
           ))}
         </select>
@@ -91,7 +92,7 @@ export default function WatchAlertSettings({ address, filters }: WatchAlertSetti
           htmlFor={`watch-amount-${address}`}
           className="block text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--color-text-muted)] mb-1"
         >
-          Minimum amount
+          {t("watchAlertSettings.minimumAmount")}
         </label>
         <input
           id={`watch-amount-${address}`}
@@ -99,7 +100,7 @@ export default function WatchAlertSettings({ address, filters }: WatchAlertSetti
           min={0}
           step="any"
           inputMode="decimal"
-          placeholder="Any"
+          placeholder={t("watchAlertSettings.any")}
           value={draft.minAmount ?? ""}
           onChange={(event) => {
             const raw = event.target.value;
@@ -122,12 +123,12 @@ export default function WatchAlertSettings({ address, filters }: WatchAlertSetti
           htmlFor={`watch-asset-${address}`}
           className="block text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--color-text-muted)] mb-1"
         >
-          Asset
+          {t("watchAlertSettings.asset")}
         </label>
         <input
           id={`watch-asset-${address}`}
           type="text"
-          placeholder="Any"
+          placeholder={t("watchAlertSettings.any")}
           value={draft.asset}
           onChange={(event) => commit({ ...draft, asset: event.target.value })}
           className="w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-base)] px-2.5 py-2 text-[13px] mono"
@@ -137,8 +138,8 @@ export default function WatchAlertSettings({ address, filters }: WatchAlertSetti
       <p className="sm:col-span-3 flex items-center gap-3 text-[12px] text-[var(--color-text-secondary)]">
         <span data-testid="watch-alert-active-count">
           {active === 0
-            ? "No filter — every operation alerts."
-            : `${active} ${active === 1 ? "filter" : "filters"} active.`}
+            ? t("watchAlertSettings.noFilter")
+            : t("watchAlertSettings.filtersActive", { count: active })}
         </span>
         {!atDefault && (
           <button
@@ -146,7 +147,7 @@ export default function WatchAlertSettings({ address, filters }: WatchAlertSetti
             onClick={() => commit({ ...DEFAULT_OPERATION_FILTERS })}
             className="font-semibold text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline"
           >
-            Reset to default
+            {t("watchAlertSettings.resetDefault")}
           </button>
         )}
       </p>

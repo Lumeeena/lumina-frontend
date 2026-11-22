@@ -214,12 +214,14 @@ describe("AccountPage without a ledger", () => {
       AccountDetail: { account: live },
       AccountTrustlineOps: { operations: { items: [] } },
       AccountLifecycle: { accountLifecycle: { createdAt: null } },
+      AccountTrades: { trades: { items: [] } },
     });
     await renderPage();
 
     expect(queriesAsked().sort()).toEqual([
       "AccountDetail",
       "AccountLifecycle",
+      "AccountTrades",
       "AccountTrustlineOps",
     ]);
     for (const section of [
@@ -241,6 +243,7 @@ describe("AccountPage without a ledger", () => {
       AccountDetail: { account: live },
       AccountTrustlineOps: { operations: { items: [] } },
       AccountLifecycle: { accountLifecycle: null },
+      AccountTrades: { trades: { items: [] } },
     });
     await renderPage({ ledger: "" });
 

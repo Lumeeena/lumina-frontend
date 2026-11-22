@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { SlashRecord } from "@/lib/registry";
 import { formatStroops } from "@/lib/formatters";
+import { t } from "@/lib/i18n";
 
 export default function RegistrySlashHistory({
   contractId,
@@ -14,9 +15,7 @@ export default function RegistrySlashHistory({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
-  async function toggle() {
-    setOpen(!open);
-    if (open || slashes !== null || loading) return;
+  async function loadHistory() {
     setLoading(true);
     setError(false);
     try {
@@ -30,6 +29,14 @@ export default function RegistrySlashHistory({
     }
   }
 
+  function toggle() {
+    const next = !open;
+    setOpen(next);
+    if (next && slashes === null) {
+      void loadHistory();
+    }
+  }
+
   return (
     <>
       <button
@@ -37,21 +44,21 @@ export default function RegistrySlashHistory({
         aria-expanded={open}
         className="mt-2.5 text-[11px] font-bold text-[var(--color-accent-text)] hover:underline underline-offset-2"
       >
-        {open ? "Hide slash history" : "Slash history"}
+        {open ? t("registrySlashHistory.hideSlashHistory") : t("registrySlashHistory.slashHistory")}
       </button>
       {open && (
         <div className="mt-2 border-t border-[var(--color-border-default)] pt-2.5">
           {loading ? (
             <p className="text-xs text-[var(--color-text-muted)]">
-              Loading slash history…
+              {t("registrySlashHistory.loadingSlashHistory")}
             </p>
           ) : error ? (
             <p role="alert" className="text-xs text-[var(--color-error-text)]">
-              Couldn&apos;t read the slash history. Close and reopen to retry.
+              {t("registrySlashHistory.couldNotReadHistory")}
             </p>
           ) : slashes?.length === 0 ? (
             <p className="text-xs text-[var(--color-text-muted)]">
-              No slashes recorded.
+              {t("registrySlashHistory.noSlashes")}
             </p>
           ) : (
             <ul className="flex flex-col gap-1.5">
@@ -70,7 +77,7 @@ export default function RegistrySlashHistory({
                     </span>
                   </span>
                   <span className="mono text-[11px] text-[var(--color-text-muted)] shrink-0">
-                    ledger {slash.slashedAt.toLocaleString()}
+                    {t("registrySlashHistory.ledger", { ledger: slash.slashedAt.toLocaleString() })}
                   </span>
                 </li>
               ))}

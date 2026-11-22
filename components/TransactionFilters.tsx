@@ -8,6 +8,7 @@ import {
 } from "@/lib/transactionFilters";
 import type { FilterPreset } from "@/lib/filterPresets";
 import { fieldInputClassName, Field } from "@/components/ui/FormField";
+import { t } from "@/lib/i18n";
 
 const field = fieldInputClassName;
 
@@ -50,6 +51,12 @@ function SourceAccountInput({
 }
 
 const STATUS_OPTIONS = ["all", "successful", "failed"] as const;
+
+const STATUS_LABEL_KEYS = {
+  all: "transactionFilters.statusAll",
+  successful: "transactionFilters.statusSuccessful",
+  failed: "transactionFilters.statusFailed",
+} as const;
 
 export default function TransactionFilters({
   filters,
@@ -142,7 +149,7 @@ export default function TransactionFilters({
     <div className="mb-6" data-testid="transaction-filters">
       <div
         role="toolbar"
-        aria-label="Transaction status filter"
+        aria-label={t("transactionFilters.statusFilter")}
         className="inline-flex border border-[var(--color-border-default)] rounded-[9px] overflow-hidden mb-4"
       >
         {STATUS_OPTIONS.map((status, index) => (
@@ -162,13 +169,13 @@ export default function TransactionFilters({
                 : "bg-[var(--color-bg-base)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)]"
             }`}
           >
-            {status}
+            {t(STATUS_LABEL_KEYS[status])}
           </button>
         ))}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
-        <Field id="filter-from" label="From">
+        <Field id="filter-from" label={t("transactionFilters.from")}>
           <input
             id="filter-from"
             type="date"
@@ -177,7 +184,7 @@ export default function TransactionFilters({
             onChange={(e) => set("fromDate", e.target.value || null)}
           />
         </Field>
-        <Field id="filter-to" label="To">
+        <Field id="filter-to" label={t("transactionFilters.to")}>
           <input
             id="filter-to"
             type="date"
@@ -186,7 +193,7 @@ export default function TransactionFilters({
             onChange={(e) => set("toDate", e.target.value || null)}
           />
         </Field>
-        <Field id="filter-source" label="Source account">
+        <Field id="filter-source" label={t("transactionFilters.sourceAccount")}>
           <SourceAccountInput
             key={filters.source}
             value={filters.source}
@@ -194,7 +201,10 @@ export default function TransactionFilters({
             className={`${field} w-full mono`}
           />
         </Field>
-        <Field id="filter-min-ops" label="Min operations">
+        <Field
+          id="filter-min-ops"
+          label={t("transactionFilters.minOperations")}
+        >
           <input
             id="filter-min-ops"
             type="number"
@@ -209,7 +219,7 @@ export default function TransactionFilters({
             }
           />
         </Field>
-        <Field id="filter-max-fee" label="Max fee (XLM)">
+        <Field id="filter-max-fee" label={t("transactionFilters.maxFee")}>
           <input
             id="filter-max-fee"
             type="number"
@@ -230,8 +240,8 @@ export default function TransactionFilters({
       <div className="flex items-center gap-2 flex-wrap">
         <input
           type="text"
-          placeholder="Name this filter"
-          aria-label="Preset name"
+          placeholder={t("transactionFilters.presetNamePlaceholder")}
+          aria-label={t("transactionFilters.presetNameLabel")}
           className={`${field} w-[190px]`}
           value={presetName}
           onChange={(e) => setPresetName(e.target.value)}
@@ -245,7 +255,7 @@ export default function TransactionFilters({
           disabled={!presetName.trim()}
           className="bg-[var(--color-bg-raised)] border border-[var(--color-border-default)] enabled:hover:border-[var(--color-border-strong)] disabled:opacity-50 font-semibold text-[13px] px-4 py-2 rounded-[9px] transition-colors"
         >
-          Save preset
+          {t("transactionFilters.savePreset")}
         </button>
 
         {activeCount > 0 && (
@@ -254,7 +264,7 @@ export default function TransactionFilters({
             onClick={() => onChange(EMPTY_FILTERS)}
             className="text-[13px] font-semibold text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] px-2 py-2"
           >
-            Clear {activeCount} filter{activeCount === 1 ? "" : "s"}
+            {t("transactionFilters.clearFilters", { count: activeCount })}
           </button>
         )}
       </div>
@@ -262,7 +272,7 @@ export default function TransactionFilters({
       {presets.length > 0 && (
         <div
           role="toolbar"
-          aria-label="Saved filter presets"
+          aria-label={t("transactionFilters.savedPresets")}
           className="flex items-center gap-2 flex-wrap mt-3"
         >
           {presets.map((preset, index) => (
@@ -278,14 +288,18 @@ export default function TransactionFilters({
                 onClick={() => onApplyPreset(preset)}
                 onKeyDown={(e) => handlePresetKeyDown(e, index)}
                 tabIndex={index === 0 ? 0 : -1}
-                aria-label={`Apply preset ${preset.name}`}
+                aria-label={t("transactionFilters.applyPreset", {
+                  name: preset.name,
+                })}
                 className="hover:underline"
               >
                 {preset.name}
               </button>
               <button
                 type="button"
-                aria-label={`Delete preset ${preset.name}`}
+                aria-label={t("transactionFilters.deletePreset", {
+                  name: preset.name,
+                })}
                 onClick={() => {
                   onDeletePreset(preset.name);
                   // Return focus to the nearest remaining preset or the preset name input

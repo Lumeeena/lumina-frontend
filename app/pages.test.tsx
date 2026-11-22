@@ -15,6 +15,16 @@ import type { Ledger, Operation, Transaction } from "@/lib/types";
 const gqlFetch = vi.hoisted(() => vi.fn());
 const getActiveContracts = vi.hoisted(() => vi.fn());
 
+vi.mock("@/components/ui/Toast", () => ({
+  useToast: () => ({
+    addToast: vi.fn(),
+    removeToast: vi.fn(),
+    clearAll: vi.fn(),
+    toasts: [],
+  }),
+  ToastProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
+
 vi.mock("@/lib/graphql", () => ({
   gqlFetch,
   GRAPHQL_URL: "http://test/graphql",

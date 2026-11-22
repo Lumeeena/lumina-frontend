@@ -13,6 +13,7 @@
  * which is not the same as `ContractEvent.contractId`.
  */
 import type { ContractEvent } from "./types";
+import { t } from "./i18n";
 
 /**
  * Display categories produced by {@link parseRegistryEvents}: known registry
@@ -147,10 +148,20 @@ export function historyFor(
  * Human-readable labels for each {@link RegistryEventType}, intended for
  * rendering event categories in registry history interfaces.
  */
-export const REGISTRY_EVENT_LABELS: Record<RegistryEventType, string> = {
-  registered: "Registered",
-  deactivated: "Deactivated",
-  "metadata-updated": "Metadata updated",
-  "ownership-transferred": "Ownership transferred",
-  unknown: "Registry event",
+const REGISTRY_EVENT_LABEL_KEYS: Record<
+  RegistryEventType,
+  Parameters<typeof t>[0]
+> = {
+  registered: "registryEvent.registered",
+  deactivated: "registryEvent.deactivated",
+  "metadata-updated": "registryEvent.metadataUpdated",
+  "ownership-transferred": "registryEvent.ownershipTransferred",
+  unknown: "registryEvent.unknown",
 };
+
+/** Localized labels for each {@link RegistryEventType}, for registry history views. */
+export const REGISTRY_EVENT_LABELS: Record<RegistryEventType, string> =
+  new Proxy({} as Record<RegistryEventType, string>, {
+    get: (_target, prop: RegistryEventType) =>
+      t(REGISTRY_EVENT_LABEL_KEYS[prop]),
+  });

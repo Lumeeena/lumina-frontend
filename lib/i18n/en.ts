@@ -192,7 +192,8 @@ const en: MessageCatalogue = {
   "owner.staking": "Staking\u2026",
   "owner.stake": "Stake",
   "owner.stakeAnyway": "Stake anyway",
-  "owner.reserveWarningTitle": "This stake would take your account below its minimum balance.",
+  "owner.reserveWarningTitle":
+    "This stake would take your account below its minimum balance.",
   "owner.reserveExplanation":
     "Stellar keeps a minimum amount of XLM in every account, called the reserve. It is 1 XLM for an account with nothing else in it, plus 0.5 XLM for each trustline, offer or other entry it owns, and that part cannot be spent. After this stake your account would hold {remaining} XLM, below the {minimum} XLM reserve. An account under its reserve can still receive XLM but cannot send transactions until it is topped up.",
   "owner.withdrawing": "Withdrawing\u2026",
@@ -217,14 +218,28 @@ const en: MessageCatalogue = {
   "owner.withdrawBlockerLocked":
     "A slash landed recently, so withdrawal is locked until ledger {until} (currently {current}, {remaining} to go).",
   "owner.withdrawBlockerNoStake": "There is no stake to withdraw.",
+  "owner.staked": "Staked",
+  "owner.ledgerPrefix": "ledger",
+  "owner.slashHistoryRetryHint": "Check your connection, then retry.",
+  "owner.retrySlashHistory": "Retry slash history",
+
+  // ── Registry event labels ─────────────────────────────────────────────
+  "registryEvent.registered": "Registered",
+  "registryEvent.deactivated": "Deactivated",
+  "registryEvent.metadataUpdated": "Metadata updated",
+  "registryEvent.ownershipTransferred": "Ownership transferred",
+  "registryEvent.unknown": "Registry event",
 
   // ── Soroban transaction pipeline ──────────────────────────────────────
   "soroban.couldNotPrepare": "Could not prepare the transaction.",
   "soroban.signatureDeclined": "Signature was declined in your wallet.",
-  "soroban.couldNotSign": "Could not sign the transaction. Check your wallet and try again.",
+  "soroban.couldNotSign":
+    "Could not sign the transaction. Check your wallet and try again.",
   "soroban.retrySignature": "Retry signature",
-  "soroban.prepareAgain": "The saved transaction is no longer usable. Submit again to prepare a fresh transaction; your inputs are saved.",
-  "soroban.rejectionPreserved": "Signature declined. Your inputs and prepared transaction are saved. You can retry when ready.",
+  "soroban.prepareAgain":
+    "The saved transaction is no longer usable. Submit again to prepare a fresh transaction; your inputs are saved.",
+  "soroban.rejectionPreserved":
+    "Signature declined. Your inputs and prepared transaction are saved. You can retry when ready.",
   "soroban.networkRejected": "The network rejected the transaction.",
   "soroban.pendingConfirmation":
     "The transaction was submitted but has not confirmed yet. Check again in a moment.",
@@ -304,20 +319,24 @@ const en: MessageCatalogue = {
   "shortcuts.title": "Keyboard shortcuts",
   "shortcuts.search": "Search",
   "shortcuts.showList": "Show this list",
-  "shortcuts.description": "Shortcuts never use Ctrl, Cmd or Alt and are ignored while you type in a field.",
+  "shortcuts.description":
+    "Shortcuts never use Ctrl, Cmd or Alt and are ignored while you type in a field.",
   "shortcuts.enable": "Enable keyboard shortcuts",
 
   // ── Search page ───────────────────────────────────────────────────────
   "search.heading": "Search",
-  "search.description": "One box for everything on the network. Type what you have \u2014 no need to say what it is.",
+  "search.description":
+    "One box for everything on the network. Type what you have \u2014 no need to say what it is.",
   "search.accountAddress": "Account address",
   "search.contractId": "Contract id \u2014 its events",
   "search.transactionHash": "Transaction hash",
   "search.memoSearch": "Memo search, ranked by the backend",
   "search.searching": "Searching the index\u2026",
-  "search.resultsCount": "{count} transaction{count, plural, one {} other {s}} matching",
+  "search.resultsCount":
+    "{count} transaction{count, plural, one {} other {s}} matching",
   "search.rankedByMemo": ", ranked by memo relevance.",
-  "search.helpText": "Looking for an account or contract? Paste its full address \u2014 the explorer takes you straight there.",
+  "search.helpText":
+    "Looking for an account or contract? Paste its full address \u2014 the explorer takes you straight there.",
 
   // ── Transactions page ─────────────────────────────────────────────────
   "transactions.heading": "Transactions",
@@ -325,7 +344,8 @@ const en: MessageCatalogue = {
 
   // ── Stats page ────────────────────────────────────────────────────────
   "stats.heading": "Network Stats",
-  "stats.description": "Indexer health and Stellar network throughput at a glance.",
+  "stats.description":
+    "Indexer health and Stellar network throughput at a glance.",
   "stats.latestLedger": "Latest Ledger",
   "stats.stellarMainnet": "Stellar Mainnet",
   "stats.txsLastLedger": "Txs (last ledger)",
@@ -340,17 +360,20 @@ const en: MessageCatalogue = {
 
   // ── Registry page ─────────────────────────────────────────────────────
   "registry.heading": "Lumina Registry",
-  "registry.description": "An on-chain Soroban manifest of contracts Lumina indexes. Register your contract to opt into priority indexing \u2014 permissionless, on Stellar/Soroban testnet.",
+  "registry.description":
+    "An on-chain Soroban manifest of contracts Lumina indexes. Register your contract to opt into priority indexing \u2014 permissionless, on Stellar/Soroban testnet.",
   "registry.registerContract": "Register a Contract",
   "registry.connecting": "Connecting\u2026",
-  "registry.connectPrompt": "Connect a wallet to register and manage contracts.",
+  "registry.connectPrompt":
+    "Connect a wallet to register and manage contracts.",
   "registry.walletLocked": "Your wallet is locked",
   "registry.unlockHint": "Unlock your wallet extension and try again.",
   "registry.myContracts": "My Contracts",
   "registry.recentlyRegistered": "Recently Registered",
   "registry.all": "All",
   "registry.filterByCategory": "Filter by category",
-  "registry.connectToSee": "Connect a wallet to see the contracts you registered.",
+  "registry.connectToSee":
+    "Connect a wallet to see the contracts you registered.",
   "registry.loadingEntries": "Loading registry entries\u2026",
   "registry.noActiveContracts": "No active {category} contracts.",
   "registry.noContractsYet": "No contracts registered yet.",
@@ -370,30 +393,106 @@ const en: MessageCatalogue = {
 
   // ── Explorer page ─────────────────────────────────────────────────────
   "explorer.heading": "Explorer",
-  "explorer.description": "Search any Stellar account or browse recent transactions in real time.",
-  "explorer.searchPlaceholder": "Search an account, transaction, contract or memo\u2026",
+  "explorer.description":
+    "Search any Stellar account or browse recent transactions in real time.",
+  "explorer.searchPlaceholder":
+    "Search an account, transaction, contract or memo\u2026",
   "explorer.recentTransactions": "Recent Transactions",
 
   // ── Events page ───────────────────────────────────────────────────────
   "events.heading": "Contract Events",
-  "events.description": "Soroban contract events indexed via RPC, newest first.",
+  "events.description":
+    "Soroban contract events indexed via RPC, newest first.",
   "events.contractIdPlaceholder": "Contract ID (C...)",
   "events.filter": "Filter",
 
   // ── Assets page ───────────────────────────────────────────────────────
   "assets.heading": "Assets",
-  "assets.description": "Every asset Lumina indexes, with the supply and holder counts behind it.",
+  "assets.description":
+    "Every asset Lumina indexes, with the supply and holder counts behind it.",
 
   // ── Watch page ────────────────────────────────────────────────────────
   "watch.backgroundNotifications": "Background notifications",
-  "watch.notificationDescription": "In-app alerts work everywhere in Lumina. This is the separate opt-in for an operating-system notification when the tab is not in front of you.",
+  "watch.notificationDescription":
+    "In-app alerts work everywhere in Lumina. This is the separate opt-in for an operating-system notification when the tab is not in front of you.",
 
   // ── Footer ────────────────────────────────────────────────────────────
   "footer.version": "Lumina frontend v{version}",
   "footer.copyVersion": "Copy version for bug reports",
+  "footer.copied": "Copied!",
+  "footer.copy": "Copy",
+  "footer.reportProblem": "Report a problem",
+  "footer.statusChangelog": "Status & Changelog",
+
+  // ── WatchAlertSettings ────────────────────────────────────────────────
+  "watchAlertSettings.alertFilter": "Alert filter for {address}",
+  "watchAlertSettings.operation": "Operation",
+  "watchAlertSettings.anyOperation": "Any operation",
+  "watchAlertSettings.minimumAmount": "Minimum amount",
+  "watchAlertSettings.any": "Any",
+  "watchAlertSettings.asset": "Asset",
+  "watchAlertSettings.noFilter": "No filter — every operation alerts.",
+  "watchAlertSettings.filtersActive": "{count} {count, plural, one {filter} other {filters}} active.",
+  "watchAlertSettings.resetDefault": "Reset to default",
+
+  // ── RegistrySlashHistory ──────────────────────────────────────────────
+  "registrySlashHistory.slashHistory": "Slash history",
+  "registrySlashHistory.hideSlashHistory": "Hide slash history",
+  "registrySlashHistory.loadingSlashHistory": "Loading slash history…",
+  "registrySlashHistory.couldNotReadHistory": "Couldn't read the slash history. Close and reopen to retry.",
+  "registrySlashHistory.noSlashes": "No slashes recorded.",
+  "registrySlashHistory.ledger": "ledger {ledger}",
+
+  // ── RegistryEntryCard ─────────────────────────────────────────────────
+  "registryEntryCard.categories": "Categories",
+  "registryEntryCard.hideSlashHistory": "Hide slash history",
+  "registryEntryCard.slashHistory": "Slash history",
+  "registryEntryCard.loadingSlashHistory": "Loading slash history…",
+  "registryEntryCard.couldNotReadHistory": "Couldn't read the slash history. Check your connection, then try again.",
+  "registryEntryCard.retryHistory": "Retry history",
+  "registryEntryCard.noSlashes": "No slashes recorded.",
+  "registryEntryCard.ledger": "ledger {ledger}",
 
   // ── SearchBar ─────────────────────────────────────────────────────────
   "searchBar.placeholder": "Search an account, transaction, contract or memo\u2026",
+  "searchBar.searchKindAccount": "Account",
+  "searchBar.searchKindContract": "Contract",
+  "searchBar.searchKindMuxed": "Muxed account",
+  "searchBar.searchKindTransaction": "Transaction",
+  "searchBar.searchKindMemo": "Memo search",
+
+  // ── Breadcrumbs ───────────────────────────────────────────────────────
+  "breadcrumbs.ariaLabel": "Breadcrumb",
+
+  // ── AddressLabelManager ───────────────────────────────────────────────
+  "addressLabelManager.labels": "Labels",
+  "addressLabelManager.manageLabels": "Manage address labels",
+  "addressLabelManager.title": "Address Labels",
+  "addressLabelManager.addNewLabel": "Add New Label",
+  "addressLabelManager.addressPlaceholder": "Stellar address",
+  "addressLabelManager.labelPlaceholder": "Label",
+  "addressLabelManager.addLabel": "Add Label",
+  "addressLabelManager.yourLabels": "Your Labels",
+  "addressLabelManager.save": "Save",
+  "addressLabelManager.edit": "Edit",
+  "addressLabelManager.deleteLabel": "Delete label",
+  "addressLabelManager.invalidFormat": "Invalid label format",
+  "addressLabelManager.failedToRead": "Failed to read file",
+  "addressLabelManager.export": "Export",
+  "addressLabelManager.import": "Import",
+  "addressLabelManager.exportTitle": "Export labels as JSON",
+  "addressLabelManager.importTitle": "Import labels from JSON",
+  "addressLabelManager.importFile": "Import labels file",
+
+  // ── PushOptIn ─────────────────────────────────────────────────────────
+  "pushOptIn.unsupported": "This browser cannot deliver notifications for watched activity. The in-app alerts still work.",
+  "pushOptIn.denied": "Notifications are blocked for this site. Re-enable them in your browser's site settings to get alerts while this tab is in the background. The in-app alerts are unaffected.",
+  "pushOptIn.subscribed": "Browser notifications are on. You will be notified when a watched address is active and this tab is in the background.",
+  "pushOptIn.turnOff": "Turn off",
+  "pushOptIn.description": "Get a browser notification when a watched address is active and this tab is in the background.",
+  "pushOptIn.noVapidKey": "Browser notifications need a VAPID public key. Set NEXT_PUBLIC_VAPID_PUBLIC_KEY to enable them — the in-app alerts work without it.",
+  "pushOptIn.enable": "Enable notifications",
+  "pushOptIn.enabling": "Enabling…",
 };
 
 export default en;

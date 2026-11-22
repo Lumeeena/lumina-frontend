@@ -7,6 +7,7 @@ const push = vi.hoisted(() => vi.fn());
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
 
 import SearchBar from "./SearchBar";
+import { t } from "@/lib/i18n";
 
 const ACCOUNT = "GBWKFFXZ5CJESIHP2EOID5IOXMF472RO5XOJ36X475D5LJGI3AF5R5KY";
 const CONTRACT = "CAYUDQPV3RKPM3EXDFGI3457FV677JLUCJ4OLKWGCUBPRIHYKXK3WFAZ";
@@ -22,74 +23,74 @@ describe("SearchBar", () => {
   it("carries the attribute the / keyboard shortcut focuses", () => {
     render(<SearchBar />);
 
-    expect(screen.getByLabelText("Search")).toHaveAttribute(
+    expect(screen.getByLabelText(t("common.search"))).toHaveAttribute(
       "data-shortcut-search",
     );
   });
 
   it("routes an account address to the account page", async () => {
     render(<SearchBar />);
-    const input = screen.getByLabelText("Search");
+    const input = screen.getByLabelText(t("common.search"));
 
     await userEvent.type(input, ACCOUNT);
-    await userEvent.click(screen.getByRole("button", { name: "Search" }));
+    await userEvent.click(screen.getByRole("button", { name: t("common.search") }));
 
     expect(push).toHaveBeenCalledWith(`/accounts/${ACCOUNT}`);
   });
 
   it("routes a contract id to the events page filtered by it", async () => {
     render(<SearchBar />);
-    const input = screen.getByLabelText("Search");
+    const input = screen.getByLabelText(t("common.search"));
 
     await userEvent.type(input, CONTRACT);
-    await userEvent.click(screen.getByRole("button", { name: "Search" }));
+    await userEvent.click(screen.getByRole("button", { name: t("common.search") }));
 
     expect(push).toHaveBeenCalledWith(`/events?contractId=${CONTRACT}`);
   });
 
   it("routes a transaction hash to the transaction page", async () => {
     render(<SearchBar />);
-    const input = screen.getByLabelText("Search");
+    const input = screen.getByLabelText(t("common.search"));
 
     await userEvent.type(input, HASH);
-    await userEvent.click(screen.getByRole("button", { name: "Search" }));
+    await userEvent.click(screen.getByRole("button", { name: t("common.search") }));
 
     expect(push).toHaveBeenCalledWith(`/transactions/${HASH}`);
   });
 
   it("routes anything unrecognised to the memo search", async () => {
     render(<SearchBar />);
-    const input = screen.getByLabelText("Search");
+    const input = screen.getByLabelText(t("common.search"));
 
     await userEvent.type(input, "order 12345");
-    await userEvent.click(screen.getByRole("button", { name: "Search" }));
+    await userEvent.click(screen.getByRole("button", { name: t("common.search") }));
 
     expect(push).toHaveBeenCalledWith("/search?q=order%2012345");
   });
 
   it("shows what it is reading the input as, live while typing", async () => {
     render(<SearchBar />);
-    const input = screen.getByLabelText("Search");
+    const input = screen.getByLabelText(t("common.search"));
 
     await userEvent.type(input, ACCOUNT.slice(0, 10));
-    expect(screen.getByText("Memo search")).toBeTruthy();
+    expect(screen.getByText(t("searchBar.searchKindMemo"))).toBeTruthy();
 
     await userEvent.clear(input);
     await userEvent.type(input, ACCOUNT);
-    expect(screen.getByText("Account")).toBeTruthy();
+    expect(screen.getByText(t("searchBar.searchKindAccount"))).toBeTruthy();
   });
 
   it("does nothing on an empty submit", async () => {
     render(<SearchBar />);
 
-    await userEvent.click(screen.getByRole("button", { name: "Search" }));
+    await userEvent.click(screen.getByRole("button", { name: t("common.search") }));
 
     expect(push).not.toHaveBeenCalled();
   });
 
   it("submits on Enter as well as on the button", async () => {
     render(<SearchBar />);
-    const input = screen.getByLabelText("Search");
+    const input = screen.getByLabelText(t("common.search"));
 
     await userEvent.type(input, HASH);
     await userEvent.keyboard("{Enter}");

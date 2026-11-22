@@ -49,7 +49,7 @@ export default async function RegistryListing({
             : "No contracts registered yet."}
         </p>
       ) : (
-        <div className="flex flex-col gap-2">
+        <div data-testid="registry-list" className="flex flex-col gap-2">
           {entries.map((profile) => (
             <RegistryEntryCard key={profile.contractId} profile={profile} />
           ))}

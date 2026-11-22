@@ -224,14 +224,29 @@ const de: MessageCatalogue = {
   "owner.withdrawBlockerLocked":
     "Ein Slash ist kürzlich gelandet, daher ist die Auszahlung bis zu Ledger {until} gesperrt (aktuell {current}, noch {remaining}).",
   "owner.withdrawBlockerNoStake": "Es gibt keinen Einsatz zum Abheben.",
+  "owner.staked": "Eingesetzt",
+  "owner.ledgerPrefix": "Ledger",
+  "owner.slashHistoryRetryHint":
+    "Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+  "owner.retrySlashHistory": "Slash-Verlauf erneut laden",
+
+  // ── Registry event labels ─────────────────────────────────────────────
+  "registryEvent.registered": "Registriert",
+  "registryEvent.deactivated": "Deaktiviert",
+  "registryEvent.metadataUpdated": "Metadaten aktualisiert",
+  "registryEvent.ownershipTransferred": "Eigentum übertragen",
+  "registryEvent.unknown": "Registry-Ereignis",
 
   // ── Soroban transaction pipeline ──────────────────────────────────────
   "soroban.couldNotPrepare": "Die Transaktion konnte nicht vorbereitet werden.",
   "soroban.signatureDeclined": "Die Signatur wurde in Ihrem Wallet abgelehnt.",
-  "soroban.couldNotSign": "Die Transaktion konnte nicht signiert werden. Prüfen Sie Ihr Wallet und versuchen Sie es erneut.",
+  "soroban.couldNotSign":
+    "Die Transaktion konnte nicht signiert werden. Prüfen Sie Ihr Wallet und versuchen Sie es erneut.",
   "soroban.retrySignature": "Signatur erneut anfordern",
-  "soroban.prepareAgain": "Die gespeicherte Transaktion ist nicht mehr gültig. Senden Sie erneut, um eine neue Transaktion vorzubereiten; Ihre Eingaben bleiben erhalten.",
-  "soroban.rejectionPreserved": "Signatur abgelehnt. Ihre Eingaben und die vorbereitete Transaktion bleiben gespeichert. Sie können es erneut versuchen, sobald Sie bereit sind.",
+  "soroban.prepareAgain":
+    "Die gespeicherte Transaktion ist nicht mehr gültig. Senden Sie erneut, um eine neue Transaktion vorzubereiten; Ihre Eingaben bleiben erhalten.",
+  "soroban.rejectionPreserved":
+    "Signatur abgelehnt. Ihre Eingaben und die vorbereitete Transaktion bleiben gespeichert. Sie können es erneut versuchen, sobald Sie bereit sind.",
   "soroban.networkRejected": "Das Netzwerk hat die Transaktion abgelehnt.",
   "soroban.pendingConfirmation":
     "Die Transaktion wurde gesendet, aber noch nicht bestätigt. Versuchen Sie es in einem Moment erneut.",
@@ -414,9 +429,80 @@ const de: MessageCatalogue = {
   // ── Footer ────────────────────────────────────────────────────────────
   "footer.version": "Lumina Frontend v{version}",
   "footer.copyVersion": "Version für Fehlerberichte kopieren",
+  "footer.copied": "Kopiert!",
+  "footer.copy": "Kopieren",
+  "footer.reportProblem": "Problem melden",
+  "footer.statusChangelog": "Status & Änderungsprotokoll",
+
+  // ── WatchAlertSettings ────────────────────────────────────────────────
+  "watchAlertSettings.alertFilter": "Benachrichtigungsfilter für {address}",
+  "watchAlertSettings.operation": "Operation",
+  "watchAlertSettings.anyOperation": "Jede Operation",
+  "watchAlertSettings.minimumAmount": "Mindestbetrag",
+  "watchAlertSettings.any": "Beliebig",
+  "watchAlertSettings.asset": "Asset",
+  "watchAlertSettings.noFilter": "Kein Filter — jede Operation löst eine Benachrichtigung aus.",
+  "watchAlertSettings.filtersActive": "{count} {count, plural, one {Filter} other {Filter}} aktiv.",
+  "watchAlertSettings.resetDefault": "Auf Standard zurücksetzen",
+
+  // ── RegistrySlashHistory ──────────────────────────────────────────────
+  "registrySlashHistory.slashHistory": "Slash-Verlauf",
+  "registrySlashHistory.hideSlashHistory": "Slash-Verlauf ausblenden",
+  "registrySlashHistory.loadingSlashHistory": "Slash-Verlauf wird geladen…",
+  "registrySlashHistory.couldNotReadHistory": "Slash-Verlauf konnte nicht gelesen werden. Schließen und erneut öffnen, um es zu wiederholen.",
+  "registrySlashHistory.noSlashes": "Keine Slashes aufgezeichnet.",
+  "registrySlashHistory.ledger": "Ledger {ledger}",
+
+  // ── RegistryEntryCard ─────────────────────────────────────────────────
+  "registryEntryCard.categories": "Kategorien",
+  "registryEntryCard.hideSlashHistory": "Slash-Verlauf ausblenden",
+  "registryEntryCard.slashHistory": "Slash-Verlauf",
+  "registryEntryCard.loadingSlashHistory": "Slash-Verlauf wird geladen…",
+  "registryEntryCard.couldNotReadHistory": "Slash-Verlauf konnte nicht gelesen werden. Überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+  "registryEntryCard.retryHistory": "Verlauf erneut versuchen",
+  "registryEntryCard.noSlashes": "Keine Slashes aufgezeichnet.",
+  "registryEntryCard.ledger": "Ledger {ledger}",
 
   // ── SearchBar ─────────────────────────────────────────────────────────
   "searchBar.placeholder": "Konto, Transaktion, Vertrag oder Memo suchen\u2026",
+  "searchBar.searchKindAccount": "Konto",
+  "searchBar.searchKindContract": "Vertrag",
+  "searchBar.searchKindMuxed": "Gemuxtes Konto",
+  "searchBar.searchKindTransaction": "Transaktion",
+  "searchBar.searchKindMemo": "Memo-Suche",
+
+  // ── Breadcrumbs ───────────────────────────────────────────────────────
+  "breadcrumbs.ariaLabel": "Breadcrumb",
+
+  // ── AddressLabelManager ───────────────────────────────────────────────
+  "addressLabelManager.labels": "Labels",
+  "addressLabelManager.manageLabels": "Adressen-Labels verwalten",
+  "addressLabelManager.title": "Adressen-Labels",
+  "addressLabelManager.addNewLabel": "Neues Label hinzufügen",
+  "addressLabelManager.addressPlaceholder": "Stellar-Adresse",
+  "addressLabelManager.labelPlaceholder": "Label",
+  "addressLabelManager.addLabel": "Label hinzufügen",
+  "addressLabelManager.yourLabels": "Ihre Labels",
+  "addressLabelManager.save": "Speichern",
+  "addressLabelManager.edit": "Bearbeiten",
+  "addressLabelManager.deleteLabel": "Label löschen",
+  "addressLabelManager.invalidFormat": "Ungültiges Label-Format",
+  "addressLabelManager.failedToRead": "Datei konnte nicht gelesen werden",
+  "addressLabelManager.export": "Exportieren",
+  "addressLabelManager.import": "Importieren",
+  "addressLabelManager.exportTitle": "Labels als JSON exportieren",
+  "addressLabelManager.importTitle": "Labels aus JSON importieren",
+  "addressLabelManager.importFile": "Label-Datei importieren",
+
+  // ── PushOptIn ─────────────────────────────────────────────────────────
+  "pushOptIn.unsupported": "Dieser Browser kann keine Benachrichtigungen für beobachtete Aktivitäten übermitteln. Die In-App-Benachrichtigungen funktionieren weiterhin.",
+  "pushOptIn.denied": "Benachrichtigungen sind für diese Website blockiert. Aktivieren Sie sie in den Website-Einstellungen Ihres Browsers erneut, um Benachrichtigungen zu erhalten, während dieser Tab im Hintergrund ist. Die In-App-Benachrichtigungen sind nicht betroffen.",
+  "pushOptIn.subscribed": "Browser-Benachrichtigungen sind aktiviert. Sie werden benachrichtigt, wenn eine beobachtete Adresse aktiv ist und dieser Tab im Hintergrund ist.",
+  "pushOptIn.turnOff": "Ausschalten",
+  "pushOptIn.description": "Erhalten Sie eine Browser-Benachrichtigung, wenn eine beobachtete Adresse aktiv ist und dieser Tab im Hintergrund ist.",
+  "pushOptIn.noVapidKey": "Browser-Benachrichtigungen benötigen einen öffentlichen VAPID-Schlüssel. Setzen Sie NEXT_PUBLIC_VAPID_PUBLIC_KEY, um sie zu aktivieren — die In-App-Benachrichtigungen funktionieren ohne ihn.",
+  "pushOptIn.enable": "Benachrichtigungen aktivieren",
+  "pushOptIn.enabling": "Wird aktiviert\u2026",
 };
 
 export default de;
