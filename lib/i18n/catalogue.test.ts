@@ -118,6 +118,34 @@ describe("translation catalogues", () => {
     ).toEqual([]);
   });
 
+  it("accepts zero, one, two, few, many, other plural categories", () => {
+    const template =
+      "{count, plural, zero {none} one {one} two {two} few {few} many {many} other {other}}";
+    expect(placeholders(template)).toEqual(["count:plural"]);
+  });
+
+  it("extracts nested interpolation placeholders across all plural categories", () => {
+    const template =
+      "{count, plural, zero {none} one {{name} singular} two {pair {name}} few {{name} few} many {{name} many} other {{name} and {extra}}}";
+    expect(placeholders(template)).toEqual([
+      "count:plural",
+      "extra:value",
+      "name:value",
+    ]);
+  });
+
+  it("allows target catalogue to use few and many plural forms when reference uses one and other", () => {
+    expect(
+      errors(
+        { count: "{count, plural, one {item} other {items}}" },
+        {
+          count:
+            "{count, plural, one {element} few {elementy} many {elementów} other {elementu}}",
+        },
+      ),
+    ).toEqual([]);
+  });
+
   it("rejects malformed plurals", () => {
     for (const template of [
       "{count, plural, one {hello}}",
