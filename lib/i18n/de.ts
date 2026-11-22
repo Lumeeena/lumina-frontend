@@ -321,6 +321,22 @@ const de: MessageCatalogue = {
     "Basierend auf den {count} neuesten indexierten Operationen.",
 
   // ── Registry page ─────────────────────────────────────────────────────
+  "registry.loading": "Registry wird geladen\u2026",
+  "registry.sessionRestoreFailed": "Ihre gespeicherte Wallet-Sitzung konnte nicht wiederhergestellt werden.",
+  "registry.networkMismatchTitle": "Falsches Netzwerk",
+  "registry.networkMismatch": "Ihr Wallet verwendet {walletNetwork}, diese App jedoch {appNetwork}. Wechseln Sie in Ihrem Wallet zum Stellar-Testnetz und versuchen Sie es erneut.",
+  "registry.connectFailed": "Verbindung mit Ihrem Wallet konnte nicht hergestellt werden.",
+  "registry.disconnectFailed": "Ihr Wallet konnte nicht getrennt werden. Trennen Sie die Verbindung in der Wallet-Erweiterung und laden Sie diese Seite neu.",
+  "registry.walletRetry": "{error} \u00d6ffnen Sie Ihr Wallet und w\u00e4hlen Sie \u201eWallet verbinden\u201c, um es erneut zu versuchen.",
+  "registry.category.DeFi": "DeFi",
+  "registry.category.Nft": "NFT",
+  "registry.category.Gaming": "Spiele",
+  "registry.category.Identity": "Identit\u00e4t",
+  "registry.category.Infrastructure": "Infrastruktur",
+  "registry.category.Payments": "Zahlungen",
+  "registry.category.Oracle": "Orakel",
+  "registry.category.Dao": "DAO",
+  "registry.category.Other": "Sonstiges",
   "registry.heading": "Lumina Registry",
   "registry.description":
     "Ein on-chain Soroban-Manifest der Verträge, die Lumina indexiert. Registrieren Sie Ihren Vertrag, um in die priorisierte Indizierung aufgenommen zu werden \u2014 permissionslos, auf Stellar/Soroban Testnet.",

@@ -169,3 +169,10 @@ layout with a fluent speaker.
 - [ ] `npm test` passes.
 - [ ] You have manually checked the error, empty-state and loading paths in
       the running app.
+
+## Home page
+
+The client-rendered home page uses the `registry.*` catalogue keys, including
+category filters, loading states and wallet recovery messages. Switching the
+locale updates visible messages without reconnecting the wallet. Error details
+returned by wallet providers are preserved inside the translated recovery hint.

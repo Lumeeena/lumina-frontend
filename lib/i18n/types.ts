@@ -279,6 +279,22 @@ export interface MessageCatalogue {
   "stats.basedOnRecent": string;
 
   // ── Registry page ─────────────────────────────────────────────────────
+  "registry.loading": string;
+  "registry.sessionRestoreFailed": string;
+  "registry.networkMismatchTitle": string;
+  "registry.networkMismatch": string;
+  "registry.connectFailed": string;
+  "registry.disconnectFailed": string;
+  "registry.walletRetry": string;
+  "registry.category.DeFi": string;
+  "registry.category.Nft": string;
+  "registry.category.Gaming": string;
+  "registry.category.Identity": string;
+  "registry.category.Infrastructure": string;
+  "registry.category.Payments": string;
+  "registry.category.Oracle": string;
+  "registry.category.Dao": string;
+  "registry.category.Other": string;
   "registry.heading": string;
   "registry.description": string;
   "registry.registerContract": string;

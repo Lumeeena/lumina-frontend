@@ -1,14 +1,19 @@
-
 "use client";
 
 import type { Metadata } from "next";
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { routeMetadata } from "@/lib/metadata";
 import { REGISTRY } from "@/lib/routes";
 import {
   CATEGORIES,
-  CATEGORY_LABELS,
   getActiveProfiles,
   isCategory,
   withCategories,
@@ -23,15 +28,34 @@ import {
   readPersistedSession,
   type WalletSession,
 } from "@/lib/wallet";
-import { subscribeLocale, t } from "@/lib/i18n";
+import { subscribeLocale, t, type MessageKey } from "@/lib/i18n";
 import BackendUnavailable from "@/components/BackendUnavailable";
 import RegistryContractInfo from "@/components/RegistryContractInfo";
 import WalletInfo from "@/components/WalletInfo";
 import { Button } from "@/components/ui/Button";
 
 type Tab = "mine" | "all";
+type WalletError =
+  { key: MessageKey; values?: Record<string, string> } | { detail: string };
+const CATEGORY_MESSAGE_KEYS = {
+  DeFi: "registry.category.DeFi",
+  Nft: "registry.category.Nft",
+  Gaming: "registry.category.Gaming",
+  Identity: "registry.category.Identity",
+  Infrastructure: "registry.category.Infrastructure",
+  Payments: "registry.category.Payments",
+  Oracle: "registry.category.Oracle",
+  Dao: "registry.category.Dao",
+  Other: "registry.category.Other",
+} satisfies Record<Category, MessageKey>;
 
-const RegisterContractForm = lazy(() => import("@/components/RegisterContractForm"));
+function walletErrorMessage(error: WalletError): string {
+  return "key" in error ? t(error.key, error.values) : error.detail;
+}
+
+const RegisterContractForm = lazy(
+  () => import("@/components/RegisterContractForm"),
+);
 const OwnerContracts = lazy(() => import("@/components/OwnerContracts"));
 const RegistryEntryCard = lazy(() => import("@/components/RegistryEntryCard"));
 
@@ -65,11 +89,20 @@ export function generateMetadata(): Metadata {
 
 // useSearchParams has to sit inside a Suspense boundary for Next to build.
 export default function RegistryPage() {
+  // Re-render this page whenever the active language changes.
+  const [, setLocaleVersion] = useState(0);
+
+  useEffect(() => {
+    return subscribeLocale(() => {
+      setLocaleVersion((version) => version + 1);
+    });
+  }, []);
+
   return (
     <Suspense
       fallback={
         <div className="p-8 text-center text-[var(--color-text-muted)] text-sm">
-          Loading registry…
+          {t("registry.loading")}
         </div>
       }
     >
@@ -99,15 +132,6 @@ function RegistryContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Re-render this page whenever the active language changes.
-  const [, setLocaleVersion] = useState(0);
-
-  useEffect(() => {
-    return subscribeLocale(() => {
-      setLocaleVersion((version) => version + 1);
-    });
-  }, []);
-
   // The URL is the source of truth, so a shared link opens the same filter.
   const rawCategory = searchParams?.get("category");
   const category = isCategory(rawCategory) ? rawCategory : null;
@@ -121,7 +145,7 @@ function RegistryContent() {
   const [walletResolving, setWalletResolving] = useState(persisted !== null);
   const [connecting, setConnecting] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
-  const [connectError, setConnectError] = useState<string | null>(null);
+  const [connectError, setConnectError] = useState<WalletError | null>(null);
   const [walletLocked, setWalletLocked] = useState(false);
 
   const walletAddress = wallet?.address ?? null;
@@ -224,9 +248,7 @@ function RegistryContent() {
         if (cancelled) return;
 
         setWalletResolving(false);
-        setConnectError(
-          "Your saved wallet session could not be restored.",
-        );
+        setConnectError({ key: "registry.sessionRestoreFailed" });
       },
     );
 
@@ -254,7 +276,7 @@ function RegistryContent() {
       const result = await connectWallet();
 
       if ("error" in result) {
-        setConnectError(result.error);
+        setConnectError({ detail: result.error });
         setWalletLocked(result.isLocked ?? false);
       } else {
         const mismatch = await checkNetworkMismatch();
@@ -263,16 +285,20 @@ function RegistryContent() {
         setWallet(session);
 
         if (mismatch) {
-          setConnectError(
-            `${mismatch.error} Switch your wallet to the Stellar testnet before trying again.`,
-          );
+          setConnectError({
+            key: "registry.networkMismatch",
+            values: {
+              walletNetwork: mismatch.walletNetwork,
+              appNetwork: mismatch.appNetwork,
+            },
+          });
         } else {
           setTab("mine");
           setWalletLocked(false);
         }
       }
     } catch {
-      setConnectError("Could not connect to your wallet.");
+      setConnectError({ key: "registry.connectFailed" });
     } finally {
       setConnecting(false);
     }
@@ -287,9 +313,7 @@ function RegistryContent() {
       setTab("all");
       setConnectError(null);
     } catch {
-      setConnectError(
-        "Could not disconnect your wallet. Disconnect in the wallet extension, then refresh this page.",
-      );
+      setConnectError({ key: "registry.disconnectFailed" });
     } finally {
       setDisconnecting(false);
     }
@@ -353,17 +377,21 @@ function RegistryContent() {
                         {t("registry.unlockHint")}
                       </p>
                     </div>
-                  ) : connectError.includes("Network mismatch") ? (
+                  ) : "key" in connectError &&
+                    connectError.key === "registry.networkMismatch" ? (
                     <div>
-                      <p className="font-semibold mb-1">Network Mismatch</p>
+                      <p className="font-semibold mb-1">
+                        {t("registry.networkMismatchTitle")}
+                      </p>
                       <p className="text-[var(--color-error-dark)]">
-                        {connectError}
+                        {walletErrorMessage(connectError)}
                       </p>
                     </div>
                   ) : (
                     <p>
-                      {connectError} Open your wallet and choose Connect Wallet
-                      to try again.
+                      {t("registry.walletRetry", {
+                        error: walletErrorMessage(connectError),
+                      })}
                     </p>
                   )}
                 </div>
@@ -376,7 +404,7 @@ function RegistryContent() {
                   role="alert"
                   className="text-xs text-[var(--color-error-text)] bg-[var(--color-error-bg)] rounded-lg px-3 py-2"
                 >
-                  {connectError}
+                  {walletErrorMessage(connectError)}
                 </p>
               )}
 
@@ -414,10 +442,7 @@ function RegistryContent() {
               {t("registry.myContracts")}
             </TabButton>
 
-            <TabButton
-              active={tab === "all"}
-              onClick={() => setTab("all")}
-            >
+            <TabButton active={tab === "all"} onClick={() => setTab("all")}>
               {t("registry.recentlyRegistered")}
             </TabButton>
           </div>
@@ -441,7 +466,7 @@ function RegistryContent() {
                   active={category === c}
                   onClick={() => handleCategory(c)}
                 >
-                  {CATEGORY_LABELS[c]}
+                  {t(CATEGORY_MESSAGE_KEYS[c])}
                 </CategoryChip>
               ))}
             </div>
@@ -479,7 +504,7 @@ function RegistryContent() {
                 <p className="text-sm text-[var(--color-text-muted)]">
                   {category
                     ? t("registry.noActiveContracts", {
-                        category: CATEGORY_LABELS[category],
+                        category: t(CATEGORY_MESSAGE_KEYS[category]),
                       })
                     : t("registry.noContractsYet")}
                 </p>
