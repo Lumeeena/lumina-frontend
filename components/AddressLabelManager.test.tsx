@@ -193,7 +193,7 @@ describe("AddressLabelManager", () => {
   });
 
   it("exports the saved labels as a JSON download", () => {
-    const createObjectURL = vi.fn(() => "blob:labels");
+    const createObjectURL = vi.fn<(blob: Blob) => string>(() => "blob:labels");
     const revokeObjectURL = vi.fn();
     URL.createObjectURL = createObjectURL;
     URL.revokeObjectURL = revokeObjectURL;
@@ -209,7 +209,7 @@ describe("AddressLabelManager", () => {
     fireEvent.click(screen.getByRole("button", { name: "Export" }));
 
     expect(createObjectURL).toHaveBeenCalledTimes(1);
-    const blob = createObjectURL.mock.calls[0][0] as Blob;
+    const blob = createObjectURL.mock.calls[0][0];
     expect(blob.type).toBe("application/json");
     expect(revokeObjectURL).toHaveBeenCalledWith("blob:labels");
     expect(downloads).toEqual(["lumina-address-labels.json"]);
