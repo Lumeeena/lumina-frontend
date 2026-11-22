@@ -161,7 +161,8 @@ const en: MessageCatalogue = {
   "owner.staking": "Staking\u2026",
   "owner.stake": "Stake",
   "owner.stakeAnyway": "Stake anyway",
-  "owner.reserveWarningTitle": "This stake would take your account below its minimum balance.",
+  "owner.reserveWarningTitle":
+    "This stake would take your account below its minimum balance.",
   "owner.reserveExplanation":
     "Stellar keeps a minimum amount of XLM in every account, called the reserve. It is 1 XLM for an account with nothing else in it, plus 0.5 XLM for each trustline, offer or other entry it owns, and that part cannot be spent. After this stake your account would hold {remaining} XLM, below the {minimum} XLM reserve. An account under its reserve can still receive XLM but cannot send transactions until it is topped up.",
   "owner.withdrawing": "Withdrawing\u2026",
@@ -190,10 +191,13 @@ const en: MessageCatalogue = {
   // ── Soroban transaction pipeline ──────────────────────────────────────
   "soroban.couldNotPrepare": "Could not prepare the transaction.",
   "soroban.signatureDeclined": "Signature was declined in your wallet.",
-  "soroban.couldNotSign": "Could not sign the transaction. Check your wallet and try again.",
+  "soroban.couldNotSign":
+    "Could not sign the transaction. Check your wallet and try again.",
   "soroban.retrySignature": "Retry signature",
-  "soroban.prepareAgain": "The saved transaction is no longer usable. Submit again to prepare a fresh transaction; your inputs are saved.",
-  "soroban.rejectionPreserved": "Signature declined. Your inputs and prepared transaction are saved. You can retry when ready.",
+  "soroban.prepareAgain":
+    "The saved transaction is no longer usable. Submit again to prepare a fresh transaction; your inputs are saved.",
+  "soroban.rejectionPreserved":
+    "Signature declined. Your inputs and prepared transaction are saved. You can retry when ready.",
   "soroban.networkRejected": "The network rejected the transaction.",
   "soroban.pendingConfirmation":
     "The transaction was submitted but has not confirmed yet. Check again in a moment.",
@@ -273,20 +277,24 @@ const en: MessageCatalogue = {
   "shortcuts.title": "Keyboard shortcuts",
   "shortcuts.search": "Search",
   "shortcuts.showList": "Show this list",
-  "shortcuts.description": "Shortcuts never use Ctrl, Cmd or Alt and are ignored while you type in a field.",
+  "shortcuts.description":
+    "Shortcuts never use Ctrl, Cmd or Alt and are ignored while you type in a field.",
   "shortcuts.enable": "Enable keyboard shortcuts",
 
   // ── Search page ───────────────────────────────────────────────────────
   "search.heading": "Search",
-  "search.description": "One box for everything on the network. Type what you have \u2014 no need to say what it is.",
+  "search.description":
+    "One box for everything on the network. Type what you have \u2014 no need to say what it is.",
   "search.accountAddress": "Account address",
   "search.contractId": "Contract id \u2014 its events",
   "search.transactionHash": "Transaction hash",
   "search.memoSearch": "Memo search, ranked by the backend",
   "search.searching": "Searching the index\u2026",
-  "search.resultsCount": "{count} transaction{count, plural, one {} other {s}} matching",
+  "search.resultsCount":
+    "{count} transaction{count, plural, one {} other {s}} matching",
   "search.rankedByMemo": ", ranked by memo relevance.",
-  "search.helpText": "Looking for an account or contract? Paste its full address \u2014 the explorer takes you straight there.",
+  "search.helpText":
+    "Looking for an account or contract? Paste its full address \u2014 the explorer takes you straight there.",
 
   // ── Transactions page ─────────────────────────────────────────────────
   "transactions.heading": "Transactions",
@@ -294,7 +302,8 @@ const en: MessageCatalogue = {
 
   // ── Stats page ────────────────────────────────────────────────────────
   "stats.heading": "Network Stats",
-  "stats.description": "Indexer health and Stellar network throughput at a glance.",
+  "stats.description":
+    "Indexer health and Stellar network throughput at a glance.",
   "stats.latestLedger": "Latest Ledger",
   "stats.stellarMainnet": "Stellar Mainnet",
   "stats.txsLastLedger": "Txs (last ledger)",
@@ -309,17 +318,20 @@ const en: MessageCatalogue = {
 
   // ── Registry page ─────────────────────────────────────────────────────
   "registry.heading": "Lumina Registry",
-  "registry.description": "An on-chain Soroban manifest of contracts Lumina indexes. Register your contract to opt into priority indexing \u2014 permissionless, on Stellar/Soroban testnet.",
+  "registry.description":
+    "An on-chain Soroban manifest of contracts Lumina indexes. Register your contract to opt into priority indexing \u2014 permissionless, on Stellar/Soroban testnet.",
   "registry.registerContract": "Register a Contract",
   "registry.connecting": "Connecting\u2026",
-  "registry.connectPrompt": "Connect a wallet to register and manage contracts.",
+  "registry.connectPrompt":
+    "Connect a wallet to register and manage contracts.",
   "registry.walletLocked": "Your wallet is locked",
   "registry.unlockHint": "Unlock your wallet extension and try again.",
   "registry.myContracts": "My Contracts",
   "registry.recentlyRegistered": "Recently Registered",
   "registry.all": "All",
   "registry.filterByCategory": "Filter by category",
-  "registry.connectToSee": "Connect a wallet to see the contracts you registered.",
+  "registry.connectToSee":
+    "Connect a wallet to see the contracts you registered.",
   "registry.loadingEntries": "Loading registry entries\u2026",
   "registry.noActiveContracts": "No active {category} contracts.",
   "registry.noContractsYet": "No contracts registered yet.",
@@ -339,30 +351,221 @@ const en: MessageCatalogue = {
 
   // ── Explorer page ─────────────────────────────────────────────────────
   "explorer.heading": "Explorer",
-  "explorer.description": "Search any Stellar account or browse recent transactions in real time.",
-  "explorer.searchPlaceholder": "Search an account, transaction, contract or memo\u2026",
+  "explorer.description":
+    "Search any Stellar account or browse recent transactions in real time.",
+  "explorer.searchPlaceholder":
+    "Search an account, transaction, contract or memo\u2026",
   "explorer.recentTransactions": "Recent Transactions",
 
   // ── Events page ───────────────────────────────────────────────────────
   "events.heading": "Contract Events",
-  "events.description": "Soroban contract events indexed via RPC, newest first.",
+  "events.description":
+    "Soroban contract events indexed via RPC, newest first.",
   "events.contractIdPlaceholder": "Contract ID (C...)",
   "events.filter": "Filter",
 
   // ── Assets page ───────────────────────────────────────────────────────
   "assets.heading": "Assets",
-  "assets.description": "Every asset Lumina indexes, with the supply and holder counts behind it.",
+  "assets.description":
+    "Every asset Lumina indexes, with the supply and holder counts behind it.",
 
   // ── Watch page ────────────────────────────────────────────────────────
   "watch.backgroundNotifications": "Background notifications",
-  "watch.notificationDescription": "In-app alerts work everywhere in Lumina. This is the separate opt-in for an operating-system notification when the tab is not in front of you.",
+  "watch.notificationDescription":
+    "In-app alerts work everywhere in Lumina. This is the separate opt-in for an operating-system notification when the tab is not in front of you.",
 
   // ── Footer ────────────────────────────────────────────────────────────
   "footer.version": "Lumina frontend v{version}",
   "footer.copyVersion": "Copy version for bug reports",
 
   // ── SearchBar ─────────────────────────────────────────────────────────
-  "searchBar.placeholder": "Search an account, transaction, contract or memo\u2026",
+  "searchBar.placeholder":
+    "Search an account, transaction, contract or memo\u2026",
+  // ── Developer portal ──────────────────────────────────────────────────
+  "devPortal.heading": "Lumina Developer Portal",
+  "devPortal.description":
+    "Everything you need to integrate Lumina's Stellar API into your application. From your first query to production monitoring.",
+  "devPortal.gettingStarted.title": "Getting Started",
+  "devPortal.gettingStarted.description":
+    "Step-by-step guide to making your first API request. Learn about authentication, pagination, and error handling with copy-paste code examples.",
+  "devPortal.gettingStarted.cta": "Get started →",
+  "devPortal.apiDocs.title": "API Documentation",
+  "devPortal.apiDocs.description":
+    "Explore the GraphQL schema with worked examples you can run live. Understand pagination patterns and error handling in depth.",
+  "devPortal.apiDocs.cta": "Explore docs →",
+  "devPortal.playground.title": "Query Playground",
+  "devPortal.playground.description":
+    "Write GraphQL queries and generate client code in JavaScript and Python. Test your queries live against the real API.",
+  "devPortal.playground.cta": "Open playground →",
+  "devPortal.usage.title": "Usage Dashboard",
+  "devPortal.usage.description":
+    "Monitor your API key usage and quota consumption. See request counts and trends over time.",
+  "devPortal.usage.cta": "View dashboard →",
+  "devPortal.webhooks.title": "Webhooks",
+  "devPortal.webhooks.description":
+    "Register webhooks for real-time event notifications. Monitor delivery attempts and test your endpoints.",
+  "devPortal.webhooks.cta": "Manage webhooks →",
+  "devPortal.quickStart.title": "Quick Start",
+  "devPortal.quickStart.before": "New to Lumina? Head over to our",
+  "devPortal.quickStart.link": "getting started guide",
+  "devPortal.quickStart.after":
+    "to learn the basics. You'll be querying the Stellar blockchain in minutes.",
+  "devPortal.step1.action": "Make a request",
+  "devPortal.step1.rest": "using our playground or your preferred language",
+  "devPortal.step2.action": "Generate code",
+  "devPortal.step2.rest": "in JavaScript or Python for your application",
+  "devPortal.step3.action": "Monitor usage",
+  "devPortal.step3.rest": "from your dashboard",
+
+  // ── Getting started guide ─────────────────────────────────────────────
+  "guide.heading": "Getting Started with Lumina",
+  "guide.subtitle":
+    "Learn how to make your first GraphQL query in just a few minutes.",
+  "guide.step1.title": "Make Your First Request",
+  "guide.step1.before": "The Lumina GraphQL API is available at",
+  "guide.step1.after":
+    ". Start with this simple query that fetches the latest ledger:",
+  "guide.step1.hint":
+    "Copy the code above and run it in your terminal. You should see the latest Stellar ledger information.",
+  "guide.example.firstRequest": "First Request",
+  "guide.example.pagination": "Query with Pagination",
+  "guide.step2.title": "Work with Pagination",
+  "guide.step2.intro":
+    "For queries that return multiple items, we use cursor-based pagination.",
+  "guide.step2.response":
+    "The response includes a pageInfo object with hasNextPage and cursor fields:",
+  "guide.step2.nextTitle": "How to fetch the next page:",
+  "guide.step2.nextBefore": "To get the next page of results, pass the",
+  "guide.step2.nextAfter": "from the previous response to the next query:",
+  "guide.step3.title": "Handle Errors Gracefully",
+  "guide.step3.before":
+    "The GraphQL API returns HTTP 200 even when there are errors — check the",
+  "guide.step3.after": "array in the response:",
+  "guide.errors.title": "Common Errors:",
+  "guide.errors.invalidQuery": "Invalid Query",
+  "guide.errors.invalidQueryBefore":
+    "Your GraphQL syntax is invalid. Check the",
+  "guide.errors.invalidQueryLink": "playground",
+  "guide.errors.invalidQueryAfter": "for the correct schema.",
+  "guide.errors.notFound": "Not Found",
+  "guide.errors.notFoundDesc":
+    "The resource doesn't exist (e.g., an account that hasn't been funded on Stellar).",
+  "guide.errors.serverError": "Server Error",
+  "guide.errors.serverErrorDesc":
+    "Our backend is temporarily unavailable. Retry with exponential backoff.",
+  "guide.errorHandling.title": "Error Handling Pattern",
+  "guide.step4.title": "Explore the Schema",
+  "guide.step4.before": "Visit the",
+  "guide.step4.link": "GraphQL Playground",
+  "guide.step4.after":
+    "to explore all available queries and data types. The playground includes worked examples you can run live against the API.",
+  "guide.step4.popularLabel": "Popular queries:",
+  "guide.step4.popularItems":
+    "Recent transactions, Account balances, Contract events, Asset information, Payment history",
+  "guide.next.title": "What's Next?",
+  "guide.next.tryPlayground.label": "Try the playground:",
+  "guide.next.tryPlayground.link": "Run live queries",
+  "guide.next.readDocs.label": "Read the docs:",
+  "guide.next.readDocs.link": "Dive deeper into pagination and error handling",
+  "guide.next.generateCode.label": "Generate code:",
+  "guide.next.generateCode.text":
+    "Use the playground to write a query, then generate production-ready code in JavaScript or Python",
+  "guide.next.monitorUsage.label": "Monitor usage:",
+  "guide.next.monitorUsage.link": "Track your API consumption",
+
+  // ── API documentation ─────────────────────────────────────────────────
+  "apiDocs.heading": "API Documentation",
+  "apiDocs.subtitleBefore":
+    "Explore the GraphQL schema with worked examples you can run live against the API. All examples below are runnable in the",
+  "apiDocs.subtitleLink": "GraphQL Playground",
+  "apiDocs.pagination.title": "Pagination Guide",
+  "apiDocs.pagination.intro":
+    "All list queries in Lumina use cursor-based pagination. This approach is ideal for large datasets because it's:",
+  "apiDocs.pagination.bulletScalable.label": "Scalable:",
+  "apiDocs.pagination.bulletScalable.desc":
+    "Cursors don't require offset calculations",
+  "apiDocs.pagination.bulletStable.label": "Stable:",
+  "apiDocs.pagination.bulletStable.desc":
+    "Results don't shift if items are added/removed",
+  "apiDocs.pagination.bulletEfficient.label": "Efficient:",
+  "apiDocs.pagination.bulletEfficient.desc":
+    "No need to fetch and skip earlier items",
+  "apiDocs.pagination.returns": "Every list query returns:",
+  "apiDocs.pagination.next":
+    "To fetch the next page, pass the cursor from the previous response:",
+  "apiDocs.errors.title": "Error Handling",
+  "apiDocs.errors.before": "GraphQL always returns HTTP 200. Check the",
+  "apiDocs.errors.after": "array for problems:",
+  "apiDocs.errors.success": "Successful Response",
+  "apiDocs.errors.error": "Error Response",
+  "apiDocs.errors.checkBefore": "Always check for",
+  "apiDocs.errors.checkMiddle": "before accessing",
+  "apiDocs.errors.checkAfter": ".",
+  "apiDocs.examples.title": "Worked Examples",
+  "apiDocs.example.recentTransactions.name": "Recent Transactions",
+  "apiDocs.example.recentTransactions.description":
+    "Fetch the last 5 transactions on the network",
+  "apiDocs.example.accountBalances.name": "Account Balances",
+  "apiDocs.example.accountBalances.description":
+    "Get all asset balances for an account (edit the address below)",
+  "apiDocs.example.paymentHistory.name": "Payment History",
+  "apiDocs.example.paymentHistory.description":
+    "Fetch payment operations for an account (edit the address below)",
+  "apiDocs.example.contractEvents.name": "Contract Events",
+  "apiDocs.example.contractEvents.description":
+    "Query Soroban contract events by contract address (edit the contract ID below)",
+  "apiDocs.tryInPlayground": "Try in Playground",
+  "apiDocs.viewDocs": "View Docs",
+  "apiDocs.next.title": "Next Steps",
+  "apiDocs.next.runExample.label": "Run an example:",
+  "apiDocs.next.runExample.text":
+    'Click "{button}" to run any of the examples above against the live API',
+  "apiDocs.next.modify.label": "Modify and test:",
+  "apiDocs.next.modify.text":
+    "Edit the query in the playground to explore different fields and filters",
+  "apiDocs.next.generate.label": "Generate code:",
+  "apiDocs.next.generate.text":
+    "Once your query works, generate JavaScript or Python code to integrate into your app",
+
+  // ── Usage dashboard ───────────────────────────────────────────────────
+  "usage.heading": "Usage Dashboard",
+  "usage.subtitle":
+    "Monitor your API key usage and quota consumption, protected by wallet ownership.",
+  "usage.connectedOwner": "Connected Owner Account",
+  "usage.walletRequired.title": "Wallet Ownership Required",
+  "usage.walletRequired.body":
+    "Key management is tied strictly to wallet ownership. Connect your Stellar wallet to view, create, and manage your private API keys.",
+  "usage.connecting": "Connecting Wallet…",
+  "usage.connectCta": "Connect Wallet to Access Keys",
+  "usage.requestsThisWeek": "Requests This Week",
+  "usage.peakDay": "Peak day: {count} requests",
+  "usage.quotaRemaining": "Quota Remaining",
+  "usage.quotaOfTotal": "of {total} total",
+  "usage.quotaUsage": "Quota Usage",
+  "usage.warning": "Warning",
+  "usage.requestsOverTime": "Requests Over Time (Last 7 Days)",
+  "usage.byApiKey": "Usage by API Key",
+  "usage.keyManagement": "API Key Management",
+  "usage.keyNamePlaceholder": "Key name (e.g. Staging Key)",
+  "usage.createKey": "Create API Key",
+  "usage.thKeyName": "Key Name",
+  "usage.thApiKey": "API Key",
+  "usage.thCreated": "Created",
+  "usage.thUsage": "Usage",
+  "usage.thAction": "Action",
+  "usage.percentUsed": "{percent}% used",
+  "usage.revoke": "Revoke",
+  "usage.aboutKeys.title": "About Wallet-Protected Keys",
+  "usage.aboutKeys.body":
+    "API keys are associated 1:1 with your wallet address as your identity. Disconnecting your wallet protects your keys from display without deleting them.",
+
+  // ── Code snippet ──────────────────────────────────────────────────────
+  "codeSnippet.copy": "Copy",
+  "codeSnippet.copied": "✓ Copied",
+  "codeSnippet.copiedAria": "Code copied",
+  "codeSnippet.copiedStatus": "Code copied to clipboard",
+  "codeSnippet.copyError":
+    "Clipboard access failed. Select the code and copy it manually.",
 };
 
 export default en;

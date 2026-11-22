@@ -1,20 +1,22 @@
-'use client';
+"use client";
 
-import { useRef, useState } from 'react';
+import { useRef, useState } from "react";
+import { t } from "@/lib/i18n";
 
 export interface CodeSnippetProps {
   code: string;
-  language?: 'javascript' | 'typescript' | 'python' | 'curl';
+  language?: "javascript" | "typescript" | "python" | "curl";
   title?: string;
   copyLabel?: string;
 }
 
 export default function CodeSnippet({
   code,
-  language = 'javascript',
+  language = "javascript",
   title,
-  copyLabel = 'Copy',
+  copyLabel,
 }: CodeSnippetProps) {
+  const label = copyLabel ?? t("codeSnippet.copy");
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState(false);
   const codeRef = useRef<HTMLPreElement>(null);
@@ -52,18 +54,21 @@ export default function CodeSnippet({
         <button
           type="button"
           onClick={handleCopy}
-          aria-label={copied ? 'Code copied' : (copyLabel || 'Copy code')}
+          aria-label={copied ? t("codeSnippet.copiedAria") : label}
           className="absolute top-2 right-2 px-3 py-1.5 rounded text-xs font-semibold bg-[var(--color-accent-fill)] text-[var(--color-text-inverse)] hover:bg-[var(--color-accent-fill-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-fill)] transition-opacity motion-reduce:transition-none"
         >
-          {copied ? '✓ Copied' : copyLabel}
+          {copied ? t("codeSnippet.copied") : label}
         </button>
         <span className="sr-only" role="status" aria-live="polite">
-          {copied ? 'Code copied to clipboard' : ''}
+          {copied ? t("codeSnippet.copiedStatus") : ""}
         </span>
       </div>
       {copyError && (
-        <p role="alert" className="px-4 py-2 text-xs text-[var(--color-error-text)]">
-          Clipboard access failed. Select the code and copy it manually.
+        <p
+          role="alert"
+          className="px-4 py-2 text-xs text-[var(--color-error-text)]"
+        >
+          {t("codeSnippet.copyError")}
         </p>
       )}
     </div>

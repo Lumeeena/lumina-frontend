@@ -334,6 +334,156 @@ export interface MessageCatalogue {
 
   // ── SearchBar ─────────────────────────────────────────────────────────
   "searchBar.placeholder": string;
+
+  // ── Developer portal ──────────────────────────────────────────────────
+  "devPortal.heading": string;
+  "devPortal.description": string;
+  "devPortal.gettingStarted.title": string;
+  "devPortal.gettingStarted.description": string;
+  "devPortal.gettingStarted.cta": string;
+  "devPortal.apiDocs.title": string;
+  "devPortal.apiDocs.description": string;
+  "devPortal.apiDocs.cta": string;
+  "devPortal.playground.title": string;
+  "devPortal.playground.description": string;
+  "devPortal.playground.cta": string;
+  "devPortal.usage.title": string;
+  "devPortal.usage.description": string;
+  "devPortal.usage.cta": string;
+  "devPortal.webhooks.title": string;
+  "devPortal.webhooks.description": string;
+  "devPortal.webhooks.cta": string;
+  "devPortal.quickStart.title": string;
+  "devPortal.quickStart.before": string;
+  "devPortal.quickStart.link": string;
+  "devPortal.quickStart.after": string;
+  "devPortal.step1.action": string;
+  "devPortal.step1.rest": string;
+  "devPortal.step2.action": string;
+  "devPortal.step2.rest": string;
+  "devPortal.step3.action": string;
+  "devPortal.step3.rest": string;
+
+  // ── Getting started guide ─────────────────────────────────────────────
+  "guide.heading": string;
+  "guide.subtitle": string;
+  "guide.step1.title": string;
+  "guide.step1.before": string;
+  "guide.step1.after": string;
+  "guide.step1.hint": string;
+  "guide.example.firstRequest": string;
+  "guide.example.pagination": string;
+  "guide.step2.title": string;
+  "guide.step2.intro": string;
+  "guide.step2.response": string;
+  "guide.step2.nextTitle": string;
+  "guide.step2.nextBefore": string;
+  "guide.step2.nextAfter": string;
+  "guide.step3.title": string;
+  "guide.step3.before": string;
+  "guide.step3.after": string;
+  "guide.errors.title": string;
+  "guide.errors.invalidQuery": string;
+  "guide.errors.invalidQueryBefore": string;
+  "guide.errors.invalidQueryLink": string;
+  "guide.errors.invalidQueryAfter": string;
+  "guide.errors.notFound": string;
+  "guide.errors.notFoundDesc": string;
+  "guide.errors.serverError": string;
+  "guide.errors.serverErrorDesc": string;
+  "guide.errorHandling.title": string;
+  "guide.step4.title": string;
+  "guide.step4.before": string;
+  "guide.step4.link": string;
+  "guide.step4.after": string;
+  "guide.step4.popularLabel": string;
+  "guide.step4.popularItems": string;
+  "guide.next.title": string;
+  "guide.next.tryPlayground.label": string;
+  "guide.next.tryPlayground.link": string;
+  "guide.next.readDocs.label": string;
+  "guide.next.readDocs.link": string;
+  "guide.next.generateCode.label": string;
+  "guide.next.generateCode.text": string;
+  "guide.next.monitorUsage.label": string;
+  "guide.next.monitorUsage.link": string;
+
+  // ── API documentation ─────────────────────────────────────────────────
+  "apiDocs.heading": string;
+  "apiDocs.subtitleBefore": string;
+  "apiDocs.subtitleLink": string;
+  "apiDocs.pagination.title": string;
+  "apiDocs.pagination.intro": string;
+  "apiDocs.pagination.bulletScalable.label": string;
+  "apiDocs.pagination.bulletScalable.desc": string;
+  "apiDocs.pagination.bulletStable.label": string;
+  "apiDocs.pagination.bulletStable.desc": string;
+  "apiDocs.pagination.bulletEfficient.label": string;
+  "apiDocs.pagination.bulletEfficient.desc": string;
+  "apiDocs.pagination.returns": string;
+  "apiDocs.pagination.next": string;
+  "apiDocs.errors.title": string;
+  "apiDocs.errors.before": string;
+  "apiDocs.errors.after": string;
+  "apiDocs.errors.success": string;
+  "apiDocs.errors.error": string;
+  "apiDocs.errors.checkBefore": string;
+  "apiDocs.errors.checkMiddle": string;
+  "apiDocs.errors.checkAfter": string;
+  "apiDocs.examples.title": string;
+  "apiDocs.example.recentTransactions.name": string;
+  "apiDocs.example.recentTransactions.description": string;
+  "apiDocs.example.accountBalances.name": string;
+  "apiDocs.example.accountBalances.description": string;
+  "apiDocs.example.paymentHistory.name": string;
+  "apiDocs.example.paymentHistory.description": string;
+  "apiDocs.example.contractEvents.name": string;
+  "apiDocs.example.contractEvents.description": string;
+  "apiDocs.tryInPlayground": string;
+  "apiDocs.viewDocs": string;
+  "apiDocs.next.title": string;
+  "apiDocs.next.runExample.label": string;
+  "apiDocs.next.runExample.text": string;
+  "apiDocs.next.modify.label": string;
+  "apiDocs.next.modify.text": string;
+  "apiDocs.next.generate.label": string;
+  "apiDocs.next.generate.text": string;
+
+  // ── Usage dashboard ───────────────────────────────────────────────────
+  "usage.heading": string;
+  "usage.subtitle": string;
+  "usage.connectedOwner": string;
+  "usage.walletRequired.title": string;
+  "usage.walletRequired.body": string;
+  "usage.connecting": string;
+  "usage.connectCta": string;
+  "usage.requestsThisWeek": string;
+  "usage.peakDay": string;
+  "usage.quotaRemaining": string;
+  "usage.quotaOfTotal": string;
+  "usage.quotaUsage": string;
+  "usage.warning": string;
+  "usage.requestsOverTime": string;
+  "usage.byApiKey": string;
+  "usage.keyManagement": string;
+  "usage.keyNamePlaceholder": string;
+  "usage.createKey": string;
+  "usage.thKeyName": string;
+  "usage.thApiKey": string;
+  "usage.thCreated": string;
+  "usage.thUsage": string;
+  "usage.thAction": string;
+  "usage.percentUsed": string;
+  "usage.revoke": string;
+  "usage.aboutKeys.title": string;
+  "usage.aboutKeys.body": string;
+
+  // ── Code snippet ──────────────────────────────────────────────────────
+  "codeSnippet.copy": string;
+  "codeSnippet.copied": string;
+  "codeSnippet.copiedAria": string;
+  "codeSnippet.copiedStatus": string;
+  "codeSnippet.copyError": string;
 }
 
 export type MessageKey = keyof MessageCatalogue;

@@ -1,31 +1,55 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { readPersistedSession, connectWallet, disconnectWallet } from '@/lib/wallet';
-import { loadKeysForWallet, createKeyForWallet, deleteKeyForWallet, type DeveloperKey } from '@/lib/developerKeys';
-import { truncateAddress } from '@/lib/formatters';
+import { useEffect, useState } from "react";
+import {
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+import {
+  readPersistedSession,
+  connectWallet,
+  disconnectWallet,
+} from "@/lib/wallet";
+import {
+  loadKeysForWallet,
+  createKeyForWallet,
+  deleteKeyForWallet,
+  type DeveloperKey,
+} from "@/lib/developerKeys";
+import { truncateAddress } from "@/lib/formatters";
+import { t } from "@/lib/i18n";
 
 const usageData = [
-  { date: 'Mon', requests: 240 },
-  { date: 'Tue', requests: 1398 },
-  { date: 'Wed', requests: 9800 },
-  { date: 'Thu', requests: 3908 },
-  { date: 'Fri', requests: 4800 },
-  { date: 'Sat', requests: 3800 },
-  { date: 'Sun', requests: 4300 },
+  { date: "Mon", requests: 240 },
+  { date: "Tue", requests: 1398 },
+  { date: "Wed", requests: 9800 },
+  { date: "Thu", requests: 3908 },
+  { date: "Fri", requests: 4800 },
+  { date: "Sat", requests: 3800 },
+  { date: "Sun", requests: 4300 },
 ];
 
 export default function UsageDashboardPage() {
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [keys, setKeys] = useState<DeveloperKey[]>([]);
-  const [newKeyName, setNewKeyName] = useState('');
+  const [newKeyName, setNewKeyName] = useState("");
   const [connecting, setConnecting] = useState(false);
 
   useEffect(() => {
     const session = readPersistedSession();
     if (session?.address) {
+      // Hydrate the browser-only session after SSR.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setWalletAddress(session.address);
+
       setKeys(loadKeysForWallet(session.address));
     }
   }, []);
@@ -34,7 +58,7 @@ export default function UsageDashboardPage() {
     setConnecting(true);
     const result = await connectWallet();
     setConnecting(false);
-    if ('address' in result && result.address) {
+    if ("address" in result && result.address) {
       setWalletAddress(result.address);
       setKeys(loadKeysForWallet(result.address));
     }
@@ -51,7 +75,7 @@ export default function UsageDashboardPage() {
     if (!walletAddress || !newKeyName.trim()) return;
     const updated = createKeyForWallet(walletAddress, newKeyName.trim());
     setKeys(updated);
-    setNewKeyName('');
+    setNewKeyName("");
   };
 
   const handleDeleteKey = (keyId: string) => {
@@ -61,7 +85,7 @@ export default function UsageDashboardPage() {
   };
 
   const totalRequests = usageData.reduce((sum, day) => sum + day.requests, 0);
-  const maxRequests = Math.max(...usageData.map(d => d.requests));
+  const maxRequests = Math.max(...usageData.map((d) => d.requests));
   const quotaLimit = keys.reduce((acc, k) => acc + k.limit, 50000);
   const quotaUsed = totalRequests;
   const quotaPercentage = Math.round((quotaUsed / quotaLimit) * 100);
@@ -77,10 +101,10 @@ export default function UsageDashboardPage() {
       <div className="flex items-start justify-between gap-4 mb-8 flex-wrap">
         <div>
           <h1 className="text-4xl font-bold text-[var(--color-text-primary)] mb-3">
-            Usage Dashboard
+            {t("usage.heading")}
           </h1>
           <p className="text-lg text-[var(--color-text-secondary)]">
-            Monitor your API key usage and quota consumption, protected by wallet ownership.
+            {t("usage.subtitle")}
           </p>
         </div>
 
@@ -88,9 +112,12 @@ export default function UsageDashboardPage() {
           <div className="flex items-center gap-3 p-3 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-raised)]">
             <div>
               <span className="block text-xs text-[var(--color-text-muted)] uppercase tracking-wide font-bold">
-                Connected Owner
+                {t("usage.connectedOwner")}
               </span>
-              <span className="mono text-sm font-semibold text-[var(--color-accent-text)]" title={walletAddress}>
+              <span
+                className="mono text-sm font-semibold text-[var(--color-accent-text)]"
+                title={walletAddress}
+              >
                 {truncateAddress(walletAddress, 6)}
               </span>
             </div>
@@ -99,20 +126,23 @@ export default function UsageDashboardPage() {
               onClick={handleDisconnect}
               className="text-xs font-semibold text-[var(--color-error-text)] hover:underline px-2 py-1 rounded"
             >
-              Disconnect
+              {t("common.disconnect")}
             </button>
           </div>
         )}
       </div>
 
       {!walletAddress ? (
-        <div data-testid="wallet-protected-banner" className="p-8 rounded-xl border border-[var(--color-accent-fill)]/30 bg-[var(--color-bg-subtle)] text-center my-8">
+        <div
+          data-testid="wallet-protected-banner"
+          className="p-8 rounded-xl border border-[var(--color-accent-fill)]/30 bg-[var(--color-bg-subtle)] text-center my-8"
+        >
           <div className="text-4xl mb-3">🔒</div>
           <h2 className="text-xl font-bold text-[var(--color-text-primary)] mb-2">
-            Wallet Ownership Required
+            {t("usage.walletRequired.title")}
           </h2>
           <p className="text-sm text-[var(--color-text-secondary)] max-w-lg mx-auto mb-6">
-            Key management is tied strictly to wallet ownership. Connect your Stellar wallet to view, create, and manage your private API keys.
+            {t("usage.walletRequired.body")}
           </p>
           <button
             type="button"
@@ -120,7 +150,7 @@ export default function UsageDashboardPage() {
             disabled={connecting}
             className="rounded-lg bg-[var(--color-accent-fill)] hover:bg-[var(--color-accent-fill-hover)] text-white font-bold text-sm px-6 py-2.5 transition-colors disabled:opacity-50"
           >
-            {connecting ? 'Connecting Wallet…' : 'Connect Wallet to Access Keys'}
+            {connecting ? t("usage.connecting") : t("usage.connectCta")}
           </button>
         </div>
       ) : (
@@ -129,39 +159,41 @@ export default function UsageDashboardPage() {
           <div className="grid md:grid-cols-3 gap-4 mb-8">
             <div className="p-6 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-raised)]">
               <div className="text-sm font-semibold uppercase text-[var(--color-text-muted)] mb-2">
-                Requests This Week
+                {t("usage.requestsThisWeek")}
               </div>
               <div className="text-3xl font-bold text-[var(--color-text-primary)]">
                 {totalRequests.toLocaleString()}
               </div>
               <div className="text-xs text-[var(--color-text-secondary)] mt-2">
-                Peak day: {maxRequests.toLocaleString()} requests
+                {t("usage.peakDay", { count: maxRequests.toLocaleString() })}
               </div>
             </div>
 
             <div className="p-6 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-raised)]">
               <div className="text-sm font-semibold uppercase text-[var(--color-text-muted)] mb-2">
-                Quota Remaining
+                {t("usage.quotaRemaining")}
               </div>
               <div className="text-3xl font-bold text-[var(--color-text-primary)]">
                 {(quotaLimit - quotaUsed).toLocaleString()}
               </div>
               <div className="text-xs text-[var(--color-text-secondary)] mt-2">
-                of {quotaLimit.toLocaleString()} total
+                {t("usage.quotaOfTotal", {
+                  total: quotaLimit.toLocaleString(),
+                })}
               </div>
             </div>
 
             <div className="p-6 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-raised)]">
               <div className="text-sm font-semibold uppercase text-[var(--color-text-muted)] mb-2">
-                Quota Usage
+                {t("usage.quotaUsage")}
               </div>
               <div className="flex items-baseline gap-2">
                 <div className="text-3xl font-bold text-[var(--color-text-primary)]">
                   {quotaPercentage}%
                 </div>
                 {quotaPercentage > 80 && (
-                  <div className="px-2 py-1 rounded bg-[#fee2e2] text-[#991b1b] text-xs font-semibold">
-                    Warning
+                  <div className="px-2 py-1 rounded bg-[var(--color-error-bg)] text-[var(--color-error-dark)] text-xs font-semibold">
+                    {t("usage.warning")}
                   </div>
                 )}
               </div>
@@ -169,10 +201,10 @@ export default function UsageDashboardPage() {
                 <div
                   className={`h-2 rounded-full transition-colors ${
                     quotaPercentage > 80
-                      ? 'bg-[#dc2626]'
+                      ? "bg-[var(--color-error-text)]"
                       : quotaPercentage > 60
-                      ? 'bg-[#f59e0b]'
-                      : 'bg-[#10b981]'
+                        ? "bg-[var(--color-warning-text)]"
+                        : "bg-[var(--color-success-text)]"
                   }`}
                   style={{ width: `${quotaPercentage}%` }}
                 />
@@ -183,19 +215,22 @@ export default function UsageDashboardPage() {
           {/* Usage Over Time Chart */}
           <div className="mb-8 p-6 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-raised)]">
             <h2 className="text-xl font-bold text-[var(--color-text-primary)] mb-6">
-              Requests Over Time (Last 7 Days)
+              {t("usage.requestsOverTime")}
             </h2>
             <ResponsiveContainer width="100%" height={300}>
               <AreaChart data={usageData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-default)" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="var(--color-border-default)"
+                />
                 <XAxis dataKey="date" stroke="var(--color-text-muted)" />
                 <YAxis stroke="var(--color-text-muted)" />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: 'var(--color-bg-subtle)',
-                    border: '1px solid var(--color-border-default)',
+                    backgroundColor: "var(--color-bg-subtle)",
+                    border: "1px solid var(--color-border-default)",
                   }}
-                  labelStyle={{ color: 'var(--color-text-primary)' }}
+                  labelStyle={{ color: "var(--color-text-primary)" }}
                 />
                 <Area
                   type="monotone"
@@ -212,19 +247,22 @@ export default function UsageDashboardPage() {
           {keyUsageData.length > 0 && (
             <div className="mb-8 p-6 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-raised)]">
               <h2 className="text-xl font-bold text-[var(--color-text-primary)] mb-6">
-                Usage by API Key
+                {t("usage.byApiKey")}
               </h2>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={keyUsageData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-default)" />
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="var(--color-border-default)"
+                  />
                   <XAxis dataKey="name" stroke="var(--color-text-muted)" />
                   <YAxis stroke="var(--color-text-muted)" />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: 'var(--color-bg-subtle)',
-                      border: '1px solid var(--color-border-default)',
+                      backgroundColor: "var(--color-bg-subtle)",
+                      border: "1px solid var(--color-border-default)",
                     }}
-                    labelStyle={{ color: 'var(--color-text-primary)' }}
+                    labelStyle={{ color: "var(--color-text-primary)" }}
                   />
                   <Legend />
                   <Bar dataKey="usage" fill="var(--color-accent-fill)" />
@@ -238,45 +276,51 @@ export default function UsageDashboardPage() {
           <div className="p-6 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-raised)] mb-8">
             <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
               <h2 className="text-xl font-bold text-[var(--color-text-primary)]">
-                API Key Management
+                {t("usage.keyManagement")}
               </h2>
             </div>
 
             {/* Create key form */}
-            <form onSubmit={handleCreateKey} className="flex gap-2 mb-6 items-center flex-wrap">
+            <form
+              onSubmit={handleCreateKey}
+              className="flex gap-2 mb-6 items-center flex-wrap"
+            >
               <input
                 type="text"
                 value={newKeyName}
                 onChange={(e) => setNewKeyName(e.target.value)}
-                placeholder="Key name (e.g. Staging Key)"
+                placeholder={t("usage.keyNamePlaceholder")}
                 className="flex-1 min-w-[14rem] rounded-lg border border-[var(--color-border-default)] px-3 py-2 text-sm"
               />
               <button
                 type="submit"
                 className="rounded-lg bg-[var(--color-accent-fill)] hover:bg-[var(--color-accent-fill-hover)] text-white font-bold text-sm px-4 py-2 transition-colors"
               >
-                Create API Key
+                {t("usage.createKey")}
               </button>
             </form>
 
             <div className="overflow-x-auto">
-              <table className="w-full text-sm" data-testid="developer-keys-table">
+              <table
+                className="w-full text-sm"
+                data-testid="developer-keys-table"
+              >
                 <thead>
                   <tr className="border-b border-[var(--color-border-default)]">
                     <th className="text-left py-3 px-4 font-semibold text-[var(--color-text-primary)]">
-                      Key Name
+                      {t("usage.thKeyName")}
                     </th>
                     <th className="text-left py-3 px-4 font-semibold text-[var(--color-text-primary)]">
-                      API Key
+                      {t("usage.thApiKey")}
                     </th>
                     <th className="text-left py-3 px-4 font-semibold text-[var(--color-text-primary)]">
-                      Created
+                      {t("usage.thCreated")}
                     </th>
                     <th className="text-right py-3 px-4 font-semibold text-[var(--color-text-primary)]">
-                      Usage
+                      {t("usage.thUsage")}
                     </th>
                     <th className="text-right py-3 px-4 font-semibold text-[var(--color-text-primary)]">
-                      Action
+                      {t("usage.thAction")}
                     </th>
                   </tr>
                 </thead>
@@ -299,10 +343,13 @@ export default function UsageDashboardPage() {
                         </td>
                         <td className="py-3 px-4 text-right">
                           <div className="text-[var(--color-text-primary)] font-semibold">
-                            {key.usage.toLocaleString()} / {key.limit.toLocaleString()}
+                            {key.usage.toLocaleString()} /{" "}
+                            {key.limit.toLocaleString()}
                           </div>
                           <div className="text-xs text-[var(--color-text-muted)] mt-1">
-                            {percentage.toFixed(1)}% used
+                            {t("usage.percentUsed", {
+                              percent: percentage.toFixed(1),
+                            })}
                           </div>
                         </td>
                         <td className="py-3 px-4 text-right">
@@ -311,7 +358,7 @@ export default function UsageDashboardPage() {
                             onClick={() => handleDeleteKey(key.id)}
                             className="text-xs font-semibold text-[var(--color-error-text)] hover:underline"
                           >
-                            Revoke
+                            {t("usage.revoke")}
                           </button>
                         </td>
                       </tr>
@@ -327,10 +374,10 @@ export default function UsageDashboardPage() {
       {/* Information Box */}
       <div className="mt-8 p-6 rounded-lg border border-[var(--color-accent-fill)]/20 bg-[var(--color-bg-subtle)]">
         <h3 className="font-semibold text-[var(--color-text-primary)] mb-2">
-          About Wallet-Protected Keys
+          {t("usage.aboutKeys.title")}
         </h3>
         <p className="text-sm text-[var(--color-text-secondary)] mb-3">
-          API keys are associated 1:1 with your wallet address as your identity. Disconnecting your wallet protects your keys from display without deleting them.
+          {t("usage.aboutKeys.body")}
         </p>
       </div>
     </div>
