@@ -18,9 +18,29 @@
 import type { MessageCatalogue, MessageKey } from "./types";
 import en from "./en";
 import de from "./de";
-import { getDirection, isRtl, RTL_LANGUAGES, type Direction } from "./direction";
+import {
+  getDirection,
+  isRtl,
+  RTL_LANGUAGES,
+  type Direction,
+} from "./direction";
 
 const CATALOGUES: Record<string, MessageCatalogue> = { en, de };
+
+const pluralRulesCache = new Map<string, Intl.PluralRules>();
+
+function getPluralRules(locale: string): Intl.PluralRules {
+  let rules = pluralRulesCache.get(locale);
+  if (!rules) {
+    try {
+      rules = new Intl.PluralRules(locale);
+    } catch {
+      rules = new Intl.PluralRules("en");
+    }
+    pluralRulesCache.set(locale, rules);
+  }
+  return rules;
+}
 
 let activeCatalogue: MessageCatalogue = en;
 let activeLocale = "en";
@@ -39,9 +59,13 @@ function baseLanguage(locale: string): string {
  * switches the app away from English.
  */
 export function isSupportedLocale(locale: string): boolean {
-  return locale in CATALOGUES || RTL_LANGUAGES.has(baseLanguage(locale)) || [
-    "en", "zh", "ja", "ko", "ru", "ar", "he", "es", "pt"
-  ].includes(baseLanguage(locale));
+  return (
+    locale in CATALOGUES ||
+    RTL_LANGUAGES.has(baseLanguage(locale)) ||
+    ["en", "zh", "ja", "ko", "ru", "ar", "he", "es", "pt"].includes(
+      baseLanguage(locale),
+    )
+  );
 }
 
 /**
@@ -111,30 +135,29 @@ export function t(
  * Plural blocks use a brace-counting scan so nested `{…}` in the branch
  * text is handled correctly.
  */
-function interpolate(
+export function interpolate(
   template: string,
   values: Record<string, string | number | bigint>,
+  locale: string = activeLocale,
 ): string {
   // First pass: expand plural blocks, which contain nested braces.
-  let result = expandPlurals(template, values);
+  let result = expandPlurals(template, values, locale);
   // Second pass: simple {name} placeholders.
-  result = result.replace(
-    /\{(\w+)\}/g,
-    (_match, name: string) => {
-      const val = values[name];
-      return val !== undefined ? String(val) : `{${name}}`;
-    },
-  );
+  result = result.replace(/\{(\w+)\}/g, (_match, name: string) => {
+    const val = values[name];
+    return val !== undefined ? String(val) : `{${name}}`;
+  });
   return result;
 }
 
 /**
  * Find `{name, plural, one {…} other {…}}` and replace each with the
- * correct branch.
+ * correct branch using Intl.PluralRules for the active locale.
  */
 function expandPlurals(
   template: string,
   values: Record<string, string | number | bigint>,
+  locale: string = activeLocale,
 ): string {
   const re = /\{(\w+),\s*plural,\s*/g;
   let match: RegExpExecArray | null;
@@ -154,7 +177,7 @@ function expandPlurals(
       // Skip whitespace.
       while (pos < template.length && /\s/.test(template[pos])) pos++;
       if (template[pos] === "}") break;
-      // Read branch name (e.g. "one", "other").
+      // Read branch name (e.g. "zero", "one", "two", "few", "many", "other").
       const branchStart = pos;
       while (pos < template.length && /\w/.test(template[pos])) pos++;
       const branchName = template.slice(branchStart, pos);
@@ -175,7 +198,8 @@ function expandPlurals(
     // Skip the outer closing }.
     if (pos < template.length && template[pos] === "}") pos++;
 
-    out += n === 1 && branches["one"] ? branches["one"] : (branches["other"] ?? String(n));
+    const category = getPluralRules(locale).select(n);
+    out += branches[category] ?? branches["other"] ?? String(n);
     last = pos;
     re.lastIndex = pos;
   }

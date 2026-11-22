@@ -392,62 +392,107 @@ const en: MessageCatalogue = {
   // ── SearchBar ─────────────────────────────────────────────────────────
   "searchBar.placeholder":
     "Search an account, transaction, contract or memo\u2026",
-  // ── Navbar ────────────────────────────────────────────────────────────
-  "navbar.home": "Lumina home",
-  "navbar.mainNav": "Main navigation",
-  "navbar.explorer": "Explorer",
-  "navbar.transactions": "Transactions",
-  "navbar.ledgers": "Ledgers",
-  "navbar.search": "Search",
-  "navbar.contractEvents": "Contract Events",
-  "navbar.assets": "Assets",
-  "navbar.graphql": "GraphQL",
-  "navbar.developers": "Developers",
-  "navbar.registry": "Registry",
-  "navbar.stats": "Stats",
-  "navbar.watch": "Watch",
 
-  // ── Transaction filters ───────────────────────────────────────────────
-  "transactionFilters.statusFilter": "Transaction status filter",
-  "transactionFilters.statusAll": "All",
-  "transactionFilters.statusSuccessful": "Successful",
-  "transactionFilters.statusFailed": "Failed",
-  "transactionFilters.from": "From",
-  "transactionFilters.to": "To",
-  "transactionFilters.sourceAccount": "Source account",
-  "transactionFilters.minOperations": "Min operations",
-  "transactionFilters.maxFee": "Max fee (XLM)",
-  "transactionFilters.presetNamePlaceholder": "Name this filter",
-  "transactionFilters.presetNameLabel": "Preset name",
-  "transactionFilters.savePreset": "Save preset",
-  "transactionFilters.clearFilters":
-    "Clear {count} {count, plural, one {filter} other {filters}}",
-  "transactionFilters.savedPresets": "Saved filter presets",
-  "transactionFilters.applyPreset": "Apply preset {name}",
-  "transactionFilters.deletePreset": "Delete preset {name}",
+  // ── WalletInfo ────────────────────────────────────────────────────────
+  "walletInfo.disconnect": "Disconnect",
+  "walletInfo.disconnecting": "Disconnecting…",
+  "walletInfo.disconnectLabel": "Disconnect wallet",
 
-  // ── Network stats dashboard ───────────────────────────────────────────
-  "networkStats.activeAccounts": "Active Accounts",
-  "networkStats.inSampledData": "In sampled data",
-  "networkStats.sampledTransactions": "Sampled Transactions",
-  "networkStats.mostRecent": "Most recent",
-  "networkStats.sampledOperations": "Sampled Operations",
-  "networkStats.successRate": "Success Rate",
-  "networkStats.inSampledTransactions": "In sampled transactions",
-  "networkStats.operationsOverTime": "Operations Over Time",
-  "networkStats.operationsDescription":
-    "Hourly operation volume from recent indexed data",
-  "networkStats.operationsUnit": " ops",
-  "networkStats.operationsCaption":
-    "Based on the most recent indexed operations",
-  "networkStats.noOperationData": "No operation data available",
-  "networkStats.transactionsOverTime": "Transactions Over Time",
-  "networkStats.transactionsDescription":
-    "Hourly transaction volume from recent indexed data",
-  "networkStats.transactionsUnit": " txs",
-  "networkStats.transactionsCaption":
-    "Based on the most recent indexed transactions",
-  "networkStats.noTransactionData": "No transaction data available",
+  // ── WatchedAddressList ────────────────────────────────────────────────
+  "watchList.heading": "Watched addresses",
+  "watchList.exportList": "Export List",
+  "watchList.importList": "Import List",
+  "watchList.importFileLabel": "Import watch list file",
+  "watchList.importTitle": "Import Watch List",
+  "watchList.importPrompt":
+    "Choose how to apply the imported addresses to your current watch list:",
+  "watchList.mergeOption": "Merge (combine with existing)",
+  "watchList.replaceOption": "Replace (overwrite current list)",
+  "watchList.confirmImport": "Confirm Import",
+  "watchList.cancel": "Cancel",
+  "watchList.addressLabel": "Stellar address to watch",
+  "watchList.addWatch": "Add watch",
+  "watchList.errorEmpty": "Enter an address to watch.",
+  "watchList.errorInvalid": "That is not a Stellar account ID: {hint}.",
+  "watchList.errorDuplicate":
+    "That address is already on your watch list. Choose a different address or remove the existing one first.",
+  "watchList.importFailed":
+    "{error} Check the file format and select a valid watch list to try again.",
+  "watchList.importFailedFallback": "Failed to import watch list.",
+  "watchList.listFull":
+    "The list is capped at {count} addresses. Remove one to add another.",
+  "watchList.emptyState":
+    "Nothing watched yet. Add an address above, or use the bookmark icon next to any account on the site.",
+  "watchList.filtersCount":
+    "{count} {count, plural, one {filter} other {filters}}",
+  "watchList.unwatch": "Unwatch {address}",
+  "watchList.remove": "Remove",
+
+  // ── OnboardingTour ────────────────────────────────────────────────────
+  "onTour.welcomeTitle": "Welcome to Lumina",
+  "onTour.welcomeSubtitle": "Let's explore what makes Lumina unique",
+  "onTour.closeTour": "Close tour",
+  "onTour.stepPosition": "{current} of {total}",
+  "onTour.skip": "Skip",
+  "onTour.next": "Next",
+  "onTour.done": "Done",
+  "onTour.stepExplorerTitle": "Account Explorer",
+  "onTour.stepExplorerBody":
+    "Search and analyze any Stellar account. View balances, transaction history, and assets in detail.",
+  "onTour.stepTransactionsTitle": "All Transactions",
+  "onTour.stepTransactionsBody":
+    "Browse all transactions on the network in real-time. Filter by account, asset, or operation type.",
+  "onTour.stepEventsTitle": "Contract Events",
+  "onTour.stepEventsBody":
+    "Monitor Soroban contract events. Track smart contract executions and their effects.",
+  "onTour.stepGraphqlTitle": "GraphQL Playground",
+  "onTour.stepGraphqlBody":
+    "Query the Lumina API directly. Build custom queries to extract exactly the data you need.",
+  "onTour.stepRegistryTitle": "Registry",
+  "onTour.stepRegistryBody":
+    "Register your Soroban contracts for indexing. Make your contracts discoverable to the network.",
+
+  // ── CommandPalette ────────────────────────────────────────────────────
+  "commandPalette.placeholder": "Search routes and actions...",
+  "commandPalette.noResults": "No results found",
+  "commandPalette.selectHint": "Select",
+  "commandPalette.navigateHint": "Navigate",
+  "commandPalette.searchAction": "Search",
+  "commandPalette.searchActionDescription":
+    "Search Stellar addresses and transactions",
+  "commandPalette.route.explorer.label": "Explorer",
+  "commandPalette.route.explorer.description":
+    "Search any Stellar account or browse recent transactions, updated live over a GraphQL subscription.",
+  "commandPalette.route.transactions.label": "Transactions",
+  "commandPalette.route.transactions.description":
+    "Every indexed Stellar transaction, with filters, saved presets and cursor pagination.",
+  "commandPalette.route.ledgers.label": "Ledgers",
+  "commandPalette.route.ledgers.description":
+    "Indexed Stellar ledgers, newest first: close time, transaction and operation counts, and any gaps in the index.",
+  "commandPalette.route.search.label": "Search",
+  "commandPalette.route.search.description":
+    "Memo search across every indexed transaction — order references and short codes, ranked by the backend's trigram similarity.",
+  "commandPalette.route.events.label": "Contract Events",
+  "commandPalette.route.events.description":
+    "Soroban contract events indexed by Lumina, filterable by contract id.",
+  "commandPalette.route.assets.label": "Assets",
+  "commandPalette.route.assets.description":
+    "Every Stellar asset Lumina indexes — supply and holder counts, ordered by holders or by transfer volume.",
+  "commandPalette.route.graphql.label": "GraphQL",
+  "commandPalette.route.graphql.description":
+    "Run queries against the Lumina GraphQL API from the browser, with worked examples.",
+  "commandPalette.route.developers.label": "Developers",
+  "commandPalette.route.developers.description":
+    "API documentation, getting-started guide, and usage dashboard for developers building with Lumina.",
+  "commandPalette.route.registry.label": "Registry",
+  "commandPalette.route.registry.description":
+    "An on-chain Soroban manifest of contracts Lumina indexes — register a contract to opt into indexing.",
+  "commandPalette.route.stats.label": "Stats",
+  "commandPalette.route.stats.description":
+    "Indexer health and Stellar network throughput: latest ledger, transaction volume and the mix of operation types.",
+  "commandPalette.route.watch.label": "Watch",
+  "commandPalette.route.watch.description":
+    "Follow Stellar addresses: one live feed of activity across everything you watch, with per-address alert filters.",
 };
 
 export default en;

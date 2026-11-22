@@ -346,57 +346,83 @@ export interface MessageCatalogue {
   // ── SearchBar ─────────────────────────────────────────────────────────
   "searchBar.placeholder": string;
 
-  // ── Navbar ────────────────────────────────────────────────────────────
-  "navbar.home": string;
-  "navbar.mainNav": string;
-  "navbar.explorer": string;
-  "navbar.transactions": string;
-  "navbar.ledgers": string;
-  "navbar.search": string;
-  "navbar.contractEvents": string;
-  "navbar.assets": string;
-  "navbar.graphql": string;
-  "navbar.developers": string;
-  "navbar.registry": string;
-  "navbar.stats": string;
-  "navbar.watch": string;
+  // ── WalletInfo ────────────────────────────────────────────────────────
+  "walletInfo.disconnect": string;
+  "walletInfo.disconnecting": string;
+  "walletInfo.disconnectLabel": string;
 
-  // ── Transaction filters ───────────────────────────────────────────────
-  "transactionFilters.statusFilter": string;
-  "transactionFilters.statusAll": string;
-  "transactionFilters.statusSuccessful": string;
-  "transactionFilters.statusFailed": string;
-  "transactionFilters.from": string;
-  "transactionFilters.to": string;
-  "transactionFilters.sourceAccount": string;
-  "transactionFilters.minOperations": string;
-  "transactionFilters.maxFee": string;
-  "transactionFilters.presetNamePlaceholder": string;
-  "transactionFilters.presetNameLabel": string;
-  "transactionFilters.savePreset": string;
-  "transactionFilters.clearFilters": string;
-  "transactionFilters.savedPresets": string;
-  "transactionFilters.applyPreset": string;
-  "transactionFilters.deletePreset": string;
+  // ── WatchedAddressList ────────────────────────────────────────────────
+  "watchList.heading": string;
+  "watchList.exportList": string;
+  "watchList.importList": string;
+  "watchList.importFileLabel": string;
+  "watchList.importTitle": string;
+  "watchList.importPrompt": string;
+  "watchList.mergeOption": string;
+  "watchList.replaceOption": string;
+  "watchList.confirmImport": string;
+  "watchList.cancel": string;
+  "watchList.addressLabel": string;
+  "watchList.addWatch": string;
+  "watchList.errorEmpty": string;
+  "watchList.errorInvalid": string;
+  "watchList.errorDuplicate": string;
+  "watchList.importFailed": string;
+  "watchList.importFailedFallback": string;
+  "watchList.listFull": string;
+  "watchList.emptyState": string;
+  "watchList.filtersCount": string;
+  "watchList.unwatch": string;
+  "watchList.remove": string;
 
-  // ── Network stats dashboard ───────────────────────────────────────────
-  "networkStats.activeAccounts": string;
-  "networkStats.inSampledData": string;
-  "networkStats.sampledTransactions": string;
-  "networkStats.mostRecent": string;
-  "networkStats.sampledOperations": string;
-  "networkStats.successRate": string;
-  "networkStats.inSampledTransactions": string;
-  "networkStats.operationsOverTime": string;
-  "networkStats.operationsDescription": string;
-  "networkStats.operationsUnit": string;
-  "networkStats.operationsCaption": string;
-  "networkStats.noOperationData": string;
-  "networkStats.transactionsOverTime": string;
-  "networkStats.transactionsDescription": string;
-  "networkStats.transactionsUnit": string;
-  "networkStats.transactionsCaption": string;
-  "networkStats.noTransactionData": string;
+  // ── OnboardingTour ────────────────────────────────────────────────────
+  "onTour.welcomeTitle": string;
+  "onTour.welcomeSubtitle": string;
+  "onTour.closeTour": string;
+  "onTour.stepPosition": string;
+  "onTour.skip": string;
+  "onTour.next": string;
+  "onTour.done": string;
+  "onTour.stepExplorerTitle": string;
+  "onTour.stepExplorerBody": string;
+  "onTour.stepTransactionsTitle": string;
+  "onTour.stepTransactionsBody": string;
+  "onTour.stepEventsTitle": string;
+  "onTour.stepEventsBody": string;
+  "onTour.stepGraphqlTitle": string;
+  "onTour.stepGraphqlBody": string;
+  "onTour.stepRegistryTitle": string;
+  "onTour.stepRegistryBody": string;
+
+  // ── CommandPalette ────────────────────────────────────────────────────
+  "commandPalette.placeholder": string;
+  "commandPalette.noResults": string;
+  "commandPalette.selectHint": string;
+  "commandPalette.navigateHint": string;
+  "commandPalette.searchAction": string;
+  "commandPalette.searchActionDescription": string;
+  "commandPalette.route.explorer.label": string;
+  "commandPalette.route.explorer.description": string;
+  "commandPalette.route.transactions.label": string;
+  "commandPalette.route.transactions.description": string;
+  "commandPalette.route.ledgers.label": string;
+  "commandPalette.route.ledgers.description": string;
+  "commandPalette.route.search.label": string;
+  "commandPalette.route.search.description": string;
+  "commandPalette.route.events.label": string;
+  "commandPalette.route.events.description": string;
+  "commandPalette.route.assets.label": string;
+  "commandPalette.route.assets.description": string;
+  "commandPalette.route.graphql.label": string;
+  "commandPalette.route.graphql.description": string;
+  "commandPalette.route.developers.label": string;
+  "commandPalette.route.developers.description": string;
+  "commandPalette.route.registry.label": string;
+  "commandPalette.route.registry.description": string;
+  "commandPalette.route.stats.label": string;
+  "commandPalette.route.stats.description": string;
+  "commandPalette.route.watch.label": string;
+  "commandPalette.route.watch.description": string;
 }
 
 export type MessageKey = keyof MessageCatalogue;

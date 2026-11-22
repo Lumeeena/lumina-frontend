@@ -22,6 +22,7 @@ import {
   operationFiltersToQueryString,
 } from "@/lib/operationFilters";
 import WatchAlertSettings from "./WatchAlertSettings";
+import { getLocale, t } from "@/lib/i18n";
 
 /**
  * The watch list, with per-watch alert settings. Part of #9 / #80, #83, #84.
@@ -35,7 +36,9 @@ export default function WatchedAddressList() {
 
   // Import state
   const [importMode, setImportMode] = useState<"merge" | "replace">("merge");
-  const [pendingFileContent, setPendingFileContent] = useState<string | null>(null);
+  const [pendingFileContent, setPendingFileContent] = useState<string | null>(
+    null,
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -56,13 +59,13 @@ export default function WatchedAddressList() {
       if (!validation.valid) {
         setError(
           validation.reason === "empty"
-            ? "Enter an address to watch."
-            : `That is not a Stellar account ID: ${validation.hint}.`,
+            ? t("watchList.errorEmpty")
+            : t("watchList.errorInvalid", { hint: validation.hint }),
         );
         return;
       }
       if (entries.some((entry) => entry.address === address)) {
-        setError("That address is already on your watch list. Choose a different address or remove the existing one first.");
+        setError(t("watchList.errorDuplicate"));
         return;
       }
       addWatch(address);
@@ -89,24 +92,31 @@ export default function WatchedAddressList() {
     URL.revokeObjectURL(url);
   }, []);
 
-  const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const content = e.target?.result as string;
-      setPendingFileContent(content);
-    };
-    reader.readAsText(file);
-    // Reset file input value so re-selecting the same file triggers onChange again
-    event.target.value = "";
-  }, []);
+  const handleFileSelect = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target?.result as string;
+        setPendingFileContent(content);
+      };
+      reader.readAsText(file);
+      // Reset file input value so re-selecting the same file triggers onChange again
+      event.target.value = "";
+    },
+    [],
+  );
 
   const confirmImport = useCallback(() => {
     if (!pendingFileContent) return;
     const res = importWatches(pendingFileContent, importMode);
     if (!res.success) {
-      setError(`${res.error || "Failed to import watch list."} Check the file format and select a valid watch list to try again.`);
+      setError(
+        t("watchList.importFailed", {
+          error: res.error || t("watchList.importFailedFallback"),
+        }),
+      );
     } else {
       setError(null);
     }
@@ -120,7 +130,7 @@ export default function WatchedAddressList() {
           id="watch-list-heading"
           className="font-extrabold text-base text-[var(--color-text-primary)]"
         >
-          Watched addresses
+          {t("watchList.heading")}
         </h2>
         <div className="flex items-center gap-2">
           <button
@@ -129,14 +139,14 @@ export default function WatchedAddressList() {
             disabled={entries.length === 0}
             className="rounded-lg border border-[var(--color-border-default)] hover:bg-[var(--color-bg-subtle)] disabled:opacity-50 text-[12px] font-semibold text-[var(--color-text-primary)] px-3 py-1.5 transition-colors"
           >
-            Export List
+            {t("watchList.exportList")}
           </button>
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
             className="rounded-lg border border-[var(--color-border-default)] hover:bg-[var(--color-bg-subtle)] text-[12px] font-semibold text-[var(--color-text-primary)] px-3 py-1.5 transition-colors"
           >
-            Import List
+            {t("watchList.importList")}
           </button>
           <input
             ref={fileInputRef}
@@ -144,7 +154,7 @@ export default function WatchedAddressList() {
             accept=".json,application/json"
             onChange={handleFileSelect}
             className="hidden"
-            aria-label="Import watch list file"
+            aria-label={t("watchList.importFileLabel")}
           />
         </div>
       </div>
@@ -152,10 +162,10 @@ export default function WatchedAddressList() {
       {pendingFileContent !== null && (
         <div className="mb-4 p-4 rounded-xl border border-[var(--color-accent-fill)]/30 bg-[var(--color-bg-subtle)]">
           <h3 className="font-bold text-sm text-[var(--color-text-primary)] mb-2">
-            Import Watch List
+            {t("watchList.importTitle")}
           </h3>
           <p className="text-[13px] text-[var(--color-text-secondary)] mb-3">
-            Choose how to apply the imported addresses to your current watch list:
+            {t("watchList.importPrompt")}
           </p>
           <div className="flex items-center gap-4 mb-4 text-[13px]">
             <label className="flex items-center gap-1.5 font-medium cursor-pointer">
@@ -166,7 +176,7 @@ export default function WatchedAddressList() {
                 checked={importMode === "merge"}
                 onChange={() => setImportMode("merge")}
               />
-              Merge (combine with existing)
+              {t("watchList.mergeOption")}
             </label>
             <label className="flex items-center gap-1.5 font-medium cursor-pointer">
               <input
@@ -176,7 +186,7 @@ export default function WatchedAddressList() {
                 checked={importMode === "replace"}
                 onChange={() => setImportMode("replace")}
               />
-              Replace (overwrite current list)
+              {t("watchList.replaceOption")}
             </label>
           </div>
           <div className="flex gap-2">
@@ -185,23 +195,26 @@ export default function WatchedAddressList() {
               onClick={confirmImport}
               className="rounded-lg bg-[var(--color-accent-fill)] hover:bg-[var(--color-accent-fill-hover)] text-white font-bold text-[12px] px-3 py-1.5 transition-colors"
             >
-              Confirm Import
+              {t("watchList.confirmImport")}
             </button>
             <button
               type="button"
               onClick={() => setPendingFileContent(null)}
               className="rounded-lg border border-[var(--color-border-default)] text-[12px] font-semibold px-3 py-1.5 transition-colors"
             >
-              Cancel
+              {t("watchList.cancel")}
             </button>
           </div>
         </div>
       )}
 
-      <form onSubmit={handleAdd} className="flex flex-wrap gap-2 items-start mb-4">
+      <form
+        onSubmit={handleAdd}
+        className="flex flex-wrap gap-2 items-start mb-4"
+      >
         <div className="flex-1 min-w-[16rem]">
           <label htmlFor="watch-address" className="sr-only">
-            Stellar address to watch
+            {t("watchList.addressLabel")}
           </label>
           <input
             id="watch-address"
@@ -221,7 +234,7 @@ export default function WatchedAddressList() {
           disabled={full}
           className="rounded-lg bg-[var(--color-accent-fill)] hover:bg-[var(--color-accent-fill-hover)] disabled:opacity-50 disabled:hover:bg-[var(--color-accent-fill)] text-white font-bold text-[13px] px-4 py-2 transition-colors"
         >
-          Add watch
+          {t("watchList.addWatch")}
         </button>
       </form>
 
@@ -237,15 +250,19 @@ export default function WatchedAddressList() {
       )}
 
       {full && (
-        <p className="mb-4 text-[13px] text-[var(--color-text-secondary)]" data-testid="watch-list-full">
-          {`The list is capped at ${MAX_WATCHES} addresses. Remove one to add another.`}
+        <p
+          className="mb-4 text-[13px] text-[var(--color-text-secondary)]"
+          data-testid="watch-list-full"
+        >
+          {t("watchList.listFull", {
+            count: new Intl.NumberFormat(getLocale()).format(MAX_WATCHES),
+          })}
         </p>
       )}
 
       {entries.length === 0 ? (
         <p className="rounded-xl border border-dashed border-[var(--color-border-default)] p-6 text-center text-[13px] text-[var(--color-text-secondary)]">
-          Nothing watched yet. Add an address above, or use the bookmark icon next
-          to any account on the site.
+          {t("watchList.emptyState")}
         </p>
       ) : (
         <ul className="space-y-4" data-testid="watch-list">
@@ -265,22 +282,25 @@ export default function WatchedAddressList() {
                   href={filterHref(entry, network)}
                   className="text-[12px] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:underline"
                 >
-                  {`${countActiveOperationFilters(entry.filters)} ${
-                    countActiveOperationFilters(entry.filters) === 1
-                      ? "filter"
-                      : "filters"
-                  }`}
+                  {t("watchList.filtersCount", {
+                    count: countActiveOperationFilters(entry.filters),
+                  })}
                 </a>
                 <button
                   type="button"
                   onClick={() => handleRemove(entry.address)}
-                  aria-label={`Unwatch ${entry.address}`}
+                  aria-label={t("watchList.unwatch", {
+                    address: entry.address,
+                  })}
                   className="ms-auto text-[12px] font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-error-text)] hover:underline"
                 >
-                  Remove
+                  {t("watchList.remove")}
                 </button>
               </div>
-              <WatchAlertSettings address={entry.address} filters={entry.filters} />
+              <WatchAlertSettings
+                address={entry.address}
+                filters={entry.filters}
+              />
             </li>
           ))}
         </ul>
@@ -290,15 +310,17 @@ export default function WatchedAddressList() {
 }
 
 /** The account page with this watch's filter pre-selected, as a shareable link. */
-function filterHref(entry: WatchEntry, network: ReturnType<typeof useNetwork>['network']): string {
+function filterHref(
+  entry: WatchEntry,
+  network: ReturnType<typeof useNetwork>["network"],
+): string {
   const baseHref = `/accounts/${entry.address}`;
   const withNetworkHref = withNetwork(baseHref, network);
   const query = operationFiltersToQueryString(entry.filters);
   if (!query) return withNetworkHref;
-  const hashIdx = withNetworkHref.indexOf('#');
-  const queryIdx = withNetworkHref.indexOf('?');
+  const queryIdx = withNetworkHref.indexOf("?");
   if (queryIdx === -1) {
-    return `${withNetworkHref}${withNetworkHref.includes('?') ? '&' : '?'}${query}`;
+    return `${withNetworkHref}${withNetworkHref.includes("?") ? "&" : "?"}${query}`;
   }
   return `${withNetworkHref.slice(0, queryIdx)}?${query}&${withNetworkHref.slice(queryIdx + 1)}`;
 }
