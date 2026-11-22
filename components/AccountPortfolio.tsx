@@ -48,6 +48,7 @@ import type { AreaChartPoint } from "@/components/charts/AreaChart";
 import BalanceHistoryChart from "@/components/BalanceHistoryChart";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { InlineError } from "@/components/ui/InlineError";
+import { t } from "@/lib/i18n";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -173,7 +174,7 @@ export default function AccountPortfolio({
         // nothing to fall back on replaces the chart with an error.
         if (!req.isCurrent() || cached) return;
         const message =
-          err instanceof Error ? err.message : "Could not load activity data.";
+          err instanceof Error ? err.message : t("portfolio.couldNotLoad");
         setFetchState({ status: "error", message });
       }
     },
@@ -215,8 +216,8 @@ export default function AccountPortfolio({
     if (allZero) {
       chartContent = (
         <EmptyState
-          title="No activity in the last 30 days"
-          description={`Transfer volume for ${assetLabel(selected)} will appear here once this account sends or receives a payment.`}
+          title={t("portfolio.noActivity")}
+          description={t("portfolio.noActivityDescription", { asset: assetLabel(selected) })}
           className="min-h-[280px] flex flex-col items-center justify-center"
         />
       );
@@ -233,11 +234,11 @@ export default function AccountPortfolio({
 
       chartContent = (
         <AreaChart
-          title={`${label} transfer volume`}
-          description={`Daily transfer volume for ${label} over the last 30 days, measured in ${label}.`}
+          title={t("portfolio.transferVolume", { asset: label })}
+          description={t("portfolio.transferVolumeDescription", { asset: label })}
           data={points}
           unit={unit}
-          caption="Transfer volume (sent + received) per day · last 30 days · daily buckets"
+          caption={t("portfolio.caption")}
           height={280}
         />
       );
@@ -250,7 +251,7 @@ export default function AccountPortfolio({
         id="portfolio-heading"
         className="font-extrabold text-base mb-3 text-[var(--color-text-primary)]"
       >
-        Portfolio Activity
+        {t("portfolio.heading")}
       </h2>
 
       {/* Asset selector pill row. These are toggle buttons, not ARIA tabs: they
@@ -260,7 +261,7 @@ export default function AccountPortfolio({
         id={assetGroupId}
         className="flex flex-wrap items-center gap-2 mb-4"
         role="group"
-        aria-label="Select asset to view"
+        aria-label={t("portfolio.selectAsset")}
       >
         {visible.map((b) => {
           const key = assetKey(b);
@@ -294,14 +295,14 @@ export default function AccountPortfolio({
             onClick={() => setShowAll((v) => !v)}
             className="text-[12px] font-semibold rounded-full px-3 py-1 border border-[var(--color-border-default)] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)] transition-colors motion-reduce:transition-none"
           >
-            {showAll ? "Show less" : `+${overflowCount} more`}
+            {showAll ? t("portfolio.showLess") : t("portfolio.showMore", { count: overflowCount })}
           </button>
         )}
       </div>
 
       {/* Loading is silent on screen without this; the skeleton is aria-hidden. */}
       <p role="status" className="sr-only">
-        {fetchState.status === "loading" ? "Loading transfer volume" : ""}
+        {fetchState.status === "loading" ? t("portfolio.loadingVolume") : ""}
       </p>
 
       {/* Keyed on the asset, so switching assets starts a fresh history rather

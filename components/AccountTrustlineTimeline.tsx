@@ -15,6 +15,7 @@ import type { TrustlineOp } from "@/lib/types";
 import { truncateAddress } from "@/lib/formatters";
 import TimeAgo from "./TimeAgo";
 import LoadMoreFooter from "./LoadMoreFooter";
+import { t } from "@/lib/i18n";
 
 const PAGE_SIZE = 25;
 /** Matches the seed the server component renders. */
@@ -27,8 +28,8 @@ const SEED_LIMIT = 10;
  * Any positive value is either an initial set or an update.
  */
 function trustAction(amount: string | null): string {
-  if (!amount || amount === "0") return "Removed";
-  return "Set";
+  if (!amount || amount === "0") return t("trustline.removed");
+  return t("trustline.set");
 }
 
 /**
@@ -36,7 +37,7 @@ function trustAction(amount: string | null): string {
  * Native XLM arrives as "XLM" (no colon), so handle that gracefully.
  */
 function parseAsset(asset: string | null): { code: string; issuer: string | null } {
-  if (!asset) return { code: "Unknown", issuer: null };
+  if (!asset) return { code: t("trustline.unknown"), issuer: null };
   const colon = asset.indexOf(":");
   if (colon === -1) return { code: asset, issuer: null };
   return { code: asset.slice(0, colon), issuer: asset.slice(colon + 1) };
@@ -84,7 +85,7 @@ export default function AccountTrustlineTimeline({
       );
     } catch {
       if (!req.isCurrent()) return;
-      setError("Could not load more trustline history.");
+      setError(t("trustline.couldNotLoadMore"));
       setHasNextPage(false);
     } finally {
       setLoading(false);
@@ -94,7 +95,7 @@ export default function AccountTrustlineTimeline({
   if (rows.length === 0) {
     return (
       <p className="text-sm text-[var(--color-text-muted)]">
-        No trustline changes recorded for this account.
+        {t("trustline.noChanges")}
       </p>
     );
   }
@@ -104,8 +105,8 @@ export default function AccountTrustlineTimeline({
       <div className="flex items-center justify-between mb-3 text-[13px] text-[var(--color-text-secondary)]">
         <span data-testid="trustline-count">
           {hasNextPage
-            ? `Showing ${rows.length} of recent trustline changes`
-            : `All ${rows.length} trustline change${rows.length === 1 ? "" : "s"}`}
+            ? t("trustline.showingRecent", { count: rows.length })
+            : t("trustline.allChanges", { count: rows.length })}
         </span>
       </div>
 
@@ -114,7 +115,7 @@ export default function AccountTrustlineTimeline({
         {rows.map((op) => {
           const { code, issuer } = parseAsset(op.asset);
           const action = trustAction(op.amount);
-          const isRemoval = action === "Removed";
+          const isRemoval = action === t("trustline.removed");
 
           return (
             <li key={op.id} className="mb-0 ml-5 last:mb-0">
@@ -160,7 +161,7 @@ export default function AccountTrustlineTimeline({
                   {/* Trust limit — only meaningful when setting, not removing */}
                   {!isRemoval && op.amount && (
                     <span className="text-xs text-[var(--color-text-secondary)]">
-                      Limit:{" "}
+                      {t("trustline.limit")}:{" "}
                       <span className="mono">
                         {parseFloat(op.amount).toLocaleString()} {code}
                       </span>
@@ -177,7 +178,7 @@ export default function AccountTrustlineTimeline({
                     className="mono text-xs text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-fill)]"
                   >
                     {truncateAddress(op.transactionHash, 6)}
-                    <span className="sr-only"> on stellar.expert (opens in new tab)</span>
+                    <span className="sr-only"> {t("trustline.onStellarExpert")}</span>
                   </a>
 
                   {/* Relative time */}
@@ -195,7 +196,7 @@ export default function AccountTrustlineTimeline({
         loading={loading}
         error={error}
         hasMore={hasNextPage}
-        endLabel="End of trustline history"
+        endLabel={t("trustline.endOfHistory")}
         onLoadMore={loadMore}
       />
     </>

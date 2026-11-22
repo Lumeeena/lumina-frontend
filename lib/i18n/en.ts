@@ -88,6 +88,37 @@ const en: MessageCatalogue = {
   "accountTxs.couldNotLoad": "Could not load more transactions.",
   "accountTxs.endOfResults": "End of results",
 
+  // ── Account activity feed ─────────────────────────────────────────────
+  "accountActivity.liveActivity": "Live Activity",
+  "accountActivity.waitingForActivity": "Waiting for new activity on this account\u2026",
+  "accountActivity.latestActivity": "Latest account activity",
+  "accountActivity.viewTransactionLabel": "View {type} transaction {hash} on Stellar Expert (opens in a new tab)",
+
+  // ── Account trustline timeline ────────────────────────────────────────
+  "trustline.removed": "Removed",
+  "trustline.set": "Set",
+  "trustline.unknown": "Unknown",
+  "trustline.couldNotLoadMore": "Could not load more trustline history.",
+  "trustline.noChanges": "No trustline changes recorded for this account.",
+  "trustline.showingRecent": "Showing {count} of recent trustline changes",
+  "trustline.allChanges": "All {count} trustline {count, plural, one {change} other {changes}}",
+  "trustline.limit": "Limit",
+  "trustline.onStellarExpert": "on stellar.expert (opens in new tab)",
+  "trustline.endOfHistory": "End of trustline history",
+
+  // ── Account portfolio ─────────────────────────────────────────────────
+  "portfolio.heading": "Portfolio Activity",
+  "portfolio.selectAsset": "Select asset to view",
+  "portfolio.couldNotLoad": "Could not load activity data.",
+  "portfolio.noActivity": "No activity in the last 30 days",
+  "portfolio.noActivityDescription": "Transfer volume for {asset} will appear here once this account sends or receives a payment.",
+  "portfolio.transferVolume": "{asset} transfer volume",
+  "portfolio.transferVolumeDescription": "Daily transfer volume for {asset} over the last 30 days, measured in {asset}.",
+  "portfolio.caption": "Transfer volume (sent + received) per day \u00b7 last 30 days \u00b7 daily buckets",
+  "portfolio.showLess": "Show less",
+  "portfolio.showMore": "+{count} more",
+  "portfolio.loadingVolume": "Loading transfer volume",
+
   // ── Assets ────────────────────────────────────────────────────────────
   "assets.noAssetsYet":
     "No assets indexed yet. Once the indexer sees a balance or a transfer for an asset, it appears here.",

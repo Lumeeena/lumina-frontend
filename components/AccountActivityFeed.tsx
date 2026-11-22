@@ -8,6 +8,7 @@ import type { Operation } from "@/lib/types";
 import { truncateAddress } from "@/lib/formatters";
 import TimeAgo from "./TimeAgo";
 import ConnectionIndicator from "./ConnectionIndicator";
+import { t } from "@/lib/i18n";
 
 /** Cap, for the same reason `LiveFeed` has one: a long-lived tab. */
 export const MAX_ACTIVITY_LENGTH = 25;
@@ -72,7 +73,7 @@ export default function AccountActivityFeed({ address }: { address: string }) {
           id="live-activity-heading"
           className="font-extrabold text-base text-[var(--color-text-primary)]"
         >
-          Live Activity
+          {t("accountActivity.liveActivity")}
         </h2>
         <ConnectionIndicator
           state={state}
@@ -87,10 +88,10 @@ export default function AccountActivityFeed({ address }: { address: string }) {
             role="status"
             className="p-6 text-center text-[var(--color-text-muted)] text-sm"
           >
-            Waiting for new activity on this account&hellip;
+            {t("accountActivity.waitingForActivity")}
           </div>
         ) : (
-          <ul aria-live="polite" aria-label="Latest account activity">
+          <ul aria-live="polite" aria-label={t("accountActivity.latestActivity")}>
             {operations.map((operation) => (
               <li
                 key={operation.id}
@@ -103,7 +104,10 @@ export default function AccountActivityFeed({ address }: { address: string }) {
                   href={`https://stellar.expert/explorer/public/tx/${operation.transactionHash}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={`View ${operation.type.toLowerCase()} transaction ${operation.transactionHash} on Stellar Expert (opens in a new tab)`}
+                  aria-label={t("accountActivity.viewTransactionLabel", {
+                    type: operation.type.toLowerCase(),
+                    hash: operation.transactionHash,
+                  })}
                   className="mono text-xs text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline motion-safe:transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-fill)]"
                 >
                   {truncateAddress(operation.transactionHash, 5)}

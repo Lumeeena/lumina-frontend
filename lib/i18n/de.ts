@@ -92,6 +92,37 @@ const de: MessageCatalogue = {
     "Weitere Transaktionen konnten nicht geladen werden.",
   "accountTxs.endOfResults": "Ende der Ergebnisse",
 
+  // ── Account activity feed ─────────────────────────────────────────────
+  "accountActivity.liveActivity": "Live-Aktivität",
+  "accountActivity.waitingForActivity": "Warten auf neue Aktivität auf diesem Konto\u2026",
+  "accountActivity.latestActivity": "Neueste Kontoaktivität",
+  "accountActivity.viewTransactionLabel": "{type}-Transaktion {hash} auf Stellar Expert anzeigen (öffnet in einem neuen Tab)",
+
+  // ── Account trustline timeline ────────────────────────────────────────
+  "trustline.removed": "Entfernt",
+  "trustline.set": "Gesetzt",
+  "trustline.unknown": "Unbekannt",
+  "trustline.couldNotLoadMore": "Weitere Trustline-Historie konnte nicht geladen werden.",
+  "trustline.noChanges": "Keine Trustline-Änderungen für dieses Konto aufgezeichnet.",
+  "trustline.showingRecent": "Zeige {count} der letzten Trustline-Änderungen",
+  "trustline.allChanges": "Alle {count} Trustline-{count, plural, one {Änderung} other {Änderungen}}",
+  "trustline.limit": "Limit",
+  "trustline.onStellarExpert": "auf stellar.expert (öffnet in neuem Tab)",
+  "trustline.endOfHistory": "Ende der Trustline-Historie",
+
+  // ── Account portfolio ─────────────────────────────────────────────────
+  "portfolio.heading": "Portfolio-Aktivität",
+  "portfolio.selectAsset": "Asset zum Anzeigen auswählen",
+  "portfolio.couldNotLoad": "Aktivitätsdaten konnten nicht geladen werden.",
+  "portfolio.noActivity": "Keine Aktivität in den letzten 30 Tagen",
+  "portfolio.noActivityDescription": "Transfervolumen für {asset} erscheint hier, sobald dieses Konto eine Zahlung sendet oder empfängt.",
+  "portfolio.transferVolume": "{asset} Transfervolumen",
+  "portfolio.transferVolumeDescription": "Tägliches Transfervolumen für {asset} über die letzten 30 Tage, gemessen in {asset}.",
+  "portfolio.caption": "Transfervolumen (gesendet + empfangen) pro Tag \u00b7 letzte 30 Tage \u00b7 tägliche Buckets",
+  "portfolio.showLess": "Weniger anzeigen",
+  "portfolio.showMore": "+{count} weitere",
+  "portfolio.loadingVolume": "Transfervolumen wird geladen",
+
   // ── Assets ────────────────────────────────────────────────────────────
   "assets.noAssetsYet":
     "Noch keine Assets indexiert. Sobald der Indexer einen Salzo oder eine Überweisung für ein Asset sieht, erscheint es hier.",
