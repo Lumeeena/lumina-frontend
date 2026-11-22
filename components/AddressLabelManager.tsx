@@ -10,7 +10,7 @@ import {
   importLabels,
   AddressLabels,
 } from "@/lib/addressLabels";
-import { formatAddress } from "@/lib/formatters";
+import { truncateAddress } from "@/lib/formatters";
 import { Dialog } from "@/components/ui/Dialog";
 import { t } from "@/lib/i18n";
 
@@ -193,7 +193,7 @@ export default function AddressLabelManager() {
                             {label}
                           </div>
                           <div className="text-xs text-[var(--color-text-secondary)] font-mono truncate">
-                            {formatAddress(address)}
+                            {truncateAddress(address)}
                           </div>
                         </div>
                         <button
