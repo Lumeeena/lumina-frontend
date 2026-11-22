@@ -190,6 +190,17 @@ export interface MessageCatalogue {
   "owner.withdrawBlockerActive": string;
   "owner.withdrawBlockerLocked": string;
   "owner.withdrawBlockerNoStake": string;
+  "owner.staked": string;
+  "owner.ledgerPrefix": string;
+  "owner.slashHistoryRetryHint": string;
+  "owner.retrySlashHistory": string;
+
+  // ── Registry event labels ─────────────────────────────────────────────
+  "registryEvent.registered": string;
+  "registryEvent.deactivated": string;
+  "registryEvent.metadataUpdated": string;
+  "registryEvent.ownershipTransferred": string;
+  "registryEvent.unknown": string;
 
   // ── Soroban transaction pipeline ──────────────────────────────────────
   "soroban.couldNotPrepare": string;
@@ -363,6 +374,84 @@ export interface MessageCatalogue {
 
   // ── SearchBar ─────────────────────────────────────────────────────────
   "searchBar.placeholder": string;
+
+  // ── WalletInfo ────────────────────────────────────────────────────────
+  "walletInfo.disconnect": string;
+  "walletInfo.disconnecting": string;
+  "walletInfo.disconnectLabel": string;
+
+  // ── WatchedAddressList ────────────────────────────────────────────────
+  "watchList.heading": string;
+  "watchList.exportList": string;
+  "watchList.importList": string;
+  "watchList.importFileLabel": string;
+  "watchList.importTitle": string;
+  "watchList.importPrompt": string;
+  "watchList.mergeOption": string;
+  "watchList.replaceOption": string;
+  "watchList.confirmImport": string;
+  "watchList.cancel": string;
+  "watchList.addressLabel": string;
+  "watchList.addWatch": string;
+  "watchList.errorEmpty": string;
+  "watchList.errorInvalid": string;
+  "watchList.errorDuplicate": string;
+  "watchList.importFailed": string;
+  "watchList.importFailedFallback": string;
+  "watchList.listFull": string;
+  "watchList.emptyState": string;
+  "watchList.filtersCount": string;
+  "watchList.unwatch": string;
+  "watchList.remove": string;
+
+  // ── OnboardingTour ────────────────────────────────────────────────────
+  "onTour.welcomeTitle": string;
+  "onTour.welcomeSubtitle": string;
+  "onTour.closeTour": string;
+  "onTour.stepPosition": string;
+  "onTour.skip": string;
+  "onTour.next": string;
+  "onTour.done": string;
+  "onTour.stepExplorerTitle": string;
+  "onTour.stepExplorerBody": string;
+  "onTour.stepTransactionsTitle": string;
+  "onTour.stepTransactionsBody": string;
+  "onTour.stepEventsTitle": string;
+  "onTour.stepEventsBody": string;
+  "onTour.stepGraphqlTitle": string;
+  "onTour.stepGraphqlBody": string;
+  "onTour.stepRegistryTitle": string;
+  "onTour.stepRegistryBody": string;
+
+  // ── CommandPalette ────────────────────────────────────────────────────
+  "commandPalette.placeholder": string;
+  "commandPalette.noResults": string;
+  "commandPalette.selectHint": string;
+  "commandPalette.navigateHint": string;
+  "commandPalette.searchAction": string;
+  "commandPalette.searchActionDescription": string;
+  "commandPalette.route.explorer.label": string;
+  "commandPalette.route.explorer.description": string;
+  "commandPalette.route.transactions.label": string;
+  "commandPalette.route.transactions.description": string;
+  "commandPalette.route.ledgers.label": string;
+  "commandPalette.route.ledgers.description": string;
+  "commandPalette.route.search.label": string;
+  "commandPalette.route.search.description": string;
+  "commandPalette.route.events.label": string;
+  "commandPalette.route.events.description": string;
+  "commandPalette.route.assets.label": string;
+  "commandPalette.route.assets.description": string;
+  "commandPalette.route.graphql.label": string;
+  "commandPalette.route.graphql.description": string;
+  "commandPalette.route.developers.label": string;
+  "commandPalette.route.developers.description": string;
+  "commandPalette.route.registry.label": string;
+  "commandPalette.route.registry.description": string;
+  "commandPalette.route.stats.label": string;
+  "commandPalette.route.stats.description": string;
+  "commandPalette.route.watch.label": string;
+  "commandPalette.route.watch.description": string;
 }
 
 export type MessageKey = keyof MessageCatalogue;

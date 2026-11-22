@@ -14,9 +14,7 @@ export default function RegistrySlashHistory({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
-  async function toggle() {
-    setOpen(!open);
-    if (open || slashes !== null || loading) return;
+  async function loadHistory() {
     setLoading(true);
     setError(false);
     try {
@@ -27,6 +25,14 @@ export default function RegistrySlashHistory({
       setError(true);
     } finally {
       setLoading(false);
+    }
+  }
+
+  function toggle() {
+    const next = !open;
+    setOpen(next);
+    if (next && slashes === null) {
+      void loadHistory();
     }
   }
 
@@ -46,9 +52,22 @@ export default function RegistrySlashHistory({
               Loading slash history…
             </p>
           ) : error ? (
-            <p role="alert" className="text-xs text-[var(--color-error-text)]">
-              Couldn&apos;t read the slash history. Close and reopen to retry.
-            </p>
+            <div
+              role="alert"
+              className="text-xs text-[var(--color-error-text)]"
+            >
+              <p>
+                Couldn&apos;t read the slash history. Check your connection,
+                then try again.
+              </p>
+              <button
+                type="button"
+                onClick={() => void loadHistory()}
+                className="mt-1 font-semibold underline underline-offset-2"
+              >
+                Retry history
+              </button>
+            </div>
           ) : slashes?.length === 0 ? (
             <p className="text-xs text-[var(--color-text-muted)]">
               No slashes recorded.

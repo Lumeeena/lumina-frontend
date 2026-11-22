@@ -3,8 +3,12 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import WalletInfo from "./WalletInfo";
+import { setLocale } from "@/lib/i18n";
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  setLocale("en");
+});
 
 describe("WalletInfo", () => {
   it("shows the connected wallet name, accessible icon, and truncated address", () => {
@@ -20,7 +24,9 @@ describe("WalletInfo", () => {
     expect(screen.getByRole("img", { name: "Freighter" })).toBeTruthy();
     expect(screen.getByText("Freighter")).toBeTruthy();
     expect(screen.getByText("GABCDEF...NOPQRS")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Disconnect wallet" })).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Disconnect wallet" }),
+    ).toBeTruthy();
   });
 
   it("uses a wallet-name fallback icon and disables disconnect while it is in progress", async () => {
@@ -42,5 +48,20 @@ describe("WalletInfo", () => {
 
     await userEvent.click(button);
     expect(onDisconnect).not.toHaveBeenCalled();
+  });
+
+  it("renders the disconnect control in German when the locale is German", () => {
+    setLocale("de");
+    render(
+      <WalletInfo
+        address="GABCDEFGHIJKLMNOPQRSTUVWXYZ234567ABCDEFGHIJKLMNOPQRS"
+        walletName="Freighter"
+        walletIcon="/freighter.svg"
+        onDisconnect={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "Wallet trennen" })).toBeTruthy();
+    expect(screen.getByText("Trennen")).toBeTruthy();
   });
 });

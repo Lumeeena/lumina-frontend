@@ -219,6 +219,17 @@ const en: MessageCatalogue = {
   "owner.withdrawBlockerLocked":
     "A slash landed recently, so withdrawal is locked until ledger {until} (currently {current}, {remaining} to go).",
   "owner.withdrawBlockerNoStake": "There is no stake to withdraw.",
+  "owner.staked": "Staked",
+  "owner.ledgerPrefix": "ledger",
+  "owner.slashHistoryRetryHint": "Check your connection, then retry.",
+  "owner.retrySlashHistory": "Retry slash history",
+
+  // ── Registry event labels ─────────────────────────────────────────────
+  "registryEvent.registered": "Registered",
+  "registryEvent.deactivated": "Deactivated",
+  "registryEvent.metadataUpdated": "Metadata updated",
+  "registryEvent.ownershipTransferred": "Ownership transferred",
+  "registryEvent.unknown": "Registry event",
 
   // ── Soroban transaction pipeline ──────────────────────────────────────
   "soroban.couldNotPrepare": "Could not prepare the transaction.",

@@ -3,9 +3,60 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search, ChevronRight } from "lucide-react";
-import { NAV_ROUTES, HOME } from "@/lib/routes";
+import { NAV_ROUTES } from "@/lib/routes";
 import { isEditableTarget } from "@/lib/shortcuts";
 import { Dialog } from "@/components/ui/Dialog";
+import { t, type MessageKey } from "@/lib/i18n";
+
+const ROUTE_MESSAGE_KEYS: Record<
+  string,
+  { label: MessageKey; description: MessageKey }
+> = {
+  "/explorer": {
+    label: "commandPalette.route.explorer.label",
+    description: "commandPalette.route.explorer.description",
+  },
+  "/transactions": {
+    label: "commandPalette.route.transactions.label",
+    description: "commandPalette.route.transactions.description",
+  },
+  "/ledgers": {
+    label: "commandPalette.route.ledgers.label",
+    description: "commandPalette.route.ledgers.description",
+  },
+  "/search": {
+    label: "commandPalette.route.search.label",
+    description: "commandPalette.route.search.description",
+  },
+  "/events": {
+    label: "commandPalette.route.events.label",
+    description: "commandPalette.route.events.description",
+  },
+  "/assets": {
+    label: "commandPalette.route.assets.label",
+    description: "commandPalette.route.assets.description",
+  },
+  "/graphql": {
+    label: "commandPalette.route.graphql.label",
+    description: "commandPalette.route.graphql.description",
+  },
+  "/developers": {
+    label: "commandPalette.route.developers.label",
+    description: "commandPalette.route.developers.description",
+  },
+  "/registry": {
+    label: "commandPalette.route.registry.label",
+    description: "commandPalette.route.registry.description",
+  },
+  "/stats": {
+    label: "commandPalette.route.stats.label",
+    description: "commandPalette.route.stats.description",
+  },
+  "/watch": {
+    label: "commandPalette.route.watch.label",
+    description: "commandPalette.route.watch.description",
+  },
+};
 
 export interface PaletteItem {
   id: string;
@@ -28,8 +79,8 @@ export default function CommandPalette() {
   const items: PaletteItem[] = [
     {
       id: "search",
-      label: "Search",
-      description: "Search Stellar addresses and transactions",
+      label: t("commandPalette.searchAction"),
+      description: t("commandPalette.searchActionDescription"),
       icon: <Search className="w-4 h-4" />,
       onSelect: () => {
         router.push("/search");
@@ -37,21 +88,25 @@ export default function CommandPalette() {
       },
       category: "action",
     },
-    ...NAV_ROUTES.map((route) => ({
-      id: route.path,
-      label: route.label,
-      description: route.description,
-      onSelect: () => {
-        router.push(route.path);
-        setOpen(false);
-      },
-      category: "route" as const,
-    })),
+    ...NAV_ROUTES.map((route) => {
+      const keys = ROUTE_MESSAGE_KEYS[route.path];
+      return {
+        id: route.path,
+        label: keys ? t(keys.label) : route.label,
+        description: keys ? t(keys.description) : route.description,
+        onSelect: () => {
+          router.push(route.path);
+          setOpen(false);
+        },
+        category: "route" as const,
+      };
+    }),
   ];
 
-  const filteredItems = items.filter((item) =>
-    item.label.toLowerCase().includes(query.toLowerCase()) ||
-    item.description?.toLowerCase().includes(query.toLowerCase())
+  const filteredItems = items.filter(
+    (item) =>
+      item.label.toLowerCase().includes(query.toLowerCase()) ||
+      item.description?.toLowerCase().includes(query.toLowerCase()),
   );
 
   const handleOpen = useCallback(() => {
@@ -84,7 +139,7 @@ export default function CommandPalette() {
         case "ArrowDown":
           e.preventDefault();
           setSelectedIndex((prev) =>
-            prev < filteredItems.length - 1 ? prev + 1 : prev
+            prev < filteredItems.length - 1 ? prev + 1 : prev,
           );
           break;
         case "ArrowUp":
@@ -97,10 +152,11 @@ export default function CommandPalette() {
           break;
       }
     },
-    [filteredItems.length, handleClose, handleSelect]
+    [filteredItems.length, handleClose, handleSelect],
   );
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset highlight when the query changes
     setSelectedIndex(0);
   }, [query]);
 
@@ -112,7 +168,7 @@ export default function CommandPalette() {
 
   useEffect(() => {
     const selected = listRef.current?.querySelector(
-      `[data-index="${selectedIndex}"]`
+      `[data-index="${selectedIndex}"]`,
     ) as HTMLElement;
     if (selected) {
       selected.scrollIntoView({ block: "nearest" });
@@ -149,18 +205,15 @@ export default function CommandPalette() {
           ref={inputRef}
           id="palette-input"
           type="text"
-          placeholder="Search routes and actions..."
+          placeholder={t("commandPalette.placeholder")}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
           aria-autocomplete="list"
           aria-controls="palette-list"
-          aria-expanded={open}
           className="flex-1 bg-transparent text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] outline-none"
         />
-        <span className="text-xs text-[var(--color-text-secondary)]">
-          ESC
-        </span>
+        <span className="text-xs text-[var(--color-text-secondary)]">ESC</span>
       </div>
 
       {filteredItems.length > 0 ? (
@@ -191,9 +244,7 @@ export default function CommandPalette() {
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-sm">
-                    {item.label}
-                  </div>
+                  <div className="font-medium text-sm">{item.label}</div>
                   {item.description && (
                     <div className="text-xs text-[var(--color-text-secondary)] truncate">
                       {item.description}
@@ -207,14 +258,14 @@ export default function CommandPalette() {
         </div>
       ) : (
         <div className="px-4 py-8 text-center text-[var(--color-text-secondary)]">
-          <p className="text-sm">No results found</p>
+          <p className="text-sm">{t("commandPalette.noResults")}</p>
         </div>
       )}
 
       <div className="px-4 py-3 border-t border-[var(--color-border-default)] text-xs text-[var(--color-text-tertiary)]">
         <div className="flex justify-between">
-          <span>⏎ Select</span>
-          <span>↑↓ Navigate</span>
+          <span>⏎ {t("commandPalette.selectHint")}</span>
+          <span>↑↓ {t("commandPalette.navigateHint")}</span>
         </div>
       </div>
     </Dialog>
