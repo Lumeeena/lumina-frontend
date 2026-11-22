@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { t } from "@/lib/i18n";
 
 export interface BreadcrumbItem {
   label: string;
@@ -18,7 +19,7 @@ interface BreadcrumbsProps {
 export default function Breadcrumbs({ items }: BreadcrumbsProps) {
   return (
     <nav
-      aria-label="Breadcrumb"
+      aria-label={t("breadcrumbs.ariaLabel")}
       className="mb-4"
     >
       <ol className="flex flex-wrap gap-2 text-sm">

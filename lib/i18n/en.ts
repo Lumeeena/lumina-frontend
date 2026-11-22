@@ -363,6 +363,44 @@ const en: MessageCatalogue = {
 
   // ── SearchBar ─────────────────────────────────────────────────────────
   "searchBar.placeholder": "Search an account, transaction, contract or memo\u2026",
+  "searchBar.searchKindAccount": "Account",
+  "searchBar.searchKindContract": "Contract",
+  "searchBar.searchKindMuxed": "Muxed account",
+  "searchBar.searchKindTransaction": "Transaction",
+  "searchBar.searchKindMemo": "Memo search",
+
+  // ── Breadcrumbs ───────────────────────────────────────────────────────
+  "breadcrumbs.ariaLabel": "Breadcrumb",
+
+  // ── AddressLabelManager ───────────────────────────────────────────────
+  "addressLabelManager.labels": "Labels",
+  "addressLabelManager.manageLabels": "Manage address labels",
+  "addressLabelManager.title": "Address Labels",
+  "addressLabelManager.addNewLabel": "Add New Label",
+  "addressLabelManager.addressPlaceholder": "Stellar address",
+  "addressLabelManager.labelPlaceholder": "Label",
+  "addressLabelManager.addLabel": "Add Label",
+  "addressLabelManager.yourLabels": "Your Labels",
+  "addressLabelManager.save": "Save",
+  "addressLabelManager.edit": "Edit",
+  "addressLabelManager.deleteLabel": "Delete label",
+  "addressLabelManager.invalidFormat": "Invalid label format",
+  "addressLabelManager.failedToRead": "Failed to read file",
+  "addressLabelManager.export": "Export",
+  "addressLabelManager.import": "Import",
+  "addressLabelManager.exportTitle": "Export labels as JSON",
+  "addressLabelManager.importTitle": "Import labels from JSON",
+  "addressLabelManager.importFile": "Import labels file",
+
+  // ── PushOptIn ─────────────────────────────────────────────────────────
+  "pushOptIn.unsupported": "This browser cannot deliver notifications for watched activity. The in-app alerts still work.",
+  "pushOptIn.denied": "Notifications are blocked for this site. Re-enable them in your browser's site settings to get alerts while this tab is in the background. The in-app alerts are unaffected.",
+  "pushOptIn.subscribed": "Browser notifications are on. You will be notified when a watched address is active and this tab is in the background.",
+  "pushOptIn.turnOff": "Turn off",
+  "pushOptIn.description": "Get a browser notification when a watched address is active and this tab is in the background.",
+  "pushOptIn.noVapidKey": "Browser notifications need a VAPID public key. Set NEXT_PUBLIC_VAPID_PUBLIC_KEY to enable them — the in-app alerts work without it.",
+  "pushOptIn.enable": "Enable notifications",
+  "pushOptIn.enabling": "Enabling…",
 };
 
 export default en;

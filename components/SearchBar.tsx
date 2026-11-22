@@ -7,6 +7,7 @@ import {
   searchHref,
   SEARCH_KIND_LABEL,
 } from "@/lib/searchQuery";
+import { t } from "@/lib/i18n";
 
 /**
  * The one search box for everything on the network.
@@ -21,8 +22,8 @@ import {
  * `lib/shortcuts.ts`); without it the shortcut has nothing to land on.
  */
 export default function SearchBar({
-  placeholder = "Search an account, transaction, contract or memo…",
-  buttonLabel = "Search",
+  placeholder = t("searchBar.placeholder"),
+  buttonLabel = t("common.search"),
 }: {
   placeholder?: string;
   buttonLabel?: string;
@@ -47,7 +48,7 @@ export default function SearchBar({
           value={value}
           onChange={(e) => setValue(e.target.value)}
           placeholder={placeholder}
-          aria-label="Search"
+          aria-label={t("common.search")}
           className={`w-full min-h-[46px] px-3.5 py-2.5 text-[13px] mono bg-[var(--color-bg-subtle)] border border-[var(--color-border-default)] rounded-[9px] focus:border-[var(--color-border-strong)] ${
             classified ? "pr-[104px]" : ""
           }`}

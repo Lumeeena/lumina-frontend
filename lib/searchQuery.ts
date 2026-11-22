@@ -1,4 +1,5 @@
 import { StrKey } from "@stellar/stellar-sdk";
+import { t } from "@/lib/i18n";
 
 /**
  * Universal search classification.
@@ -106,9 +107,9 @@ export function searchHref({ kind, value }: ClassifiedSearch): string {
  * {@link SearchKind}.
  */
 export const SEARCH_KIND_LABEL: Record<SearchKind, string> = {
-  account: "Account",
-  contract: "Contract",
-  muxed: "Muxed account",
-  transaction: "Transaction",
-  memo: "Memo search",
+  get account() { return t("searchBar.searchKindAccount"); },
+  get contract() { return t("searchBar.searchKindContract"); },
+  get muxed() { return t("searchBar.searchKindMuxed"); },
+  get transaction() { return t("searchBar.searchKindTransaction"); },
+  get memo() { return t("searchBar.searchKindMemo"); },
 };

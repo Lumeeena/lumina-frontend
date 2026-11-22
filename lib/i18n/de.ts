@@ -386,6 +386,44 @@ const de: MessageCatalogue = {
 
   // ── SearchBar ─────────────────────────────────────────────────────────
   "searchBar.placeholder": "Konto, Transaktion, Vertrag oder Memo suchen\u2026",
+  "searchBar.searchKindAccount": "Konto",
+  "searchBar.searchKindContract": "Vertrag",
+  "searchBar.searchKindMuxed": "Gemuxtes Konto",
+  "searchBar.searchKindTransaction": "Transaktion",
+  "searchBar.searchKindMemo": "Memo-Suche",
+
+  // ── Breadcrumbs ───────────────────────────────────────────────────────
+  "breadcrumbs.ariaLabel": "Breadcrumb",
+
+  // ── AddressLabelManager ───────────────────────────────────────────────
+  "addressLabelManager.labels": "Labels",
+  "addressLabelManager.manageLabels": "Adressen-Labels verwalten",
+  "addressLabelManager.title": "Adressen-Labels",
+  "addressLabelManager.addNewLabel": "Neues Label hinzufügen",
+  "addressLabelManager.addressPlaceholder": "Stellar-Adresse",
+  "addressLabelManager.labelPlaceholder": "Label",
+  "addressLabelManager.addLabel": "Label hinzufügen",
+  "addressLabelManager.yourLabels": "Ihre Labels",
+  "addressLabelManager.save": "Speichern",
+  "addressLabelManager.edit": "Bearbeiten",
+  "addressLabelManager.deleteLabel": "Label löschen",
+  "addressLabelManager.invalidFormat": "Ungültiges Label-Format",
+  "addressLabelManager.failedToRead": "Datei konnte nicht gelesen werden",
+  "addressLabelManager.export": "Exportieren",
+  "addressLabelManager.import": "Importieren",
+  "addressLabelManager.exportTitle": "Labels als JSON exportieren",
+  "addressLabelManager.importTitle": "Labels aus JSON importieren",
+  "addressLabelManager.importFile": "Label-Datei importieren",
+
+  // ── PushOptIn ─────────────────────────────────────────────────────────
+  "pushOptIn.unsupported": "Dieser Browser kann keine Benachrichtigungen für beobachtete Aktivitäten übermitteln. Die In-App-Benachrichtigungen funktionieren weiterhin.",
+  "pushOptIn.denied": "Benachrichtigungen sind für diese Website blockiert. Aktivieren Sie sie in den Website-Einstellungen Ihres Browsers erneut, um Benachrichtigungen zu erhalten, während dieser Tab im Hintergrund ist. Die In-App-Benachrichtigungen sind nicht betroffen.",
+  "pushOptIn.subscribed": "Browser-Benachrichtigungen sind aktiviert. Sie werden benachrichtigt, wenn eine beobachtete Adresse aktiv ist und dieser Tab im Hintergrund ist.",
+  "pushOptIn.turnOff": "Ausschalten",
+  "pushOptIn.description": "Erhalten Sie eine Browser-Benachrichtigung, wenn eine beobachtete Adresse aktiv ist und dieser Tab im Hintergrund ist.",
+  "pushOptIn.noVapidKey": "Browser-Benachrichtigungen benötigen einen öffentlichen VAPID-Schlüssel. Setzen Sie NEXT_PUBLIC_VAPID_PUBLIC_KEY, um sie zu aktivieren — die In-App-Benachrichtigungen funktionieren ohne ihn.",
+  "pushOptIn.enable": "Benachrichtigungen aktivieren",
+  "pushOptIn.enabling": "Wird aktiviert\u2026",
 };
 
 export default de;

@@ -12,6 +12,7 @@ import {
 } from "@/lib/addressLabels";
 import { formatAddress } from "@/lib/formatters";
 import { Dialog } from "@/components/ui/Dialog";
+import { t } from "@/lib/i18n";
 
 export default function AddressLabelManager() {
   const [open, setOpen] = useState(false);
@@ -88,10 +89,10 @@ export default function AddressLabelManager() {
           setLabels(readLabels());
           setImportError("");
         } else {
-          setImportError("Invalid label format");
+          setImportError(t("addressLabelManager.invalidFormat"));
         }
       } catch {
-        setImportError("Failed to read file");
+        setImportError(t("addressLabelManager.failedToRead"));
       }
     };
     reader.readAsText(file);
@@ -105,16 +106,16 @@ export default function AddressLabelManager() {
         onClick={() => setOpen(!open)}
         aria-haspopup="dialog"
         className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-        title="Manage address labels"
+        title={t("addressLabelManager.manageLabels")}
       >
         <Tag className="w-4 h-4" />
-        <span className="hidden sm:inline">Labels</span>
+        <span className="hidden sm:inline">{t("addressLabelManager.labels")}</span>
       </button>
 
       <Dialog
         open={open}
         onClose={() => setOpen(false)}
-        title="Address Labels"
+        title={t("addressLabelManager.title")}
         triggerRef={triggerRef}
         maxWidth="lg"
         className="max-h-[80vh] overflow-y-auto"
@@ -122,19 +123,19 @@ export default function AddressLabelManager() {
         <div className="space-y-4">
           <div className="p-4 bg-[var(--color-bg-elevated)] rounded-lg border border-[var(--color-border-default)]">
             <h3 className="font-semibold text-sm mb-3 text-[var(--color-text-primary)]">
-              Add New Label
+              {t("addressLabelManager.addNewLabel")}
             </h3>
             <div className="space-y-2">
               <input
                 type="text"
-                placeholder="Stellar address"
+                placeholder={t("addressLabelManager.addressPlaceholder")}
                 value={newAddress}
                 onChange={(e) => setNewAddress(e.target.value)}
                 className="w-full px-3 py-2 text-sm bg-[var(--color-bg-base)] border border-[var(--color-border-default)] rounded text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] outline-none focus:border-[var(--color-accent-border)]"
               />
               <input
                 type="text"
-                placeholder="Label"
+                placeholder={t("addressLabelManager.labelPlaceholder")}
                 value={newLabel}
                 onChange={(e) => setNewLabel(e.target.value)}
                 onKeyDown={(e) => {
@@ -147,7 +148,7 @@ export default function AddressLabelManager() {
                 onClick={handleAddLabel}
                 className="w-full px-3 py-2 text-sm font-semibold bg-[var(--color-accent-fill)] hover:bg-[var(--color-accent-fill-hover)] text-white rounded transition-colors"
               >
-                Add Label
+                {t("addressLabelManager.addLabel")}
               </button>
             </div>
           </div>
@@ -155,7 +156,7 @@ export default function AddressLabelManager() {
           {Object.entries(labels).length > 0 && (
             <div className="p-4 bg-[var(--color-bg-elevated)] rounded-lg border border-[var(--color-border-default)]">
               <h3 className="font-semibold text-sm mb-3 text-[var(--color-text-primary)]">
-                Your Labels
+                {t("addressLabelManager.yourLabels")}
               </h3>
               <div className="space-y-2">
                 {Object.entries(labels).map(([address, label]) => (
@@ -182,7 +183,7 @@ export default function AddressLabelManager() {
                           onClick={handleEditLabel}
                           className="px-2 py-1 text-xs font-semibold bg-[var(--color-accent-fill)] text-white rounded hover:bg-[var(--color-accent-fill-hover)]"
                         >
-                          Save
+                          {t("addressLabelManager.save")}
                         </button>
                       </>
                     ) : (
@@ -203,13 +204,13 @@ export default function AddressLabelManager() {
                           }}
                           className="px-2 py-1 text-xs font-semibold text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)]"
                         >
-                          Edit
+                          {t("addressLabelManager.edit")}
                         </button>
                         <button
                           type="button"
                           onClick={() => handleRemoveLabel(address)}
                           className="p-1 text-[var(--color-text-secondary)] hover:text-red-600 transition-colors"
-                          title="Delete label"
+                          title={t("addressLabelManager.deleteLabel")}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -233,19 +234,19 @@ export default function AddressLabelManager() {
             type="button"
             onClick={handleExport}
             className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-            title="Export labels as JSON"
+            title={t("addressLabelManager.exportTitle")}
           >
             <Download className="w-4 h-4" />
-            Export
+            {t("addressLabelManager.export")}
           </button>
           <button
             type="button"
             onClick={handleImportClick}
             className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-            title="Import labels from JSON"
+            title={t("addressLabelManager.importTitle")}
           >
             <Upload className="w-4 h-4" />
-            Import
+            {t("addressLabelManager.import")}
           </button>
           <input
             ref={fileInputRef}
@@ -253,7 +254,7 @@ export default function AddressLabelManager() {
             accept=".json"
             onChange={handleImportFile}
             className="hidden"
-            aria-label="Import labels file"
+            aria-label={t("addressLabelManager.importFile")}
           />
         </footer>
       </Dialog>
