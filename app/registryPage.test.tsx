@@ -8,10 +8,8 @@
  * the wallet journey that no other test reaches.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { renderToString } from 'react-dom/server';
-import { hydrateRoot, type Root } from 'react-dom/client';
 
 const connectWallet = vi.hoisted(() => vi.fn());
 const getConnectedWallet = vi.hoisted(() => vi.fn());
@@ -45,6 +43,7 @@ vi.mock("@/lib/registry", async () => {
     getActiveProfiles,
     getContractsByOwner,
     getSlashes,
+    getRegistryVersion: vi.fn().mockResolvedValue(2),
     // Categories arrive attached to the profiles in production; here the
     // profiles are built already carrying them.
     withCategories: async (profiles: unknown[]) => profiles,
@@ -57,16 +56,31 @@ vi.mock("@/lib/graphql", () => ({
   PUBLIC_GRAPHQL_URL: "http://test/graphql",
 }));
 
+import RegistryPage from "./registry/page";
 import RegistryWorkspace from "@/components/RegistryWorkspace";
 import RegistryListing from "@/components/RegistryListing";
 
-vi.mock("next/cache", () => ({ unstable_cache: (read: () => unknown) => read }));
+vi.mock("@/components/ui/Toast", () => ({
+  useToast: () => ({
+    addToast: vi.fn(),
+    removeToast: vi.fn(),
+    clearAll: vi.fn(),
+    toasts: [],
+  }),
+  ToastProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
+
+vi.mock("next/cache", () => ({
+  unstable_cache: (read: () => unknown) => read,
+}));
 vi.mock("@/app/registry/actions", () => ({ refreshRegistry: vi.fn() }));
 
 async function renderRegistry() {
-  const raw = new URLSearchParams(nav.query).get('category');
-  const { isCategory } = await import('@/lib/registry');
-  const listing = await RegistryListing({ category: isCategory(raw) ? raw : null });
+  const raw = new URLSearchParams(nav.query).get("category");
+  const { isCategory } = await import("@/lib/registry");
+  const listing = await RegistryListing({
+    category: isCategory(raw) ? raw : null,
+  });
   return render(<RegistryWorkspace listing={listing} />);
 }
 
@@ -82,8 +96,12 @@ const session = (address: string) => ({
 
 const profile = (
   name: string,
-  reputation: { stake?: bigint; verified?: boolean; slashedTotal?: bigint } = {},
-  categories: string[] = []
+  reputation: {
+    stake?: bigint;
+    verified?: boolean;
+    slashedTotal?: bigint;
+  } = {},
+  categories: string[] = [],
 ) => ({
   contractId: C1,
   owner: OWNER,
@@ -102,15 +120,24 @@ const profile = (
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.stubGlobal("IntersectionObserver", class {
-    private callback: IntersectionObserverCallback;
-    constructor(callback: IntersectionObserverCallback) { this.callback = callback; }
-    observe = (target: Element) => queueMicrotask(() =>
-      this.callback([{ target, isIntersecting: true } as IntersectionObserverEntry], this as unknown as IntersectionObserver)
-    );
-    unobserve = vi.fn();
-    disconnect = vi.fn();
-  });
+  vi.stubGlobal(
+    "IntersectionObserver",
+    class {
+      private callback: IntersectionObserverCallback;
+      constructor(callback: IntersectionObserverCallback) {
+        this.callback = callback;
+      }
+      observe = (target: Element) =>
+        queueMicrotask(() =>
+          this.callback(
+            [{ target, isIntersecting: true } as IntersectionObserverEntry],
+            this as unknown as IntersectionObserver,
+          ),
+        );
+      unobserve = vi.fn();
+      disconnect = vi.fn();
+    },
+  );
   nav.query = "";
   // Nothing persisted, nothing connected: the state a first-time visitor gets.
   readPersistedSession.mockReturnValue(null);
@@ -127,27 +154,17 @@ afterEach(() => {
 });
 
 describe("RegistryPage", () => {
-  it("waits until the global list nears the viewport before mounting its cards", async () => {
-    let onIntersect!: IntersectionObserverCallback;
-    const observe = vi.fn();
-    const unobserve = vi.fn();
-    const disconnect = vi.fn();
-    vi.stubGlobal("IntersectionObserver", class {
-      constructor(callback: IntersectionObserverCallback) { onIntersect = callback; }
-      observe = observe;
-      unobserve = unobserve;
-      disconnect = disconnect;
-    });
-
-    render(<RegistryPage />);
-    expect(await screen.findByText(/registry entries will load as you scroll/i)).toBeTruthy();
-    expect(screen.queryByText("Global Protocol")).toBeNull();
-    expect(screen.getByTestId("registry-list").style.minHeight).toBe("144px");
-    await waitFor(() => expect(observe).toHaveBeenCalledTimes(1));
-
-    act(() => onIntersect([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver));
-    expect(await screen.findByText("Global Protocol")).toBeTruthy();
-    expect(disconnect).toHaveBeenCalled();
+  it("renders the registry page entry point directly", async () => {
+    const searchParams = Promise.resolve({});
+    render(await RegistryPage({ searchParams }));
+    expect(
+      await screen.findByRole("heading", {
+        level: 1,
+        name: /lumina registry/i,
+      }),
+    ).toBeTruthy();
+    expect(screen.getByText(/an on-chain soroban manifest/i)).toBeTruthy();
+    expect(screen.getByTestId("registry-list")).toBeTruthy();
   });
 
   it("offers connection and the global list when no wallet is connected", async () => {
@@ -221,13 +238,21 @@ describe("RegistryPage", () => {
   });
 
   it("offers a working retry when slash history cannot be read", async () => {
-    getSlashes.mockRejectedValueOnce(new Error("network down")).mockResolvedValueOnce([]);
-    render(<RegistryPage />);
+    getSlashes
+      .mockRejectedValueOnce(new Error("network down"))
+      .mockResolvedValueOnce([]);
+    await renderRegistry();
 
     await screen.findByText("Global Protocol");
-    await userEvent.click(screen.getByRole("button", { name: "Slash history" }));
-    expect(await screen.findByRole("button", { name: "Retry history" })).toBeTruthy();
-    await userEvent.click(screen.getByRole("button", { name: "Retry history" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "Slash history" }),
+    );
+    expect(
+      await screen.findByRole("button", { name: "Retry history" }),
+    ).toBeTruthy();
+    await userEvent.click(
+      screen.getByRole("button", { name: "Retry history" }),
+    );
     expect(await screen.findByText("No slashes recorded.")).toBeTruthy();
     expect(getSlashes).toHaveBeenCalledTimes(2);
   });
@@ -278,23 +303,37 @@ describe("RegistryPage", () => {
     connectWallet.mockResolvedValue({ address: OWNER });
     getConnectedWallet.mockResolvedValue(session(OWNER));
     checkNetworkMismatch.mockResolvedValue({ error: "Network mismatch" });
-    render(<RegistryPage />);
+    await renderRegistry();
 
-    await userEvent.click(screen.getByRole("button", { name: /connect wallet/i }));
-    expect((await screen.findByRole("alert")).textContent).toMatch(/switch your wallet to the stellar testnet/i);
+    await userEvent.click(
+      await screen.findByRole("button", { name: /connect wallet/i }),
+    );
+    expect((await screen.findByRole("alert")).textContent).toMatch(
+      /switch your wallet to the stellar testnet/i,
+    );
   });
 
   it("recovers from a failed saved wallet session", async () => {
-    readPersistedSession.mockReturnValue({ address: OWNER, walletId: "freighter" });
+    readPersistedSession.mockReturnValue({
+      address: OWNER,
+      walletId: "freighter",
+    });
     getConnectedWallet.mockRejectedValue(new Error("extension unavailable"));
-    render(<RegistryPage />);
+    await renderRegistry();
 
-    expect((await screen.findByRole("alert")).textContent).toMatch(/saved wallet session could not be restored/i);
-    expect(screen.getByRole("button", { name: /connect wallet/i })).toBeTruthy();
+    expect((await screen.findByRole("alert")).textContent).toMatch(
+      /saved wallet session could not be restored/i,
+    );
+    expect(
+      screen.getByRole("button", { name: /connect wallet/i }),
+    ).toBeTruthy();
   });
 
   it("opens on the owner dashboard when a wallet is already connected", async () => {
-    readPersistedSession.mockReturnValue({ address: OWNER, walletId: "freighter" });
+    readPersistedSession.mockReturnValue({
+      address: OWNER,
+      walletId: "freighter",
+    });
     getConnectedWallet.mockResolvedValue(session(OWNER));
     await renderRegistry();
 
@@ -303,7 +342,10 @@ describe("RegistryPage", () => {
   });
 
   it("confirms a persisted session without opening the picker", async () => {
-    readPersistedSession.mockReturnValue({ address: OWNER, walletId: "freighter" });
+    readPersistedSession.mockReturnValue({
+      address: OWNER,
+      walletId: "freighter",
+    });
     getConnectedWallet.mockResolvedValue(session(OWNER));
     await renderRegistry();
 
@@ -316,7 +358,9 @@ describe("RegistryPage", () => {
   it("never asks for a session when nothing is persisted", async () => {
     await renderRegistry();
 
-    expect(await screen.findByRole("button", { name: /connect wallet/i })).toBeTruthy();
+    expect(
+      await screen.findByRole("button", { name: /connect wallet/i }),
+    ).toBeTruthy();
     // No persisted session means nothing to confirm, so the wallet kit — which
     // is loaded by that confirmation — is never pulled in at all.
     expect(getConnectedWallet).not.toHaveBeenCalled();
@@ -324,7 +368,9 @@ describe("RegistryPage", () => {
   });
 
   it("holds the connect button in a loading state while the kit arrives", async () => {
-    let finishConnect!: (result: { address: string } | { error: string }) => void;
+    let finishConnect!: (
+      result: { address: string } | { error: string },
+    ) => void;
     connectWallet.mockReturnValue(
       new Promise<{ address: string } | { error: string }>((resolve) => {
         finishConnect = resolve;
@@ -333,7 +379,9 @@ describe("RegistryPage", () => {
     getConnectedWallet.mockResolvedValue(session(OWNER));
     await renderRegistry();
 
-    const button = await screen.findByRole("button", { name: /connect wallet/i });
+    const button = await screen.findByRole("button", {
+      name: /connect wallet/i,
+    });
     await userEvent.click(button);
 
     const pending = await screen.findByRole("button", { name: /connecting/i });
@@ -353,18 +401,25 @@ describe("RegistryPage", () => {
     });
     await renderRegistry();
 
-    await userEvent.click(await screen.findByRole("button", { name: /connect wallet/i }));
+    await userEvent.click(
+      await screen.findByRole("button", { name: /connect wallet/i }),
+    );
 
     expect(await screen.findByText("Network Mismatch")).toBeTruthy();
     expect(screen.getByRole("alert").textContent).toContain(
       "your wallet is on Testnet",
     );
     expect(screen.getByText("Freighter")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Disconnect wallet" })).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Disconnect wallet" }),
+    ).toBeTruthy();
   });
 
   it("switches back to the global list on demand", async () => {
-    readPersistedSession.mockReturnValue({ address: OWNER, walletId: "freighter" });
+    readPersistedSession.mockReturnValue({
+      address: OWNER,
+      walletId: "freighter",
+    });
     getConnectedWallet.mockResolvedValue(session(OWNER));
     await renderRegistry();
 
@@ -383,7 +438,9 @@ describe("RegistryPage", () => {
     await renderRegistry();
 
     await waitFor(() =>
-      expect(screen.getByRole("alert").textContent).toMatch(/temporarily unavailable/i),
+      expect(screen.getByRole("alert").textContent).toMatch(
+        /temporarily unavailable/i,
+      ),
     );
     // The copy is the component's, not the raw error — but the way out is here.
     expect(screen.getByRole("button", { name: /retry/i })).toBeTruthy();
@@ -392,7 +449,10 @@ describe("RegistryPage", () => {
   it("narrows the list to the category named in the URL", async () => {
     getActiveProfiles.mockResolvedValue([
       { ...profile("Gaming Protocol", {}, ["Gaming"]), contractId: "CGAMING" },
-      { ...profile("Payments Protocol", {}, ["Payments"]), contractId: "CPAYMENTS" },
+      {
+        ...profile("Payments Protocol", {}, ["Payments"]),
+        contractId: "CPAYMENTS",
+      },
     ]);
     nav.query = "category=Gaming";
     await renderRegistry();
@@ -405,7 +465,9 @@ describe("RegistryPage", () => {
 
   it("renders category links with shareable server navigation URLs", async () => {
     await renderRegistry();
-    expect(screen.getByRole('link', { name: 'Gaming' }).getAttribute('href')).toBe('/registry?category=Gaming');
+    expect(
+      screen.getByRole("link", { name: "Gaming" }).getAttribute("href"),
+    ).toBe("/registry?category=Gaming");
   });
 
   it("renders categories where present and no gap where absent", async () => {

@@ -110,7 +110,7 @@ braces.
 
 ### Pluralisation
 
-A plural block selects between `one` and `other` based on a numeric value:
+A plural block selects between categories based on a numeric value using `Intl.PluralRules` for the active locale:
 
 ```ts
 "watch.watchedAddresses": "{count} watched {count, plural, one {address} other {addresses}}",
@@ -119,9 +119,13 @@ A plural block selects between `one` and `other` based on a numeric value:
 `t("watch.watchedAddresses", { count: 1 })` gives `"1 watched address"`;
 `count: 5` gives `"5 watched addresses"`.
 
-Languages with more than two plural forms (e.g. Arabic, Polish) are not yet
-supported by the runtime. If your language needs them, open an issue and we
-will extend the plural resolver.
+Languages with more than two plural forms (such as Arabic and Polish) are supported. Plural blocks accept all Unicode CLDR categories: `zero`, `one`, `two`, `few`, `many`, and `other`:
+
+```ts
+"watch.watchedAddresses": "{count} watched {count, plural, one {adres} few {adresy} many {adresów} other {adresu}}",
+```
+
+The runtime selects the category matching the active locale, and falls back to `other` if a category is omitted.
 
 ### What not to translate
 

@@ -92,6 +92,38 @@ const de: MessageCatalogue = {
     "Weitere Transaktionen konnten nicht geladen werden.",
   "accountTxs.endOfResults": "Ende der Ergebnisse",
 
+  // ── Account detail page ───────────────────────────────────────────────
+  "account.breadcrumbExplorer": "Explorer",
+  "account.breadcrumbAccounts": "Konten",
+  "account.notFoundTitle": "Konto nicht gefunden",
+  "account.notFoundBody":
+    "Die Adresse {address} existiert nicht im Stellar-Mainnet oder wurde noch nie aufgeladen. Überprüfen Sie die Adresse und das Netzwerk oder laden Sie das Konto auf, bevor Sie es erneut aufrufen.",
+  "account.merged": "Zusammengeführt",
+  "account.lastModifiedLedger": "Zuletzt geändert bei Ledger {ledger}",
+  "account.statSequence": "Sequenz",
+  "account.statSubentries": "Unterpositionen",
+  "account.statSponsoring": "Sponsoring",
+  "account.statSponsored": "Gesponsert",
+  "account.flagAuthRequired": "Authentifizierung erforderlich",
+  "account.flagAuthRevocable": "Authentifizierung widerrufbar",
+  "account.flagAuthImmutable": "Authentifizierung unveränderlich",
+  "account.flagAuthClawbackEnabled": "Clawback aktiviert",
+  "account.flagNone": "Keine besonderen Flags",
+  "account.balancesTitle": "Guthaben",
+  "account.balancesAriaLabel": "Kontoguthaben",
+  "account.balanceAsset": "Vermögenswert",
+  "account.balanceIssuer": "Emittent",
+  "account.balanceBalance": "Saldo",
+  "account.balanceLimit": "Limit",
+  "account.recentTransactions": "Letzte Transaktionen",
+  "account.tradesTitle": "Handel",
+  "account.tradesUnavailable":
+    "Handelsverlauf ist nicht verfügbar. Überprüfen Sie Ihre Verbindung und aktualisieren Sie diese Seite, um es erneut zu versuchen.",
+  "account.recentOperations": "Letzte Operationen",
+  "account.trustlinesTitle": "Trustline-Verlauf",
+  "account.trustlinesUnavailable":
+    "Trustline-Verlauf ist nicht verfügbar. Überprüfen Sie Ihre Verbindung und aktualisieren Sie diese Seite, um es erneut zu versuchen.",
+
   // ── Assets ────────────────────────────────────────────────────────────
   "assets.noAssetsYet":
     "Noch keine Assets indexiert. Sobald der Indexer einen Salzo oder eine Überweisung für ein Asset sieht, erscheint es hier.",
@@ -193,14 +225,29 @@ const de: MessageCatalogue = {
   "owner.withdrawBlockerLocked":
     "Ein Slash ist kürzlich gelandet, daher ist die Auszahlung bis zu Ledger {until} gesperrt (aktuell {current}, noch {remaining}).",
   "owner.withdrawBlockerNoStake": "Es gibt keinen Einsatz zum Abheben.",
+  "owner.staked": "Eingesetzt",
+  "owner.ledgerPrefix": "Ledger",
+  "owner.slashHistoryRetryHint":
+    "Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+  "owner.retrySlashHistory": "Slash-Verlauf erneut laden",
+
+  // ── Registry event labels ─────────────────────────────────────────────
+  "registryEvent.registered": "Registriert",
+  "registryEvent.deactivated": "Deaktiviert",
+  "registryEvent.metadataUpdated": "Metadaten aktualisiert",
+  "registryEvent.ownershipTransferred": "Eigentum übertragen",
+  "registryEvent.unknown": "Registry-Ereignis",
 
   // ── Soroban transaction pipeline ──────────────────────────────────────
   "soroban.couldNotPrepare": "Die Transaktion konnte nicht vorbereitet werden.",
   "soroban.signatureDeclined": "Die Signatur wurde in Ihrem Wallet abgelehnt.",
-  "soroban.couldNotSign": "Die Transaktion konnte nicht signiert werden. Prüfen Sie Ihr Wallet und versuchen Sie es erneut.",
+  "soroban.couldNotSign":
+    "Die Transaktion konnte nicht signiert werden. Prüfen Sie Ihr Wallet und versuchen Sie es erneut.",
   "soroban.retrySignature": "Signatur erneut anfordern",
-  "soroban.prepareAgain": "Die gespeicherte Transaktion ist nicht mehr gültig. Senden Sie erneut, um eine neue Transaktion vorzubereiten; Ihre Eingaben bleiben erhalten.",
-  "soroban.rejectionPreserved": "Signatur abgelehnt. Ihre Eingaben und die vorbereitete Transaktion bleiben gespeichert. Sie können es erneut versuchen, sobald Sie bereit sind.",
+  "soroban.prepareAgain":
+    "Die gespeicherte Transaktion ist nicht mehr gültig. Senden Sie erneut, um eine neue Transaktion vorzubereiten; Ihre Eingaben bleiben erhalten.",
+  "soroban.rejectionPreserved":
+    "Signatur abgelehnt. Ihre Eingaben und die vorbereitete Transaktion bleiben gespeichert. Sie können es erneut versuchen, sobald Sie bereit sind.",
   "soroban.networkRejected": "Das Netzwerk hat die Transaktion abgelehnt.",
   "soroban.pendingConfirmation":
     "Die Transaktion wurde gesendet, aber noch nicht bestätigt. Versuchen Sie es in einem Moment erneut.",
@@ -383,6 +430,39 @@ const de: MessageCatalogue = {
   // ── Footer ────────────────────────────────────────────────────────────
   "footer.version": "Lumina Frontend v{version}",
   "footer.copyVersion": "Version für Fehlerberichte kopieren",
+  "footer.copied": "Kopiert!",
+  "footer.copy": "Kopieren",
+  "footer.reportProblem": "Problem melden",
+  "footer.statusChangelog": "Status & Änderungsprotokoll",
+
+  // ── WatchAlertSettings ────────────────────────────────────────────────
+  "watchAlertSettings.alertFilter": "Benachrichtigungsfilter für {address}",
+  "watchAlertSettings.operation": "Operation",
+  "watchAlertSettings.anyOperation": "Jede Operation",
+  "watchAlertSettings.minimumAmount": "Mindestbetrag",
+  "watchAlertSettings.any": "Beliebig",
+  "watchAlertSettings.asset": "Asset",
+  "watchAlertSettings.noFilter": "Kein Filter — jede Operation löst eine Benachrichtigung aus.",
+  "watchAlertSettings.filtersActive": "{count} {count, plural, one {Filter} other {Filter}} aktiv.",
+  "watchAlertSettings.resetDefault": "Auf Standard zurücksetzen",
+
+  // ── RegistrySlashHistory ──────────────────────────────────────────────
+  "registrySlashHistory.slashHistory": "Slash-Verlauf",
+  "registrySlashHistory.hideSlashHistory": "Slash-Verlauf ausblenden",
+  "registrySlashHistory.loadingSlashHistory": "Slash-Verlauf wird geladen…",
+  "registrySlashHistory.couldNotReadHistory": "Slash-Verlauf konnte nicht gelesen werden. Schließen und erneut öffnen, um es zu wiederholen.",
+  "registrySlashHistory.noSlashes": "Keine Slashes aufgezeichnet.",
+  "registrySlashHistory.ledger": "Ledger {ledger}",
+
+  // ── RegistryEntryCard ─────────────────────────────────────────────────
+  "registryEntryCard.categories": "Kategorien",
+  "registryEntryCard.hideSlashHistory": "Slash-Verlauf ausblenden",
+  "registryEntryCard.slashHistory": "Slash-Verlauf",
+  "registryEntryCard.loadingSlashHistory": "Slash-Verlauf wird geladen…",
+  "registryEntryCard.couldNotReadHistory": "Slash-Verlauf konnte nicht gelesen werden. Überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+  "registryEntryCard.retryHistory": "Verlauf erneut versuchen",
+  "registryEntryCard.noSlashes": "Keine Slashes aufgezeichnet.",
+  "registryEntryCard.ledger": "Ledger {ledger}",
 
   // ── SearchBar ─────────────────────────────────────────────────────────
   "searchBar.placeholder": "Konto, Transaktion, Vertrag oder Memo suchen\u2026",
