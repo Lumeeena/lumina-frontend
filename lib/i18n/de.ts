@@ -527,6 +527,48 @@ const de: MessageCatalogue = {
   "pushOptIn.noVapidKey": "Browser-Benachrichtigungen benötigen einen öffentlichen VAPID-Schlüssel. Setzen Sie NEXT_PUBLIC_VAPID_PUBLIC_KEY, um sie zu aktivieren — die In-App-Benachrichtigungen funktionieren ohne ihn.",
   "pushOptIn.enable": "Benachrichtigungen aktivieren",
   "pushOptIn.enabling": "Wird aktiviert\u2026",
+
+  // ── CommandPalette ────────────────────────────────────────────────────
+  "commandPalette.placeholder": "Routen und Aktionen suchen...",
+  "commandPalette.noResults": "Keine Ergebnisse gefunden",
+  "commandPalette.selectHint": "Auswählen",
+  "commandPalette.navigateHint": "Navigieren",
+  "commandPalette.searchAction": "Suchen",
+  "commandPalette.searchActionDescription":
+    "Stellar-Adressen und -Transaktionen suchen",
+  "commandPalette.route.explorer.label": "Explorer",
+  "commandPalette.route.explorer.description":
+    "Durchsuchen Sie jedes Stellar-Konto oder blättern Sie durch aktuelle Transaktionen, live aktualisiert über ein GraphQL-Abonnement.",
+  "commandPalette.route.transactions.label": "Transaktionen",
+  "commandPalette.route.transactions.description":
+    "Jede indexierte Stellar-Transaktion, mit Filtern, gespeicherten Vorlagen und Cursor-Paginierung.",
+  "commandPalette.route.ledgers.label": "Ledgers",
+  "commandPalette.route.ledgers.description":
+    "Indexierte Stellar-Ledgers, neueste zuerst: Abschlusszeit, Transaktions- und Operationsanzahl sowie Lücken im Index.",
+  "commandPalette.route.search.label": "Suche",
+  "commandPalette.route.search.description":
+    "Memo-Suche über alle indexierten Transaktionen — Bestellreferenzen und Kurzcodes, sortiert nach der Trigramm-Ähnlichkeit des Backends.",
+  "commandPalette.route.events.label": "Vertragsereignisse",
+  "commandPalette.route.events.description":
+    "Von Lumina indexierte Soroban-Vertragsereignisse, filterbar nach Vertrags-ID.",
+  "commandPalette.route.assets.label": "Assets",
+  "commandPalette.route.assets.description":
+    "Jedes von Lumina indexierte Stellar-Asset — Angebots- und Inhaberzahlen, sortiert nach Inhabern oder Überweisungsvolumen.",
+  "commandPalette.route.graphql.label": "GraphQL",
+  "commandPalette.route.graphql.description":
+    "Führen Sie Abfragen gegen die Lumina GraphQL-API direkt im Browser aus, mit ausgearbeiteten Beispielen.",
+  "commandPalette.route.developers.label": "Entwickler",
+  "commandPalette.route.developers.description":
+    "API-Dokumentation, Getting-Started-Guide und Nutzungs-Dashboard für Entwickler, die mit Lumina arbeiten.",
+  "commandPalette.route.registry.label": "Registry",
+  "commandPalette.route.registry.description":
+    "Ein on-chain Soroban-Manifest der Verträge, die Lumina indexiert — registrieren Sie einen Vertrag, um in die Indizierung aufgenommen zu werden.",
+  "commandPalette.route.stats.label": "Statistiken",
+  "commandPalette.route.stats.description":
+    "Indexer-Status und Stellar-Netzwerk-Durchsatz: neuester Ledger, Transaktionsvolumen und die Mischung der Operationstypen.",
+  "commandPalette.route.watch.label": "Watchlist",
+  "commandPalette.route.watch.description":
+    "Verfolgen Sie Stellar-Adressen: ein Live-Feed der Aktivität über alles, was Sie beobachten, mit Alarmfiltern pro Adresse.",
 };
 
 export default de;

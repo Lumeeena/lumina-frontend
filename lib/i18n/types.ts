@@ -548,6 +548,56 @@ export interface MessageCatalogue {
   "codeSnippet.copiedAria": string;
   "codeSnippet.copiedStatus": string;
   "codeSnippet.copyError": string;
+
+  // ── CommandPalette ────────────────────────────────────────────────────
+  "commandPalette.placeholder": string;
+  "commandPalette.noResults": string;
+  "commandPalette.selectHint": string;
+  "commandPalette.navigateHint": string;
+  "commandPalette.searchAction": string;
+  "commandPalette.searchActionDescription": string;
+  "commandPalette.route.explorer.label": string;
+  "commandPalette.route.explorer.description": string;
+  "commandPalette.route.transactions.label": string;
+  "commandPalette.route.transactions.description": string;
+  "commandPalette.route.ledgers.label": string;
+  "commandPalette.route.ledgers.description": string;
+  "commandPalette.route.search.label": string;
+  "commandPalette.route.search.description": string;
+  "commandPalette.route.events.label": string;
+  "commandPalette.route.events.description": string;
+  "commandPalette.route.assets.label": string;
+  "commandPalette.route.assets.description": string;
+  "commandPalette.route.graphql.label": string;
+  "commandPalette.route.graphql.description": string;
+  "commandPalette.route.developers.label": string;
+  "commandPalette.route.developers.description": string;
+  "commandPalette.route.registry.label": string;
+  "commandPalette.route.registry.description": string;
+  "commandPalette.route.stats.label": string;
+  "commandPalette.route.stats.description": string;
+  "commandPalette.route.watch.label": string;
+  "commandPalette.route.watch.description": string;
+
+  // ── AddressLabelManager ───────────────────────────────────────────────
+  "addressLabelManager.labels": string;
+  "addressLabelManager.manageLabels": string;
+  "addressLabelManager.title": string;
+  "addressLabelManager.addNewLabel": string;
+  "addressLabelManager.addressPlaceholder": string;
+  "addressLabelManager.labelPlaceholder": string;
+  "addressLabelManager.addLabel": string;
+  "addressLabelManager.yourLabels": string;
+  "addressLabelManager.save": string;
+  "addressLabelManager.edit": string;
+  "addressLabelManager.deleteLabel": string;
+  "addressLabelManager.invalidFormat": string;
+  "addressLabelManager.failedToRead": string;
+  "addressLabelManager.export": string;
+  "addressLabelManager.import": string;
+  "addressLabelManager.exportTitle": string;
+  "addressLabelManager.importTitle": string;
+  "addressLabelManager.importFile": string;
 }
 
 export type MessageKey = keyof MessageCatalogue;
