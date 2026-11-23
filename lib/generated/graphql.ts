@@ -108,6 +108,30 @@ export type ContractSchema = {
   version: Scalars['Int']['output'];
 };
 
+/**
+ * Only PERSISTENT entries are archived: they survive a ledger's lifecycle and are
+ * moved to cold storage ("archived") when their TTL runs out. TEMPORARY entries
+ * are evicted outright and therefore never come back as ARCHIVED.
+ */
+export type ContractStorageDurability =
+  | 'PERSISTENT'
+  | 'TEMPORARY';
+
+/**
+ * Whether an entry is currently readable, or has been archived.
+ *
+ * Soroban archives a persistent entry whose TTL has expired: the contract still
+ * owns the state, but it is inaccessible until restored. An ARCHIVED entry is
+ * reported here rather than removed, so this is how a client tells "the contract
+ * has state that is archived" apart from "this key was never set" (which has no
+ * entry at all).
+ */
+export type ContractStorageEntryState =
+  /** Currently live and readable. */
+  | 'ACTIVE'
+  /** TTL expired; retained for the contract, inaccessible until restored. */
+  | 'ARCHIVED';
+
 export type CustomEvent = {
   contractId: Scalars['String']['output'];
   createdAt: Scalars['String']['output'];
@@ -1448,33 +1472,38 @@ export const ContractDeploymentDocument = new TypedDocumentString(`
 export type ContractStorageEntriesQueryVariables = Exact<{
   contractId: Scalars['String']['input'];
   keyPrefix?: InputMaybe<Scalars['String']['input']>;
-  durability?: InputMaybe<Scalars['String']['input']>;
+  durability?: InputMaybe<ContractStorageDurability>;
   limit?: InputMaybe<Scalars['Int']['input']>;
   cursor?: InputMaybe<Scalars['String']['input']>;
+  network?: InputMaybe<Network>;
 }>;
 
 export type ContractStorageEntriesQuery = {
   contractStorageEntries: {
     items: Array<{
       key: string;
-      durability: string;
-      value: string;
+      durability: ContractStorageDurability;
+      value: string | null;
+      valueXdr: string | null;
       lastModifiedLedger: number;
-      expiration: number;
+      state: ContractStorageEntryState;
+      liveUntilLedger: number | null;
     }>;
     pageInfo: { hasNextPage: boolean; cursor: string | null };
   };
 };
 
 export const ContractStorageEntriesDocument = new TypedDocumentString(`
-    query ContractStorageEntries($contractId: String!, $keyPrefix: String, $durability: String, $limit: Int, $cursor: String) {
-  contractStorageEntries(contractId: $contractId, keyPrefix: $keyPrefix, durability: $durability, limit: $limit, cursor: $cursor) {
+    query ContractStorageEntries($contractId: String!, $keyPrefix: String, $durability: ContractStorageDurability, $limit: Int, $cursor: String, $network: Network) {
+  contractStorageEntries(contractId: $contractId, keyPrefix: $keyPrefix, durability: $durability, limit: $limit, cursor: $cursor, network: $network) {
     items {
       key
       durability
       value
+      valueXdr
       lastModifiedLedger
-      expiration
+      state
+      liveUntilLedger
     }
     pageInfo {
       hasNextPage

@@ -105,10 +105,12 @@ const data = {
   contractStorageEntries: page([
     {
       key: "counter",
-      durability: "persistent",
-      value: 1,
+      durability: "PERSISTENT",
+      value: "1",
+      valueXdr: null,
       lastModifiedLedger: 1020,
-      expiration: 2000,
+      state: "ACTIVE",
+      liveUntilLedger: 2000,
     },
   ]),
   contractStorageKeyHistory: page([]),

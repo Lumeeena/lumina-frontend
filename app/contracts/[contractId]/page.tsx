@@ -8,6 +8,12 @@ import {
 import { routeMetadata } from "@/lib/metadata";
 import { truncateAddress } from "@/lib/formatters";
 import {
+  parseStorageFilters,
+  storageHref,
+  STORAGE_DURABILITIES,
+  type StorageFilters,
+} from "@/lib/contractStorage";
+import {
   ContractStorageEntriesDocument,
   type ContractStorageEntriesQuery,
 } from "@/lib/generated/graphql";
@@ -42,6 +48,7 @@ type StorageItem = ContractStorageEntriesQuery["contractStorageEntries"]["items"
 
 async function getContractStorage(
   contractId: string,
+  filters: StorageFilters,
   cursor?: string,
 ): Promise<{
   items: StorageItem[];
@@ -53,6 +60,8 @@ async function getContractStorage(
       contractId,
       limit: CONTRACT_STORAGE_PAGE_SIZE,
       cursor: cursor ?? null,
+      keyPrefix: filters.keyPrefix ?? null,
+      durability: filters.durability ?? null,
     });
     return { ...data.contractStorageEntries, unavailable: false };
   } catch {
@@ -70,6 +79,10 @@ const stat =
   "bg-[var(--color-bg-subtle)] border border-[var(--color-border-default)] rounded-xl p-4";
 const statLabel =
   "text-[11px] text-[var(--color-text-muted)] uppercase tracking-[0.05em]";
+const filterLabel =
+  "text-[11px] uppercase tracking-[0.05em] text-[var(--color-text-muted)]";
+const filterControl =
+  "rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-subtle)] px-3 py-2 text-xs text-[var(--color-text-primary)]";
 
 function signature(
   name: string,
@@ -80,18 +93,48 @@ function signature(
   return `${name}(${args})${outputs.length ? ` -> ${outputs.join(", ")}` : ""}`;
 }
 
+function singleParam(value: string | string[] | undefined): string {
+  return typeof value === "string" ? value : "";
+}
+
+function StorageValueCell({ entry }: { entry: StorageItem }) {
+  if (entry.state === "ARCHIVED") {
+    return (
+      <span className="text-[var(--color-text-muted)]">
+        Archived: the TTL expired. Restore the entry to read its value.
+      </span>
+    );
+  }
+  if (entry.value === null) {
+    return <span className="text-[var(--color-text-muted)]">—</span>;
+  }
+  return (
+    <SorobanValue
+      value={entry.value}
+      initialExpandedDepth={2}
+      showRawToggle
+      rawValue={entry.valueXdr ?? undefined}
+    />
+  );
+}
+
 export default async function ContractPage({
   params,
   searchParams,
 }: {
   params: Promise<{ contractId: string }>;
-  searchParams: Promise<{ storageCursor?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { contractId } = await params;
-  const { storageCursor } = await searchParams;
+  const query = await searchParams;
+  const filters = parseStorageFilters(query);
+  const storageCursor = singleParam(query.storageCursor) || undefined;
+  const filtersActive = Boolean(
+    filters.keyPrefix || filters.durability || filters.invalidKeyPrefix,
+  );
 
   const [storage, contractInterface] = await Promise.all([
-    getContractStorage(contractId, storageCursor),
+    getContractStorage(contractId, filters, storageCursor),
     getContractInterface(GRAPHQL_URL, contractId),
   ]);
 
@@ -237,76 +280,145 @@ export default async function ContractPage({
 
         {storage.unavailable ? (
           <BackendUnavailable />
-        ) : storage.items.length === 0 ? (
-          <div className="rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-subtle)] p-8 text-center">
-            <p className="text-sm text-[var(--color-text-muted)]">
-              No storage entries indexed for this contract yet. Event indexing
-              is opt-in on the indexer — see the lumina-backend README.
-            </p>
-          </div>
         ) : (
           <>
-            <div className="rounded-xl border border-[var(--color-border-default)] overflow-x-auto mb-4">
-              <table className="w-full text-sm border-collapse">
-                <caption className="sr-only">Contract storage entries</caption>
-                <thead>
-                  <tr>
-                    <th scope="col" className={th}>Key</th>
-                    <th scope="col" className={th}>Durability</th>
-                    <th scope="col" className={th}>Value</th>
-                    <th scope="col" className={th}>Last Modified</th>
-                    <th scope="col" className={th}>Expiration</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {storage.items.map((entry) => (
-                    <tr
-                      key={entry.key}
-                      className="border-b border-[var(--color-bg-overlay)] last:border-0"
-                    >
-                      <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-primary)] break-all">
-                        {entry.key}
-                      </td>
-                      <td className="py-2.5 px-3 text-xs text-[var(--color-text-secondary)] font-semibold">
-                        {entry.durability}
-                      </td>
-                      <td className="py-2.5 px-3 text-xs">
-                        <SorobanValue
-                          value={entry.value}
-                          initialExpandedDepth={2}
-                          showRawToggle
-                          rawValue={entry.value}
-                        />
-                      </td>
-                      <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-secondary)]">
-                        {entry.lastModifiedLedger.toLocaleString()}
-                      </td>
-                      <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-muted)]">
-                        {entry.expiration.toLocaleString()}
-                      </td>
-                    </tr>
+            <form
+              method="get"
+              action={`/contracts/${encodeURIComponent(contractId)}`}
+              aria-label="Filter storage entries"
+              className="flex flex-wrap items-end gap-3 mb-4"
+            >
+              <div className="flex flex-col gap-1 flex-1 min-w-[14rem]">
+                <label htmlFor="storage-key-prefix" className={filterLabel}>
+                  Key prefix (base64 XDR)
+                </label>
+                <input
+                  id="storage-key-prefix"
+                  name="keyPrefix"
+                  type="text"
+                  defaultValue={singleParam(query.keyPrefix)}
+                  autoComplete="off"
+                  spellCheck={false}
+                  className={`mono ${filterControl}`}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label htmlFor="storage-durability" className={filterLabel}>
+                  Durability
+                </label>
+                <select
+                  id="storage-durability"
+                  name="durability"
+                  defaultValue={filters.durability ?? ""}
+                  className={filterControl}
+                >
+                  <option value="">Any</option>
+                  {STORAGE_DURABILITIES.map((durability) => (
+                    <option key={durability} value={durability}>
+                      {durability === "PERSISTENT" ? "Persistent" : "Temporary"}
+                    </option>
                   ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="flex justify-end gap-3">
-              {storageCursor && (
-                <Link
-                  href={`/contracts/${contractId}`}
-                  className="inline-flex items-center gap-1 rounded-lg border border-[var(--color-border-default)] px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-raised)] transition-colors"
+                </select>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  type="submit"
+                  className="rounded-lg bg-[var(--color-accent-fill)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
                 >
-                  ← First page
-                </Link>
-              )}
-              {storage.pageInfo.hasNextPage && storage.pageInfo.cursor && (
-                <Link
-                  href={`/contracts/${contractId}?storageCursor=${encodeURIComponent(storage.pageInfo.cursor)}`}
-                  className="inline-flex items-center gap-1 rounded-lg bg-[var(--color-accent-fill)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
-                >
-                  Next →
-                </Link>
-              )}
-            </div>
+                  Apply filters
+                </button>
+                {filtersActive && (
+                  <Link
+                    href={storageHref(contractId, {})}
+                    className="text-sm font-medium text-[var(--color-accent-text)] hover:underline"
+                  >
+                    Clear
+                  </Link>
+                )}
+              </div>
+            </form>
+
+            {filters.invalidKeyPrefix && (
+              <p role="status" className="text-xs text-[var(--color-text-secondary)] mb-4">
+                The key prefix must be base64 XDR (letters, digits, + and /, with
+                optional trailing =). It was not applied, so every entry is shown.
+              </p>
+            )}
+
+            {storage.items.length === 0 ? (
+              <div className="rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-subtle)] p-8 text-center">
+                <p className="text-sm text-[var(--color-text-muted)]">
+                  {filtersActive
+                    ? "No storage entries match these filters."
+                    : "No storage entries indexed for this contract yet. Event indexing is opt-in on the indexer — see the lumina-backend README."}
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="rounded-xl border border-[var(--color-border-default)] overflow-x-auto mb-4">
+                  <table className="w-full text-sm border-collapse">
+                    <caption className="sr-only">Contract storage entries</caption>
+                    <thead>
+                      <tr>
+                        <th scope="col" className={th}>Key</th>
+                        <th scope="col" className={th}>Durability</th>
+                        <th scope="col" className={th}>State</th>
+                        <th scope="col" className={th}>Value</th>
+                        <th scope="col" className={th}>Last Modified</th>
+                        <th scope="col" className={th}>Live Until</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {storage.items.map((entry) => (
+                        <tr
+                          key={entry.key}
+                          className="border-b border-[var(--color-bg-overlay)] last:border-0"
+                        >
+                          <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-primary)] break-all">
+                            {entry.key}
+                          </td>
+                          <td className="py-2.5 px-3 text-xs text-[var(--color-text-secondary)] font-semibold">
+                            {entry.durability === "PERSISTENT" ? "Persistent" : "Temporary"}
+                          </td>
+                          <td className="py-2.5 px-3 text-xs text-[var(--color-text-secondary)]">
+                            {entry.state === "ARCHIVED" ? "Archived" : "Active"}
+                          </td>
+                          <td className="py-2.5 px-3 text-xs">
+                            <StorageValueCell entry={entry} />
+                          </td>
+                          <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-secondary)]">
+                            {entry.lastModifiedLedger.toLocaleString()}
+                          </td>
+                          <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-muted)]">
+                            {entry.liveUntilLedger == null
+                              ? "—"
+                              : entry.liveUntilLedger.toLocaleString()}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="flex justify-end gap-3">
+                  {storageCursor && (
+                    <Link
+                      href={storageHref(contractId, filters)}
+                      className="inline-flex items-center gap-1 rounded-lg border border-[var(--color-border-default)] px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-raised)] transition-colors"
+                    >
+                      ← First page
+                    </Link>
+                  )}
+                  {storage.pageInfo.hasNextPage && storage.pageInfo.cursor && (
+                    <Link
+                      href={storageHref(contractId, filters, storage.pageInfo.cursor)}
+                      className="inline-flex items-center gap-1 rounded-lg bg-[var(--color-accent-fill)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+                    >
+                      Next →
+                    </Link>
+                  )}
+                </div>
+              </>
+            )}
           </>
         )}
       </section>
