@@ -12,6 +12,7 @@ import CodeSnippet from "@/components/CodeSnippet";
 import LanguageSelector from "@/components/LanguageSelector";
 import { generateJavaScriptClient, generatePythonClient } from "@/lib/codegen";
 import { queryRecovery } from "@/lib/errorRecovery";
+import { apiKeyProblem, maskApiKey, playgroundHeaders } from "@/lib/playgroundAuth";
 
 function JsonHighlight({ data }: { data: object }) {
   const str = JSON.stringify(data, null, 2);
@@ -64,6 +65,8 @@ export default function GraphQLPage() {
   const [running, setRunning] = useState(false);
   const [showCodeGen, setShowCodeGen] = useState(false);
   const [codegenLanguage, setCodegenLanguage] = useState<'javascript' | 'python'>('javascript');
+  // Held in memory only: a key is never written to storage, the URL or the query text.
+  const [apiKey, setApiKey] = useState("");
 
   useEffect(() => {
     const timer = window.setTimeout(() => setHistory(loadQueryHistory()), 0);
@@ -83,6 +86,16 @@ export default function GraphQLPage() {
 
   const runQuery = useCallback(async () => {
     const req = scope.next();
+    // A key that cannot be sent is reported instead of being dropped silently,
+    // which would turn an authenticated request into an unauthenticated one.
+    const problem = apiKeyProblem(apiKey);
+    if (problem) {
+      setError(problem);
+      setResult(null);
+      setMeta(null);
+      setUnavailable(false);
+      return;
+    }
     setHistory(saveQueryToHistory(query));
     setRunning(true);
     setError(null);
@@ -92,7 +105,7 @@ export default function GraphQLPage() {
     try {
       const res = await fetch(PUBLIC_GRAPHQL_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: playgroundHeaders(apiKey),
         body: JSON.stringify({ query }),
         signal: req.signal,
       });
@@ -155,7 +168,7 @@ export default function GraphQLPage() {
     } finally {
       setRunning(false);
     }
-  }, [query, scope]);
+  }, [query, scope, apiKey]);
 
   function selectExample(ex: QueryExample) {
     setSelected(ex);
@@ -178,6 +191,28 @@ export default function GraphQLPage() {
       <div className="flex items-center gap-2.5 mb-7 flex-wrap">
         <p className="text-[var(--color-text-secondary)] text-[13px] m-0">Lumina GraphQL endpoint:</p>
         <span className="mono text-xs px-2.5 py-1 rounded-full bg-[var(--color-accent-surface)] text-[var(--color-accent-text)]">{PUBLIC_GRAPHQL_URL}</span>
+      </div>
+
+      <div className="mb-7 max-w-[520px]">
+        <label htmlFor="playground-api-key" className="block text-xs font-bold tracking-wide uppercase text-[var(--color-text-muted)] mb-1">
+          API key (optional)
+        </label>
+        <input
+          id="playground-api-key"
+          name="apiKey"
+          type="password"
+          autoComplete="off"
+          spellCheck={false}
+          value={apiKey}
+          onChange={(event) => setApiKey(event.target.value)}
+          aria-describedby="playground-api-key-help"
+          placeholder="Paste a key to send authenticated requests"
+          className="mono w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-subtle)] px-3 py-2 text-xs text-[var(--color-text-primary)]"
+        />
+        <p id="playground-api-key-help" className="mt-1 text-xs text-[var(--color-text-muted)]">
+          {apiKey.trim() ? `Sending as ${maskApiKey(apiKey)}. ` : ""}
+          Kept in this tab&apos;s memory only and sent as a bearer token with each Run Query. Reloading the page clears it.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-6" style={{ minHeight: "560px" }}>
