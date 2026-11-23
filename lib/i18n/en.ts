@@ -50,17 +50,6 @@ const en: MessageCatalogue = {
   "connection.reasonRefused": "server refused the connection",
   "connection.whatDoesMean": "What does {label} mean?",
 
-
-  graphql: {
-  title: 'GraphQL Explorer',
-  description: 'Run queries against the Lumina API.',
-  queryLabel: 'Query',
-  queryPlaceholder: 'Enter a GraphQL query',
-  runButton: 'Run query',
-  runButtonAria: 'Run the GraphQL query',
-  emptyResults: 'No results yet. Run a query to see data here.',
-  resultCount: '{count} results',          // use YOUR plural syntax here
-},
   // ── Transaction explorer ──────────────────────────────────────────────
   "explorer.couldNotLoad": "Could not load more transactions.",
   "explorer.noTransactionsYet": "No transactions indexed yet.",
@@ -99,36 +88,37 @@ const en: MessageCatalogue = {
   "accountTxs.couldNotLoad": "Could not load more transactions.",
   "accountTxs.endOfResults": "End of results",
 
-  // ── Account activity feed ─────────────────────────────────────────────
-  "accountActivity.liveActivity": "Live Activity",
-  "accountActivity.waitingForActivity": "Waiting for new activity on this account\u2026",
-  "accountActivity.latestActivity": "Latest account activity",
-  "accountActivity.viewTransactionLabel": "View {type} transaction {hash} on Stellar Expert (opens in a new tab)",
-
-  // ── Account trustline timeline ────────────────────────────────────────
-  "trustline.removed": "Removed",
-  "trustline.set": "Set",
-  "trustline.unknown": "Unknown",
-  "trustline.couldNotLoadMore": "Could not load more trustline history.",
-  "trustline.noChanges": "No trustline changes recorded for this account.",
-  "trustline.showingRecent": "Showing {count} of recent trustline changes",
-  "trustline.allChanges": "All {count} trustline {count, plural, one {change} other {changes}}",
-  "trustline.limit": "Limit",
-  "trustline.onStellarExpert": "on stellar.expert (opens in new tab)",
-  "trustline.endOfHistory": "End of trustline history",
-
-  // ── Account portfolio ─────────────────────────────────────────────────
-  "portfolio.heading": "Portfolio Activity",
-  "portfolio.selectAsset": "Select asset to view",
-  "portfolio.couldNotLoad": "Could not load activity data.",
-  "portfolio.noActivity": "No activity in the last 30 days",
-  "portfolio.noActivityDescription": "Transfer volume for {asset} will appear here once this account sends or receives a payment.",
-  "portfolio.transferVolume": "{asset} transfer volume",
-  "portfolio.transferVolumeDescription": "Daily transfer volume for {asset} over the last 30 days, measured in {asset}.",
-  "portfolio.caption": "Transfer volume (sent + received) per day \u00b7 last 30 days \u00b7 daily buckets",
-  "portfolio.showLess": "Show less",
-  "portfolio.showMore": "+{count} more",
-  "portfolio.loadingVolume": "Loading transfer volume",
+  // ── Account detail page ───────────────────────────────────────────────
+  "account.breadcrumbExplorer": "Explorer",
+  "account.breadcrumbAccounts": "Accounts",
+  "account.notFoundTitle": "Account Not Found",
+  "account.notFoundBody":
+    "The address {address} does not exist on Stellar Mainnet, or has never been funded. Check the address and network, or fund the account before looking it up again.",
+  "account.merged": "Merged",
+  "account.lastModifiedLedger": "Last modified at ledger {ledger}",
+  "account.statSequence": "Sequence",
+  "account.statSubentries": "Subentries",
+  "account.statSponsoring": "Sponsoring",
+  "account.statSponsored": "Sponsored",
+  "account.flagAuthRequired": "Auth Required",
+  "account.flagAuthRevocable": "Auth Revocable",
+  "account.flagAuthImmutable": "Auth Immutable",
+  "account.flagAuthClawbackEnabled": "Clawback Enabled",
+  "account.flagNone": "No Special Flags",
+  "account.balancesTitle": "Balances",
+  "account.balancesAriaLabel": "Account balances",
+  "account.balanceAsset": "Asset",
+  "account.balanceIssuer": "Issuer",
+  "account.balanceBalance": "Balance",
+  "account.balanceLimit": "Limit",
+  "account.recentTransactions": "Recent Transactions",
+  "account.tradesTitle": "Trades",
+  "account.tradesUnavailable":
+    "Trade history is unavailable. Check your connection and refresh this page to try again.",
+  "account.recentOperations": "Recent Operations",
+  "account.trustlinesTitle": "Trustline History",
+  "account.trustlinesUnavailable":
+    "Trustline history is unavailable. Check your connection and refresh this page to try again.",
 
   // ── Assets ────────────────────────────────────────────────────────────
   "assets.noAssetsYet":
@@ -454,82 +444,197 @@ const en: MessageCatalogue = {
   // ── Footer ────────────────────────────────────────────────────────────
   "footer.version": "Lumina frontend v{version}",
   "footer.copyVersion": "Copy version for bug reports",
-  "footer.copied": "Copied!",
-  "footer.copy": "Copy",
-  "footer.reportProblem": "Report a problem",
-  "footer.statusChangelog": "Status & Changelog",
-
-  // ── WatchAlertSettings ────────────────────────────────────────────────
-  "watchAlertSettings.alertFilter": "Alert filter for {address}",
-  "watchAlertSettings.operation": "Operation",
-  "watchAlertSettings.anyOperation": "Any operation",
-  "watchAlertSettings.minimumAmount": "Minimum amount",
-  "watchAlertSettings.any": "Any",
-  "watchAlertSettings.asset": "Asset",
-  "watchAlertSettings.noFilter": "No filter — every operation alerts.",
-  "watchAlertSettings.filtersActive": "{count} {count, plural, one {filter} other {filters}} active.",
-  "watchAlertSettings.resetDefault": "Reset to default",
-
-  // ── RegistrySlashHistory ──────────────────────────────────────────────
-  "registrySlashHistory.slashHistory": "Slash history",
-  "registrySlashHistory.hideSlashHistory": "Hide slash history",
-  "registrySlashHistory.loadingSlashHistory": "Loading slash history…",
-  "registrySlashHistory.couldNotReadHistory": "Couldn't read the slash history. Close and reopen to retry.",
-  "registrySlashHistory.noSlashes": "No slashes recorded.",
-  "registrySlashHistory.ledger": "ledger {ledger}",
-
-  // ── RegistryEntryCard ─────────────────────────────────────────────────
-  "registryEntryCard.categories": "Categories",
-  "registryEntryCard.hideSlashHistory": "Hide slash history",
-  "registryEntryCard.slashHistory": "Slash history",
-  "registryEntryCard.loadingSlashHistory": "Loading slash history…",
-  "registryEntryCard.couldNotReadHistory": "Couldn't read the slash history. Check your connection, then try again.",
-  "registryEntryCard.retryHistory": "Retry history",
-  "registryEntryCard.noSlashes": "No slashes recorded.",
-  "registryEntryCard.ledger": "ledger {ledger}",
 
   // ── SearchBar ─────────────────────────────────────────────────────────
   "searchBar.placeholder": "Search an account, transaction, contract or memo\u2026",
-  "searchBar.searchKindAccount": "Account",
-  "searchBar.searchKindContract": "Contract",
-  "searchBar.searchKindMuxed": "Muxed account",
-  "searchBar.searchKindTransaction": "Transaction",
-  "searchBar.searchKindMemo": "Memo search",
 
-  // ── Breadcrumbs ───────────────────────────────────────────────────────
-  "breadcrumbs.ariaLabel": "Breadcrumb",
+  // ── Developer portal ──────────────────────────────────────────────────
+  "devPortal.heading": "Lumina Developer Portal",
+  "devPortal.description":
+    "Everything you need to integrate Lumina's Stellar API into your application. From your first query to production monitoring.",
+  "devPortal.gettingStarted.title": "Getting Started",
+  "devPortal.gettingStarted.description":
+    "Step-by-step guide to making your first API request. Learn about authentication, pagination, and error handling with copy-paste code examples.",
+  "devPortal.gettingStarted.cta": "Get started →",
+  "devPortal.apiDocs.title": "API Documentation",
+  "devPortal.apiDocs.description":
+    "Explore the GraphQL schema with worked examples you can run live. Understand pagination patterns and error handling in depth.",
+  "devPortal.apiDocs.cta": "Explore docs →",
+  "devPortal.playground.title": "Query Playground",
+  "devPortal.playground.description":
+    "Write GraphQL queries and generate client code in JavaScript and Python. Test your queries live against the real API.",
+  "devPortal.playground.cta": "Open playground →",
+  "devPortal.usage.title": "Usage Dashboard",
+  "devPortal.usage.description":
+    "Monitor your API key usage and quota consumption. See request counts and trends over time.",
+  "devPortal.usage.cta": "View dashboard →",
+  "devPortal.webhooks.title": "Webhooks",
+  "devPortal.webhooks.description":
+    "Register webhooks for real-time event notifications. Monitor delivery attempts and test your endpoints.",
+  "devPortal.webhooks.cta": "Manage webhooks →",
+  "devPortal.quickStart.title": "Quick Start",
+  "devPortal.quickStart.before": "New to Lumina? Head over to our",
+  "devPortal.quickStart.link": "getting started guide",
+  "devPortal.quickStart.after":
+    "to learn the basics. You'll be querying the Stellar blockchain in minutes.",
+  "devPortal.step1.action": "Make a request",
+  "devPortal.step1.rest": "using our playground or your preferred language",
+  "devPortal.step2.action": "Generate code",
+  "devPortal.step2.rest": "in JavaScript or Python for your application",
+  "devPortal.step3.action": "Monitor usage",
+  "devPortal.step3.rest": "from your dashboard",
 
-  // ── AddressLabelManager ───────────────────────────────────────────────
-  "addressLabelManager.labels": "Labels",
-  "addressLabelManager.manageLabels": "Manage address labels",
-  "addressLabelManager.title": "Address Labels",
-  "addressLabelManager.addNewLabel": "Add New Label",
-  "addressLabelManager.addressPlaceholder": "Stellar address",
-  "addressLabelManager.labelPlaceholder": "Label",
-  "addressLabelManager.addLabel": "Add Label",
-  "addressLabelManager.yourLabels": "Your Labels",
-  "addressLabelManager.save": "Save",
-  "addressLabelManager.edit": "Edit",
-  "addressLabelManager.deleteLabel": "Delete label",
-  "addressLabelManager.invalidFormat": "Invalid label format",
-  "addressLabelManager.failedToRead": "Failed to read file",
-  "addressLabelManager.export": "Export",
-  "addressLabelManager.import": "Import",
-  "addressLabelManager.exportTitle": "Export labels as JSON",
-  "addressLabelManager.importTitle": "Import labels from JSON",
-  "addressLabelManager.importFile": "Import labels file",
+  // ── Getting started guide ─────────────────────────────────────────────
+  "guide.heading": "Getting Started with Lumina",
+  "guide.subtitle":
+    "Learn how to make your first GraphQL query in just a few minutes.",
+  "guide.step1.title": "Make Your First Request",
+  "guide.step1.before": "The Lumina GraphQL API is available at",
+  "guide.step1.after":
+    ". Start with this simple query that fetches the latest ledger:",
+  "guide.step1.hint":
+    "Copy the code above and run it in your terminal. You should see the latest Stellar ledger information.",
+  "guide.example.firstRequest": "First Request",
+  "guide.example.pagination": "Query with Pagination",
+  "guide.step2.title": "Work with Pagination",
+  "guide.step2.intro":
+    "For queries that return multiple items, we use cursor-based pagination.",
+  "guide.step2.response":
+    "The response includes a pageInfo object with hasNextPage and cursor fields:",
+  "guide.step2.nextTitle": "How to fetch the next page:",
+  "guide.step2.nextBefore": "To get the next page of results, pass the",
+  "guide.step2.nextAfter": "from the previous response to the next query:",
+  "guide.step3.title": "Handle Errors Gracefully",
+  "guide.step3.before":
+    "The GraphQL API returns HTTP 200 even when there are errors — check the",
+  "guide.step3.after": "array in the response:",
+  "guide.errors.title": "Common Errors:",
+  "guide.errors.invalidQuery": "Invalid Query",
+  "guide.errors.invalidQueryBefore":
+    "Your GraphQL syntax is invalid. Check the",
+  "guide.errors.invalidQueryLink": "playground",
+  "guide.errors.invalidQueryAfter": "for the correct schema.",
+  "guide.errors.notFound": "Not Found",
+  "guide.errors.notFoundDesc":
+    "The resource doesn't exist (e.g., an account that hasn't been funded on Stellar).",
+  "guide.errors.serverError": "Server Error",
+  "guide.errors.serverErrorDesc":
+    "Our backend is temporarily unavailable. Retry with exponential backoff.",
+  "guide.errorHandling.title": "Error Handling Pattern",
+  "guide.step4.title": "Explore the Schema",
+  "guide.step4.before": "Visit the",
+  "guide.step4.link": "GraphQL Playground",
+  "guide.step4.after":
+    "to explore all available queries and data types. The playground includes worked examples you can run live against the API.",
+  "guide.step4.popularLabel": "Popular queries:",
+  "guide.step4.popularItems":
+    "Recent transactions, Account balances, Contract events, Asset information, Payment history",
+  "guide.next.title": "What's Next?",
+  "guide.next.tryPlayground.label": "Try the playground:",
+  "guide.next.tryPlayground.link": "Run live queries",
+  "guide.next.readDocs.label": "Read the docs:",
+  "guide.next.readDocs.link": "Dive deeper into pagination and error handling",
+  "guide.next.generateCode.label": "Generate code:",
+  "guide.next.generateCode.text":
+    "Use the playground to write a query, then generate production-ready code in JavaScript or Python",
+  "guide.next.monitorUsage.label": "Monitor usage:",
+  "guide.next.monitorUsage.link": "Track your API consumption",
 
-  // ── PushOptIn ─────────────────────────────────────────────────────────
-  "pushOptIn.unsupported": "This browser cannot deliver notifications for watched activity. The in-app alerts still work.",
-  "pushOptIn.denied": "Notifications are blocked for this site. Re-enable them in your browser's site settings to get alerts while this tab is in the background. The in-app alerts are unaffected.",
-  "pushOptIn.subscribed": "Browser notifications are on. You will be notified when a watched address is active and this tab is in the background.",
-  "pushOptIn.turnOff": "Turn off",
-  "pushOptIn.description": "Get a browser notification when a watched address is active and this tab is in the background.",
-  "pushOptIn.noVapidKey": "Browser notifications need a VAPID public key. Set NEXT_PUBLIC_VAPID_PUBLIC_KEY to enable them — the in-app alerts work without it.",
-  "pushOptIn.enable": "Enable notifications",
-  "pushOptIn.enabling": "Enabling…",
+  // ── API documentation ─────────────────────────────────────────────────
+  "apiDocs.heading": "API Documentation",
+  "apiDocs.subtitleBefore":
+    "Explore the GraphQL schema with worked examples you can run live against the API. All examples below are runnable in the",
+  "apiDocs.subtitleLink": "GraphQL Playground",
+  "apiDocs.pagination.title": "Pagination Guide",
+  "apiDocs.pagination.intro":
+    "All list queries in Lumina use cursor-based pagination. This approach is ideal for large datasets because it's:",
+  "apiDocs.pagination.bulletScalable.label": "Scalable:",
+  "apiDocs.pagination.bulletScalable.desc":
+    "Cursors don't require offset calculations",
+  "apiDocs.pagination.bulletStable.label": "Stable:",
+  "apiDocs.pagination.bulletStable.desc":
+    "Results don't shift if items are added/removed",
+  "apiDocs.pagination.bulletEfficient.label": "Efficient:",
+  "apiDocs.pagination.bulletEfficient.desc":
+    "No need to fetch and skip earlier items",
+  "apiDocs.pagination.returns": "Every list query returns:",
+  "apiDocs.pagination.next":
+    "To fetch the next page, pass the cursor from the previous response:",
+  "apiDocs.errors.title": "Error Handling",
+  "apiDocs.errors.before": "GraphQL always returns HTTP 200. Check the",
+  "apiDocs.errors.after": "array for problems:",
+  "apiDocs.errors.success": "Successful Response",
+  "apiDocs.errors.error": "Error Response",
+  "apiDocs.errors.checkBefore": "Always check for",
+  "apiDocs.errors.checkMiddle": "before accessing",
+  "apiDocs.errors.checkAfter": ".",
+  "apiDocs.examples.title": "Worked Examples",
+  "apiDocs.example.recentTransactions.name": "Recent Transactions",
+  "apiDocs.example.recentTransactions.description":
+    "Fetch the last 5 transactions on the network",
+  "apiDocs.example.accountBalances.name": "Account Balances",
+  "apiDocs.example.accountBalances.description":
+    "Get all asset balances for an account (edit the address below)",
+  "apiDocs.example.paymentHistory.name": "Payment History",
+  "apiDocs.example.paymentHistory.description":
+    "Fetch payment operations for an account (edit the address below)",
+  "apiDocs.example.contractEvents.name": "Contract Events",
+  "apiDocs.example.contractEvents.description":
+    "Query Soroban contract events by contract address (edit the contract ID below)",
+  "apiDocs.tryInPlayground": "Try in Playground",
+  "apiDocs.viewDocs": "View Docs",
+  "apiDocs.next.title": "Next Steps",
+  "apiDocs.next.runExample.label": "Run an example:",
+  "apiDocs.next.runExample.text":
+    'Click "{button}" to run any of the examples above against the live API',
+  "apiDocs.next.modify.label": "Modify and test:",
+  "apiDocs.next.modify.text":
+    "Edit the query in the playground to explore different fields and filters",
+  "apiDocs.next.generate.label": "Generate code:",
+  "apiDocs.next.generate.text":
+    "Once your query works, generate JavaScript or Python code to integrate into your app",
 
-  // \u2500\u2500 CommandPalette \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  // ── Usage dashboard ───────────────────────────────────────────────────
+  "usage.heading": "Usage Dashboard",
+  "usage.subtitle":
+    "Monitor your API key usage and quota consumption, protected by wallet ownership.",
+  "usage.connectedOwner": "Connected Owner Account",
+  "usage.walletRequired.title": "Wallet Ownership Required",
+  "usage.walletRequired.body":
+    "Key management is tied strictly to wallet ownership. Connect your Stellar wallet to view, create, and manage your private API keys.",
+  "usage.connecting": "Connecting Wallet…",
+  "usage.connectCta": "Connect Wallet to Access Keys",
+  "usage.requestsThisWeek": "Requests This Week",
+  "usage.peakDay": "Peak day: {count} requests",
+  "usage.quotaRemaining": "Quota Remaining",
+  "usage.quotaOfTotal": "of {total} total",
+  "usage.quotaUsage": "Quota Usage",
+  "usage.warning": "Warning",
+  "usage.requestsOverTime": "Requests Over Time (Last 7 Days)",
+  "usage.byApiKey": "Usage by API Key",
+  "usage.keyManagement": "API Key Management",
+  "usage.keyNamePlaceholder": "Key name (e.g. Staging Key)",
+  "usage.createKey": "Create API Key",
+  "usage.thKeyName": "Key Name",
+  "usage.thApiKey": "API Key",
+  "usage.thCreated": "Created",
+  "usage.thUsage": "Usage",
+  "usage.thAction": "Action",
+  "usage.percentUsed": "{percent}% used",
+  "usage.revoke": "Revoke",
+  "usage.aboutKeys.title": "About Wallet-Protected Keys",
+  "usage.aboutKeys.body":
+    "API keys are associated 1:1 with your wallet address as your identity. Disconnecting your wallet protects your keys from display without deleting them.",
+
+  // ── Code snippet ──────────────────────────────────────────────────────
+  "codeSnippet.copy": "Copy",
+  "codeSnippet.copied": "✓ Copied",
+  "codeSnippet.copiedAria": "Code copied",
+  "codeSnippet.copiedStatus": "Code copied to clipboard",
+  "codeSnippet.copyError":
+    "Clipboard access failed. Select the code and copy it manually.",
+
+  // ── CommandPalette ────────────────────────────────────────────────────
   "commandPalette.placeholder": "Search routes and actions...",
   "commandPalette.noResults": "No results found",
   "commandPalette.selectHint": "Select",
@@ -570,6 +675,183 @@ const en: MessageCatalogue = {
   "commandPalette.route.watch.label": "Watch",
   "commandPalette.route.watch.description":
     "Follow Stellar addresses: one live feed of activity across everything you watch, with per-address alert filters.",
+
+  // ── AddressLabelManager ───────────────────────────────────────────────
+  "addressLabelManager.labels": "Labels",
+  "addressLabelManager.manageLabels": "Manage address labels",
+  "addressLabelManager.title": "Address Labels",
+  "addressLabelManager.addNewLabel": "Add New Label",
+  "addressLabelManager.addressPlaceholder": "Stellar address",
+  "addressLabelManager.labelPlaceholder": "Label",
+  "addressLabelManager.addLabel": "Add Label",
+  "addressLabelManager.yourLabels": "Your Labels",
+  "addressLabelManager.save": "Save",
+  "addressLabelManager.edit": "Edit",
+  "addressLabelManager.deleteLabel": "Delete label",
+  "addressLabelManager.invalidFormat": "Invalid label format",
+  "addressLabelManager.failedToRead": "Failed to read file",
+  "addressLabelManager.export": "Export",
+  "addressLabelManager.import": "Import",
+  "addressLabelManager.exportTitle": "Export labels as JSON",
+  "addressLabelManager.importTitle": "Import labels from JSON",
+  "addressLabelManager.importFile": "Import labels file",
+
+  // ── accountActivity ──
+  "accountActivity.liveActivity": "Live Activity",
+  "accountActivity.waitingForActivity": "Waiting for new activity on this account\u2026",
+  "accountActivity.latestActivity": "Latest account activity",
+  "accountActivity.viewTransactionLabel": "View {type} transaction {hash} on Stellar Expert (opens in a new tab)",
+  // ── trustline ──
+  "trustline.removed": "Removed",
+  "trustline.set": "Set",
+  "trustline.unknown": "Unknown",
+  "trustline.couldNotLoadMore": "Could not load more trustline history.",
+  "trustline.noChanges": "No trustline changes recorded for this account.",
+  "trustline.showingRecent": "Showing {count} of recent trustline changes",
+  "trustline.allChanges": "All {count} trustline {count, plural, one {change} other {changes}}",
+  "trustline.limit": "Limit",
+  "trustline.onStellarExpert": "on stellar.expert (opens in new tab)",
+  "trustline.endOfHistory": "End of trustline history",
+  // ── portfolio ──
+  "portfolio.heading": "Portfolio Activity",
+  "portfolio.selectAsset": "Select asset to view",
+  "portfolio.couldNotLoad": "Could not load activity data.",
+  "portfolio.noActivity": "No activity in the last 30 days",
+  "portfolio.noActivityDescription": "Transfer volume for {asset} will appear here once this account sends or receives a payment.",
+  "portfolio.transferVolume": "{asset} transfer volume",
+  "portfolio.transferVolumeDescription": "Daily transfer volume for {asset} over the last 30 days, measured in {asset}.",
+  "portfolio.caption": "Transfer volume (sent + received) per day \u00b7 last 30 days \u00b7 daily buckets",
+  "portfolio.showLess": "Show less",
+  "portfolio.showMore": "+{count} more",
+  "portfolio.loadingVolume": "Loading transfer volume",
+  // ── footer ──
+  "footer.copied": "Copied!",
+  "footer.copy": "Copy",
+  "footer.reportProblem": "Report a problem",
+  "footer.statusChangelog": "Status & Changelog",
+  // ── watchAlertSettings ──
+  "watchAlertSettings.alertFilter": "Alert filter for {address}",
+  "watchAlertSettings.operation": "Operation",
+  "watchAlertSettings.anyOperation": "Any operation",
+  "watchAlertSettings.minimumAmount": "Minimum amount",
+  "watchAlertSettings.any": "Any",
+  "watchAlertSettings.asset": "Asset",
+  "watchAlertSettings.noFilter": "No filter — every operation alerts.",
+  "watchAlertSettings.filtersActive": "{count} {count, plural, one {filter} other {filters}} active.",
+  "watchAlertSettings.resetDefault": "Reset to default",
+  // ── registrySlashHistory ──
+  "registrySlashHistory.slashHistory": "Slash history",
+  "registrySlashHistory.hideSlashHistory": "Hide slash history",
+  "registrySlashHistory.loadingSlashHistory": "Loading slash history…",
+  "registrySlashHistory.couldNotReadHistory": "Couldn't read the slash history. Close and reopen to retry.",
+  "registrySlashHistory.noSlashes": "No slashes recorded.",
+  "registrySlashHistory.ledger": "ledger {ledger}",
+  // ── registryEntryCard ──
+  "registryEntryCard.categories": "Categories",
+  "registryEntryCard.hideSlashHistory": "Hide slash history",
+  "registryEntryCard.slashHistory": "Slash history",
+  "registryEntryCard.loadingSlashHistory": "Loading slash history…",
+  "registryEntryCard.couldNotReadHistory": "Couldn't read the slash history. Check your connection, then try again.",
+  "registryEntryCard.retryHistory": "Retry history",
+  "registryEntryCard.noSlashes": "No slashes recorded.",
+  "registryEntryCard.ledger": "ledger {ledger}",
+  // ── searchBar ──
+  "searchBar.searchKindAccount": "Account",
+  "searchBar.searchKindContract": "Contract",
+  "searchBar.searchKindMuxed": "Muxed account",
+  "searchBar.searchKindTransaction": "Transaction",
+  "searchBar.searchKindMemo": "Memo search",
+  // ── breadcrumbs ──
+  "breadcrumbs.ariaLabel": "Breadcrumb",
+  // ── pushOptIn ──
+  "pushOptIn.unsupported": "This browser cannot deliver notifications for watched activity. The in-app alerts still work.",
+  "pushOptIn.denied": "Notifications are blocked for this site. Re-enable them in your browser's site settings to get alerts while this tab is in the background. The in-app alerts are unaffected.",
+  "pushOptIn.subscribed": "Browser notifications are on. You will be notified when a watched address is active and this tab is in the background.",
+  "pushOptIn.turnOff": "Turn off",
+  "pushOptIn.description": "Get a browser notification when a watched address is active and this tab is in the background.",
+  "pushOptIn.noVapidKey": "Browser notifications need a VAPID public key. Set NEXT_PUBLIC_VAPID_PUBLIC_KEY to enable them — the in-app alerts work without it.",
+  "pushOptIn.enable": "Enable notifications",
+  "pushOptIn.enabling": "Enabling…",
+  // ── navbar ──
+  "navbar.home": "Lumina home",
+  "navbar.mainNav": "Main navigation",
+  // ── networkStats ──
+  "networkStats.activeAccounts": "Active Accounts",
+  "networkStats.inSampledData": "In sampled data",
+  "networkStats.inSampledTransactions": "In sampled transactions",
+  "networkStats.mostRecent": "Most recent",
+  "networkStats.noOperationData": "No operation data available",
+  "networkStats.noTransactionData": "No transaction data available",
+  "networkStats.operationsCaption": "Based on the most recent indexed operations",
+  "networkStats.operationsDescription": "Hourly operation volume from recent indexed data",
+  "networkStats.operationsOverTime": "Operations Over Time",
+  "networkStats.operationsUnit": " ops",
+  "networkStats.sampledOperations": "Sampled Operations",
+  "networkStats.sampledTransactions": "Sampled Transactions",
+  "networkStats.successRate": "Success Rate",
+  "networkStats.transactionsCaption": "Based on the most recent indexed transactions",
+  "networkStats.transactionsDescription": "Hourly transaction volume from recent indexed data",
+  "networkStats.transactionsOverTime": "Transactions Over Time",
+  "networkStats.transactionsUnit": " txs",
+  // ── onTour ──
+  "onTour.closeTour": "Close tour",
+  "onTour.done": "Done",
+  "onTour.next": "Next",
+  "onTour.skip": "Skip",
+  "onTour.stepPosition": "{current} of {total}",
+  "onTour.welcomeSubtitle": "Let's explore what makes Lumina unique",
+  "onTour.welcomeTitle": "Welcome to Lumina",
+  // ── search ──
+  "search.explorerLink": "the explorer",
+  "search.helpTextAfterLink": " takes you straight there.",
+  "search.helpTextBeforeLink": "Looking for an account or contract? Paste its full address — ",
+  // ── transactionFilters ──
+  "transactionFilters.applyPreset": "Apply preset {name}",
+  "transactionFilters.clearFilters": "Clear filters ({count})",
+  "transactionFilters.deletePreset": "Delete preset {name}",
+  "transactionFilters.from": "From",
+  "transactionFilters.maxFee": "Max fee (XLM)",
+  "transactionFilters.minOperations": "Min operations",
+  "transactionFilters.presetNameLabel": "Preset name",
+  "transactionFilters.presetNamePlaceholder": "Name this filter",
+  "transactionFilters.savePreset": "Save preset",
+  "transactionFilters.savedPresets": "Saved filter presets",
+  "transactionFilters.sourceAccount": "Source account",
+  "transactionFilters.statusFilter": "Transaction status filter",
+  "transactionFilters.to": "To",
+  // ── walletInfo ──
+  "walletInfo.disconnect": "Disconnect",
+  "walletInfo.disconnectLabel": "Disconnect wallet",
+  "walletInfo.disconnecting": "Disconnecting…",
+  // ── watchList ──
+  "watchList.addWatch": "Add watch",
+  "watchList.addressLabel": "Stellar address to watch",
+  "watchList.cancel": "Cancel",
+  "watchList.confirmImport": "Confirm Import",
+  "watchList.emptyState":
+    "Nothing watched yet. Add an address above, or use the bookmark icon next to any account on the site.",
+  "watchList.errorDuplicate":
+    "That address is already on your watch list. Choose a different address or remove the existing one first.",
+  "watchList.errorEmpty": "Enter an address to watch.",
+  "watchList.errorInvalid": "That is not a Stellar account ID: {hint}.",
+  "watchList.exportList": "Export List",
+  "watchList.filtersCount":
+    "{count} {count, plural, one {filter} other {filters}}",
+  "watchList.heading": "Watched addresses",
+  "watchList.importFailed":
+    "{error} Check the file format and select a valid watch list to try again.",
+  "watchList.importFailedFallback": "Failed to import watch list.",
+  "watchList.importFileLabel": "Import watch list file",
+  "watchList.importList": "Import List",
+  "watchList.importPrompt":
+    "Choose how to apply the imported addresses to your current watch list:",
+  "watchList.importTitle": "Import Watch List",
+  "watchList.listFull":
+    "The list is capped at {count} addresses. Remove one to add another.",
+  "watchList.mergeOption": "Merge (combine with existing)",
+  "watchList.remove": "Remove",
+  "watchList.replaceOption": "Replace (overwrite current list)",
+  "watchList.unwatch": "Unwatch {address}",
 };
 
 export default en;

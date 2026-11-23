@@ -18,6 +18,8 @@
 import type { MessageCatalogue, MessageKey } from "./types";
 import en from "./en";
 import de from "./de";
+import es from "./es";
+import pt from "./pt";
 import {
   getDirection,
   isRtl,
@@ -25,7 +27,7 @@ import {
   type Direction,
 } from "./direction";
 
-export const CATALOGUES: Record<string, MessageCatalogue> = { en, de };
+export const CATALOGUES: Record<string, MessageCatalogue> = { en, de, es, pt };
 
 let activeCatalogue: MessageCatalogue = en;
 let activeLocale = "en";

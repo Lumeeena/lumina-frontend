@@ -598,6 +598,157 @@ export interface MessageCatalogue {
   "addressLabelManager.exportTitle": string;
   "addressLabelManager.importTitle": string;
   "addressLabelManager.importFile": string;
+
+  // ── accountActivity ──
+  "accountActivity.liveActivity": string;
+  "accountActivity.waitingForActivity": string;
+  "accountActivity.latestActivity": string;
+  "accountActivity.viewTransactionLabel": string;
+  // ── trustline ──
+  "trustline.removed": string;
+  "trustline.set": string;
+  "trustline.unknown": string;
+  "trustline.couldNotLoadMore": string;
+  "trustline.noChanges": string;
+  "trustline.showingRecent": string;
+  "trustline.allChanges": string;
+  "trustline.limit": string;
+  "trustline.onStellarExpert": string;
+  "trustline.endOfHistory": string;
+  // ── portfolio ──
+  "portfolio.heading": string;
+  "portfolio.selectAsset": string;
+  "portfolio.couldNotLoad": string;
+  "portfolio.noActivity": string;
+  "portfolio.noActivityDescription": string;
+  "portfolio.transferVolume": string;
+  "portfolio.transferVolumeDescription": string;
+  "portfolio.caption": string;
+  "portfolio.showLess": string;
+  "portfolio.showMore": string;
+  "portfolio.loadingVolume": string;
+  // ── footer ──
+  "footer.copied": string;
+  "footer.copy": string;
+  "footer.reportProblem": string;
+  "footer.statusChangelog": string;
+  // ── watchAlertSettings ──
+  "watchAlertSettings.alertFilter": string;
+  "watchAlertSettings.operation": string;
+  "watchAlertSettings.anyOperation": string;
+  "watchAlertSettings.minimumAmount": string;
+  "watchAlertSettings.any": string;
+  "watchAlertSettings.asset": string;
+  "watchAlertSettings.noFilter": string;
+  "watchAlertSettings.filtersActive": string;
+  "watchAlertSettings.resetDefault": string;
+  // ── registrySlashHistory ──
+  "registrySlashHistory.slashHistory": string;
+  "registrySlashHistory.hideSlashHistory": string;
+  "registrySlashHistory.loadingSlashHistory": string;
+  "registrySlashHistory.couldNotReadHistory": string;
+  "registrySlashHistory.noSlashes": string;
+  "registrySlashHistory.ledger": string;
+  // ── registryEntryCard ──
+  "registryEntryCard.categories": string;
+  "registryEntryCard.hideSlashHistory": string;
+  "registryEntryCard.slashHistory": string;
+  "registryEntryCard.loadingSlashHistory": string;
+  "registryEntryCard.couldNotReadHistory": string;
+  "registryEntryCard.retryHistory": string;
+  "registryEntryCard.noSlashes": string;
+  "registryEntryCard.ledger": string;
+  // ── searchBar ──
+  "searchBar.searchKindAccount": string;
+  "searchBar.searchKindContract": string;
+  "searchBar.searchKindMuxed": string;
+  "searchBar.searchKindTransaction": string;
+  "searchBar.searchKindMemo": string;
+  // ── breadcrumbs ──
+  "breadcrumbs.ariaLabel": string;
+  // ── pushOptIn ──
+  "pushOptIn.unsupported": string;
+  "pushOptIn.denied": string;
+  "pushOptIn.subscribed": string;
+  "pushOptIn.turnOff": string;
+  "pushOptIn.description": string;
+  "pushOptIn.noVapidKey": string;
+  "pushOptIn.enable": string;
+  "pushOptIn.enabling": string;
+  // ── navbar ──
+  "navbar.home": string;
+  "navbar.mainNav": string;
+  // ── networkStats ──
+  "networkStats.activeAccounts": string;
+  "networkStats.inSampledData": string;
+  "networkStats.inSampledTransactions": string;
+  "networkStats.mostRecent": string;
+  "networkStats.noOperationData": string;
+  "networkStats.noTransactionData": string;
+  "networkStats.operationsCaption": string;
+  "networkStats.operationsDescription": string;
+  "networkStats.operationsOverTime": string;
+  "networkStats.operationsUnit": string;
+  "networkStats.sampledOperations": string;
+  "networkStats.sampledTransactions": string;
+  "networkStats.successRate": string;
+  "networkStats.transactionsCaption": string;
+  "networkStats.transactionsDescription": string;
+  "networkStats.transactionsOverTime": string;
+  "networkStats.transactionsUnit": string;
+  // ── onTour ──
+  "onTour.closeTour": string;
+  "onTour.done": string;
+  "onTour.next": string;
+  "onTour.skip": string;
+  "onTour.stepPosition": string;
+  "onTour.welcomeSubtitle": string;
+  "onTour.welcomeTitle": string;
+  // ── search ──
+  "search.explorerLink": string;
+  "search.helpTextAfterLink": string;
+  "search.helpTextBeforeLink": string;
+  // ── transactionFilters ──
+  "transactionFilters.applyPreset": string;
+  "transactionFilters.clearFilters": string;
+  "transactionFilters.deletePreset": string;
+  "transactionFilters.from": string;
+  "transactionFilters.maxFee": string;
+  "transactionFilters.minOperations": string;
+  "transactionFilters.presetNameLabel": string;
+  "transactionFilters.presetNamePlaceholder": string;
+  "transactionFilters.savePreset": string;
+  "transactionFilters.savedPresets": string;
+  "transactionFilters.sourceAccount": string;
+  "transactionFilters.statusFilter": string;
+  "transactionFilters.to": string;
+  // ── walletInfo ──
+  "walletInfo.disconnect": string;
+  "walletInfo.disconnectLabel": string;
+  "walletInfo.disconnecting": string;
+  // ── watchList ──
+  "watchList.addWatch": string;
+  "watchList.addressLabel": string;
+  "watchList.cancel": string;
+  "watchList.confirmImport": string;
+  "watchList.emptyState": string;
+  "watchList.errorDuplicate": string;
+  "watchList.errorEmpty": string;
+  "watchList.errorInvalid": string;
+  "watchList.exportList": string;
+  "watchList.filtersCount": string;
+  "watchList.heading": string;
+  "watchList.importFailed": string;
+  "watchList.importFailedFallback": string;
+  "watchList.importFileLabel": string;
+  "watchList.importList": string;
+  "watchList.importPrompt": string;
+  "watchList.importTitle": string;
+  "watchList.listFull": string;
+  "watchList.mergeOption": string;
+  "watchList.remove": string;
+  "watchList.replaceOption": string;
+  "watchList.unwatch": string;
 }
 
 export type MessageKey = keyof MessageCatalogue;

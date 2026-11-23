@@ -11,7 +11,14 @@ lib/i18n/
   index.ts       runtime: locale switching, lookup, interpolation
   types.ts       MessageCatalogue interface — the shape every locale must match
   en.ts          English (the fallback)
+  de.ts          German
+  es.ts          Spanish
+  pt.ts          Portuguese (Brazilian usage)
 ```
+
+Every catalogue must hold exactly the keys declared in `types.ts`. `en.ts`
+is the reference for wording, and `catalogue.test.ts` fails when a locale is
+missing a key, has an extra one, or changes a placeholder.
 
 Each locale is one TypeScript file that default-exports a `MessageCatalogue`.
 TypeScript enforces that every key is present and every value is a string, so a
