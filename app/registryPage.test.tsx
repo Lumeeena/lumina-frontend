@@ -167,6 +167,21 @@ describe("RegistryPage", () => {
     expect(screen.getByTestId("registry-list")).toBeTruthy();
   });
 
+  it("says the registry is not on another network, and links to the one it is on", async () => {
+    // The test environment deploys the registry to testnet (the default
+    // passphrase), so mainnet is a network with no registry to list.
+    const searchParams = Promise.resolve({ network: "mainnet" });
+    render(await RegistryPage({ searchParams }));
+
+    expect(
+      screen.getByRole("heading", { name: "The Registry is not deployed on Mainnet" }),
+    ).toBeTruthy();
+    expect(screen.queryByTestId("registry-list")).toBeNull();
+    expect(
+      screen.getByRole("link", { name: "Open the Testnet Registry" }).getAttribute("href"),
+    ).toBe("/registry?network=testnet");
+  });
+
   it("offers connection and the global list when no wallet is connected", async () => {
     await renderRegistry();
 

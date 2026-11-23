@@ -73,7 +73,9 @@ that fills in after hydration.
 
 Every GraphQL operation now accepts an optional `$network` parameter. When passed, the query is executed on the specified network; when omitted, it defaults to the deployment's primary network. This allows the same query to serve data from mainnet, testnet, or futurenet as the page's URL selects.
 
-Calling code threads the network from `useNetwork()` or the URL into `gqlFetch` and subscriptions, so a page viewed on testnet sees testnet data, not the deployment's default.
+The GraphQL enum is uppercase (`TESTNET`) and the URL is lowercase (`testnet`). Never send the URL value: `graphqlNetwork()` in `lib/network.ts` is the one mapping, and every call site goes through it.
+
+Threaded today: the asset list (the first page on the server, and every "Load more" and sort change on the client) and the asset detail page (supply, volume and trustline changes). Pages not yet threaded are listed under [Not yet](#not-yet).
 
 ## Network-preserving internal links
 
@@ -87,8 +89,15 @@ A new page `/ledgers/[sequence]` shows a ledger's close time, fees, base reserve
 
 The URL says which network a page is about; completing the story is the rest of [#10](https://github.com/Lumeeena/lumina-frontend/issues/10):
 
-- The Registry page's RPC URL, passphrase and contract id still come from
-  `NEXT_PUBLIC_*` environment variables, one deployment per network — see
-  [ENVIRONMENT_VARIABLES.md](./ENVIRONMENT_VARIABLES.md). Between a URL that
-  selects testnet and a build configured for mainnet, the build wins until that
-  work lands.
+- **The Registry** is served only on the network its deployment is configured
+  for. Any other network shows a "not deployed" state with a link to the right
+  one (`registryView` in `lib/network.ts`), so a registration can never be sent
+  to the wrong chain. Its RPC URL, passphrase and contract id still come from
+  `NEXT_PUBLIC_*` environment variables, one deployment per build — see
+  [ENVIRONMENT_VARIABLES.md](./ENVIRONMENT_VARIABLES.md). A second network's
+  registry needs per-network deployment configuration.
+- **Pages still on the deployment's default network**, because they do not read
+  the URL yet: `/contracts/*`, `/ledgers/*`, `/search`, `/events`, the
+  transaction explorer, account trades, account activity, and the watch feed's
+  activity subscription. Each must read `?network=` and pass `graphqlNetwork()`
+  before it can claim to show the selected network.

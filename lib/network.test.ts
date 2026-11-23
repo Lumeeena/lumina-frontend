@@ -4,12 +4,17 @@ import {
   NETWORKS,
   NETWORK_IDS,
   NETWORK_PARAM,
+  graphqlNetwork,
   isInternalHref,
   isNetworkId,
   parseNetwork,
   readNetwork,
+  registryView,
   withNetwork,
 } from "./network";
+
+const TESTNET_PASSPHRASE = "Test SDF Network ; September 2015";
+const MAINNET_PASSPHRASE = "Public Global Stellar Network ; September 2015";
 
 describe("the network catalogue", () => {
   it("offers the three Stellar networks, default first", () => {
@@ -175,5 +180,79 @@ describe("withNetwork", () => {
       "//other.example/explorer",
     );
     expect(withNetwork("#activity", "testnet")).toBe("#activity");
+  });
+});
+
+describe("graphqlNetwork", () => {
+  it("maps every network id to the uppercase enum value the schema declares", () => {
+    expect(graphqlNetwork("mainnet")).toBe("MAINNET");
+    expect(graphqlNetwork("testnet")).toBe("TESTNET");
+    expect(graphqlNetwork("futurenet")).toBe("FUTURENET");
+  });
+
+  it("covers every network the switcher offers", () => {
+    for (const id of NETWORK_IDS) {
+      expect(graphqlNetwork(id)).toBe(id.toUpperCase());
+    }
+  });
+});
+
+describe("registryView", () => {
+  it("serves the registry on the network its deployment is configured for", () => {
+    expect(registryView("testnet", TESTNET_PASSPHRASE)).toEqual({
+      kind: "available",
+      network: "testnet",
+    });
+  });
+
+  it("uses the deployment's own network when no network is named, so /registry keeps working", () => {
+    expect(registryView(undefined, TESTNET_PASSPHRASE)).toEqual({
+      kind: "available",
+      network: "testnet",
+    });
+    expect(registryView(null, TESTNET_PASSPHRASE)).toEqual({
+      kind: "available",
+      network: "testnet",
+    });
+  });
+
+  it("is unavailable on another network, pointing at the one it is deployed on", () => {
+    expect(registryView("mainnet", TESTNET_PASSPHRASE)).toEqual({
+      kind: "unavailable",
+      selected: "mainnet",
+      deployedOn: "testnet",
+    });
+  });
+
+  it("treats an unrecognised network name as no choice, not as a request for a network", () => {
+    expect(registryView("lolnet", TESTNET_PASSPHRASE)).toEqual({
+      kind: "available",
+      network: "testnet",
+    });
+  });
+
+  it("is unavailable everywhere when the configured passphrase names no known network", () => {
+    expect(registryView(undefined, "Some Private Network ; 2026")).toEqual({
+      kind: "unavailable",
+      selected: "mainnet",
+      deployedOn: null,
+    });
+    expect(registryView("testnet", "Some Private Network ; 2026")).toEqual({
+      kind: "unavailable",
+      selected: "testnet",
+      deployedOn: null,
+    });
+  });
+
+  it("follows a mainnet deployment the same way", () => {
+    expect(registryView("mainnet", MAINNET_PASSPHRASE)).toEqual({
+      kind: "available",
+      network: "mainnet",
+    });
+    expect(registryView("testnet", MAINNET_PASSPHRASE)).toEqual({
+      kind: "unavailable",
+      selected: "testnet",
+      deployedOn: "mainnet",
+    });
   });
 });

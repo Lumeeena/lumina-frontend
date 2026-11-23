@@ -177,3 +177,57 @@ export function withNetwork(href: string, network: NetworkId): string {
 export function networkForPassphrase(passphrase: string): NetworkInfo | null {
   return NETWORKS.find((network) => network.passphrase === passphrase) ?? null;
 }
+
+/**
+ * The enum value the GraphQL API takes for a network. The URL spells networks
+ * in lowercase (`testnet`) and the schema spells them in uppercase (`TESTNET`);
+ * sending the URL spelling makes the API reject the variable, so every query
+ * goes through this mapping rather than through `toUpperCase()` at call sites.
+ */
+export type GraphqlNetwork = "MAINNET" | "TESTNET" | "FUTURENET";
+
+const GRAPHQL_NETWORK: Record<NetworkId, GraphqlNetwork> = {
+  mainnet: "MAINNET",
+  testnet: "TESTNET",
+  futurenet: "FUTURENET",
+};
+
+export function graphqlNetwork(network: NetworkId): GraphqlNetwork {
+  return GRAPHQL_NETWORK[network];
+}
+
+/**
+ * Which network the Lumina Registry is served from, and whether the requested
+ * one is it.
+ *
+ * The registry is one contract on one deployment, and a deployment is one
+ * passphrase (`NEXT_PUBLIC_NETWORK_PASSPHRASE`). Asking for any other network
+ * is a request for a registry that is not here, so the page says so instead of
+ * submitting a transaction to the wrong chain.
+ *
+ * With no network named — a link from before the switcher existed — the
+ * registry resolves to its own deployment network rather than the app default
+ * (mainnet). That keeps `/registry` working as it always has; only an explicit
+ * choice of a different network produces the unavailable state.
+ */
+export type RegistryView =
+  | { kind: "available"; network: NetworkId }
+  | { kind: "unavailable"; selected: NetworkId; deployedOn: NetworkId | null };
+
+export function registryView(
+  requested: string | null | undefined,
+  configuredPassphrase: string,
+): RegistryView {
+  const deployedOn = networkForPassphrase(configuredPassphrase)?.id ?? null;
+  const explicit = parseNetwork(requested);
+  const selected = explicit ?? deployedOn;
+
+  if (selected !== null && selected === deployedOn) {
+    return { kind: "available", network: selected };
+  }
+  return {
+    kind: "unavailable",
+    selected: selected ?? DEFAULT_NETWORK,
+    deployedOn,
+  };
+}
