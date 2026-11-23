@@ -4,6 +4,7 @@ import { routeMetadata } from "@/lib/metadata";
 import WatchedAddressList from "@/components/WatchedAddressList";
 import WatchFeed from "@/components/WatchFeed";
 import PushOptIn from "@/components/PushOptIn";
+import DigestOptIn from "@/components/DigestOptIn";
 
 export function generateMetadata(): Metadata {
   return routeMetadata(WATCHES);
@@ -48,6 +49,8 @@ export default function WatchPage() {
         </p>
         <PushOptIn />
       </section>
+
+      <DigestOptIn />
     </div>
   );
 }
