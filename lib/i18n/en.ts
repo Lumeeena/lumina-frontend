@@ -50,6 +50,17 @@ const en: MessageCatalogue = {
   "connection.reasonRefused": "server refused the connection",
   "connection.whatDoesMean": "What does {label} mean?",
 
+
+  graphql: {
+  title: 'GraphQL Explorer',
+  description: 'Run queries against the Lumina API.',
+  queryLabel: 'Query',
+  queryPlaceholder: 'Enter a GraphQL query',
+  runButton: 'Run query',
+  runButtonAria: 'Run the GraphQL query',
+  emptyResults: 'No results yet. Run a query to see data here.',
+  resultCount: '{count} results',          // use YOUR plural syntax here
+},
   // ── Transaction explorer ──────────────────────────────────────────────
   "explorer.couldNotLoad": "Could not load more transactions.",
   "explorer.noTransactionsYet": "No transactions indexed yet.",
