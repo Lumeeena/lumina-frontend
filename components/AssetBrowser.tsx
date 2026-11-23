@@ -29,7 +29,7 @@ import {
   type AssetsQuery,
 } from "@/lib/generated/graphql";
 import { gqlFetch, PUBLIC_GRAPHQL_URL } from "@/lib/graphql";
-import { withNetwork } from "@/lib/network";
+import { graphqlNetwork, withNetwork } from "@/lib/network";
 import { useNetwork } from "@/lib/useNetwork";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -96,10 +96,14 @@ export default function AssetBrowser({
     setLoading(true);
     setError(null);
 
+    // Every page of one list must come from the network the list was seeded
+    // on. Leaving `network` out would fall back to the deployment's default,
+    // and "Load more" on a testnet list would append mainnet rows.
     void gqlFetch(PUBLIC_GRAPHQL_URL, ASSETS_QUERY, {
       sortBy: sort,
       limit: PAGE_SIZE,
       cursor,
+      network: graphqlNetwork(network),
     })
       .then((data) => {
         const page = data.assets;
@@ -121,14 +125,18 @@ export default function AssetBrowser({
         setHasNextPage(false);
       })
       .finally(() => setLoading(false));
-  }, [cursor, loading, sort]);
+  }, [cursor, loading, sort, network]);
 
+  // `withNetwork` keeps the selected network through a sort change. Building
+  // the URL by hand here dropped `?network=`, and the list reverted to mainnet.
   const setSort = useCallback(
     (next: AssetSort) => {
       if (next === sort) return;
-      router.replace(`${pathname}?sort=${next}`, { scroll: false });
+      router.replace(withNetwork(`${pathname}?sort=${next}`, network), {
+        scroll: false,
+      });
     },
-    [pathname, router, sort],
+    [network, pathname, router, sort],
   );
 
   const needle = query.trim().toLowerCase();

@@ -19,6 +19,7 @@ const nav = vi.hoisted(() => ({ replace: vi.fn(), refresh: vi.fn() }));
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: nav.replace, refresh: nav.refresh }),
   usePathname: () => "/assets",
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 vi.mock("@/lib/graphql", () => ({
@@ -96,6 +97,40 @@ describe("assets page", () => {
       "http://test/graphql",
       expect.anything(),
       expect.objectContaining({ sortBy: "VOLUME" }),
+    );
+  });
+
+  it("asks the backend for the network the URL names, not the deployment default", async () => {
+    gqlFetch.mockResolvedValue(page([XLM]));
+
+    render(
+      await AssetsPage({
+        searchParams: Promise.resolve({ network: "testnet" }),
+      }),
+    );
+
+    await screen.findByText("XLM");
+    expect(gqlFetch).toHaveBeenCalledWith(
+      "http://test/graphql",
+      expect.anything(),
+      expect.objectContaining({ network: "TESTNET" }),
+    );
+  });
+
+  it("treats an unknown network name as mainnet, like every other unrecognised parameter", async () => {
+    gqlFetch.mockResolvedValue(page([XLM]));
+
+    render(
+      await AssetsPage({
+        searchParams: Promise.resolve({ network: "lolnet" }),
+      }),
+    );
+
+    await screen.findByText("XLM");
+    expect(gqlFetch).toHaveBeenCalledWith(
+      "http://test/graphql",
+      expect.anything(),
+      expect.objectContaining({ network: "MAINNET" }),
     );
   });
 

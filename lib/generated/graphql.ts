@@ -770,6 +770,7 @@ export type AssetsQueryVariables = Exact<{
   sortBy?: InputMaybe<AssetSort>;
   limit?: InputMaybe<Scalars['Int']['input']>;
   cursor?: InputMaybe<Scalars['String']['input']>;
+  network?: InputMaybe<Network>;
 }>;
 
 
@@ -1152,8 +1153,8 @@ export const AccountActivityDocument = new TypedDocumentString(`
 }
     `) as unknown as TypedDocumentString<AccountActivitySubscription, AccountActivitySubscriptionVariables>;
 export const AssetsDocument = new TypedDocumentString(`
-    query Assets($sortBy: AssetSort, $limit: Int, $cursor: String) {
-  assets(sortBy: $sortBy, limit: $limit, cursor: $cursor) {
+    query Assets($sortBy: AssetSort, $limit: Int, $cursor: String, $network: Network) {
+  assets(sortBy: $sortBy, limit: $limit, cursor: $cursor, network: $network) {
     items {
       asset
       code

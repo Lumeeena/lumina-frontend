@@ -1,8 +1,16 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import AssetBrowser, { type AssetSummary } from "./AssetBrowser";
+
+// AssetBrowser reads the network and the route from the App Router, which does
+// not exist under Vitest. Without these the component throws before rendering.
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: vi.fn(), refresh: vi.fn() }),
+  usePathname: () => "/assets",
+  useSearchParams: () => new URLSearchParams(),
+}));
 
 afterEach(cleanup);
 

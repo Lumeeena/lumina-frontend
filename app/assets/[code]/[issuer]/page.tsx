@@ -8,8 +8,18 @@ import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
 import { truncateAddress } from "@/lib/formatters";
 import { routeMetadata } from "@/lib/metadata";
 import { SITE_NAME } from "@/lib/site";
-import { TypedDocumentString } from "@/lib/generated/graphql";
+import { TypedDocumentString, type Network } from "@/lib/generated/graphql";
 import { AssetActions } from "@/components/AssetActions";
+import AssetTrustlineFeed, {
+  type AssetTrustlineChange,
+} from "@/components/AssetTrustlineFeed";
+import {
+  DEFAULT_NETWORK,
+  graphqlNetwork,
+  parseNetwork,
+  withNetwork,
+  type NetworkId,
+} from "@/lib/network";
 
 const BUCKET_SECONDS = 86_400;
 
@@ -36,11 +46,12 @@ type AssetDetailQueryVariables = {
   from?: string | null;
   to?: string | null;
   bucketSeconds?: number | null;
+  network?: Network | null;
 };
 
 const ASSET_DETAIL_DOCUMENT = new TypedDocumentString(`
-  query AssetDetail($asset: String!, $from: String, $to: String, $bucketSeconds: Int) {
-    asset(asset: $asset, from: $from, to: $to, bucketSeconds: $bucketSeconds) {
+  query AssetDetail($asset: String!, $from: String, $to: String, $bucketSeconds: Int, $network: Network) {
+    asset(asset: $asset, from: $from, to: $to, bucketSeconds: $bucketSeconds, network: $network) {
       asset
       code
       issuer
@@ -58,6 +69,40 @@ const ASSET_DETAIL_DOCUMENT = new TypedDocumentString(`
   AssetDetailQuery,
   AssetDetailQueryVariables
 >;
+
+type AssetTrustlinesQuery = {
+  operations: {
+    items: AssetTrustlineChange[];
+  };
+};
+
+type AssetTrustlinesQueryVariables = {
+  asset: string;
+  limit?: number | null;
+  network?: Network | null;
+};
+
+// Trustline history is the `change_trust` operations on one asset. The asset
+// aggregate only knows the current holder count, so the operation list is the
+// only place a per-account change can come from.
+const ASSET_TRUSTLINES_DOCUMENT = new TypedDocumentString(`
+  query AssetTrustlines($asset: String!, $limit: Int, $network: Network) {
+    operations(asset: $asset, type: CHANGE_TRUST, limit: $limit, network: $network) {
+      items {
+        id
+        createdAt
+        transactionHash
+        sourceAccount
+        amount
+      }
+    }
+  }
+`) as unknown as TypedDocumentString<
+  AssetTrustlinesQuery,
+  AssetTrustlinesQueryVariables
+>;
+
+const TRUSTLINE_LIMIT = 10;
 
 function bucketLabel(iso: string): string {
   const d = new Date(iso);
@@ -97,9 +142,27 @@ export function generateMetadata({
   });
 }
 
+async function getTrustlineChanges(
+  assetKey: string,
+  network: NetworkId,
+): Promise<{ items: AssetTrustlineChange[]; unavailable: boolean }> {
+  try {
+    const data = await gqlFetch(GRAPHQL_URL, ASSET_TRUSTLINES_DOCUMENT, {
+      asset: assetKey,
+      limit: TRUSTLINE_LIMIT,
+      network: graphqlNetwork(network),
+    });
+    return { items: data.operations.items, unavailable: false };
+  } catch {
+    // The feed failing must not take the asset's supply and volume down with it.
+    return { items: [], unavailable: true };
+  }
+}
+
 async function getAsset(
   code: string,
   issuer: string,
+  network: NetworkId,
 ): Promise<{ asset: AssetDetailQuery["asset"]; unavailable: boolean }> {
   const assetKey = `${code}:${issuer}`;
 
@@ -107,6 +170,7 @@ async function getAsset(
     const data = await gqlFetch(GRAPHQL_URL, ASSET_DETAIL_DOCUMENT, {
       asset: assetKey,
       bucketSeconds: BUCKET_SECONDS,
+      network: graphqlNetwork(network),
     });
     return { asset: data.asset, unavailable: false };
   } catch (error) {
@@ -125,13 +189,21 @@ const statCell =
 
 export default async function AssetDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ code: string; issuer: string }>;
+  searchParams: Promise<{ network?: string }>;
 }) {
   const { code, issuer } = await params;
+  const { network: rawNetwork } = await searchParams;
+  const network = parseNetwork(rawNetwork) ?? DEFAULT_NETWORK;
   const decodedCode = decodeURIComponent(code);
   const decodedIssuer = decodeURIComponent(issuer);
-  const { asset, unavailable } = await getAsset(decodedCode, decodedIssuer);
+  const assetKey = `${decodedCode}:${decodedIssuer}`;
+  const [{ asset, unavailable }, trustlines] = await Promise.all([
+    getAsset(decodedCode, decodedIssuer, network),
+    getTrustlineChanges(assetKey, network),
+  ]);
 
   if (unavailable) {
     return <BackendUnavailable />;
@@ -148,7 +220,7 @@ export default async function AssetDetailPage({
   return (
     <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
       <Link
-        href="/assets"
+        href={withNetwork("/assets", network)}
         className="inline-block text-[13px] font-semibold text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] mb-[18px]"
       >
         &larr; Back to Assets
@@ -273,6 +345,13 @@ export default async function AssetDetailPage({
           height={280}
         />
       )}
+
+      <AssetTrustlineFeed
+        assetLabel={asset.code ?? asset.asset}
+        items={trustlines.items}
+        unavailable={trustlines.unavailable}
+        network={network}
+      />
     </div>
   );
 }

@@ -4,6 +4,12 @@ import {
   type AssetSort,
 } from "@/lib/generated/graphql";
 import { gqlFetch, GRAPHQL_URL } from "@/lib/graphql";
+import {
+  DEFAULT_NETWORK,
+  graphqlNetwork,
+  parseNetwork,
+  type NetworkId,
+} from "@/lib/network";
 import { routeMetadata } from "@/lib/metadata";
 import { ASSETS } from "@/lib/routes";
 import AssetBrowser, {
@@ -32,7 +38,10 @@ function parseSort(raw: string | undefined): AssetSort {
   return raw?.toUpperCase() === "VOLUME" ? "VOLUME" : "HOLDERS";
 }
 
-async function getAssets(sort: AssetSort): Promise<{
+async function getAssets(
+  sort: AssetSort,
+  network: NetworkId,
+): Promise<{
   items: AssetSummary[];
   cursor: string | null;
   hasNextPage: boolean;
@@ -45,6 +54,7 @@ async function getAssets(sort: AssetSort): Promise<{
     const data = await gqlFetch(GRAPHQL_URL, ASSETS_QUERY, {
       sortBy: sort,
       limit: PAGE_SIZE,
+      network: graphqlNetwork(network),
     });
     return {
       items: data.assets.items,
@@ -62,11 +72,13 @@ async function getAssets(sort: AssetSort): Promise<{
 export default async function AssetsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ sort?: string }>;
+  searchParams: Promise<{ sort?: string; network?: string }>;
 }) {
-  const { sort: rawSort } = await searchParams;
+  const { sort: rawSort, network: rawNetwork } = await searchParams;
   const sort = parseSort(rawSort);
-  const first = await getAssets(sort);
+  // The same rule `readNetwork` applies to a URL: an unknown name is the default.
+  const network = parseNetwork(rawNetwork) ?? DEFAULT_NETWORK;
+  const first = await getAssets(sort, network);
 
   return (
     <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
@@ -80,11 +92,12 @@ export default async function AssetsPage({
       {first.unavailable ? (
         <BackendUnavailable />
       ) : (
-        // Keyed on the sort so changing it starts a clean list. Without it the
-        // component keeps the rows it had under the old ordering and appends the
-        // new ordering's page two, which is a list of two different things.
+        // Keyed on the network as well as the sort. Switching network re-renders
+        // this page with new `initial` rows, but `useState` keeps whatever rows it
+        // already holds; without the network in the key, mainnet rows would stay
+        // on screen under a testnet selection.
         <AssetBrowser
-          key={sort}
+          key={`${network}:${sort}`}
           initial={first.items}
           initialCursor={first.cursor}
           initialHasNextPage={first.hasNextPage}
