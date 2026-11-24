@@ -415,6 +415,25 @@ export interface MessageCatalogue {
   "assets.heading": string;
   "assets.description": string;
 
+  // ── Asset detail page ─────────────────────────────────────────────────
+  "assetDetail.backToAssets": string;
+  "assetDetail.eyebrow": string;
+  "assetDetail.nativeAsset": string;
+  "assetDetail.customAsset": string;
+  "assetDetail.nativeStellarAsset": string;
+  "assetDetail.statSupply": string;
+  "assetDetail.statHolders": string;
+  "assetDetail.stat30dVolume": string;
+  "assetDetail.detailsAriaLabel": string;
+  "assetDetail.rowAssetCode": string;
+  "assetDetail.rowIssuer": string;
+  "assetDetail.transferVolumeHeading": string;
+  "assetDetail.noActivityTitle": string;
+  "assetDetail.noActivityBody": string;
+  "assetDetail.chartTitle": string;
+  "assetDetail.chartDescription": string;
+  "assetDetail.chartCaption": string;
+
   // ── Watch page ────────────────────────────────────────────────────────
   "watch.backgroundNotifications": string;
   "watch.notificationDescription": string;

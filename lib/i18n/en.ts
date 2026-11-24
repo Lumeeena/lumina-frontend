@@ -465,6 +465,28 @@ const en: MessageCatalogue = {
   "assets.description":
     "Every asset Lumina indexes, with the supply and holder counts behind it.",
 
+  // ── Asset detail page ─────────────────────────────────────────────────
+  "assetDetail.backToAssets": "\u2190 Back to Assets",
+  "assetDetail.eyebrow": "Asset",
+  "assetDetail.nativeAsset": "Native asset",
+  "assetDetail.customAsset": "Custom asset",
+  "assetDetail.nativeStellarAsset": "Native Stellar asset",
+  "assetDetail.statSupply": "Supply",
+  "assetDetail.statHolders": "Holders",
+  "assetDetail.stat30dVolume": "30d Volume",
+  "assetDetail.detailsAriaLabel": "Asset details",
+  "assetDetail.rowAssetCode": "Asset code",
+  "assetDetail.rowIssuer": "Issuer",
+  "assetDetail.transferVolumeHeading": "Transfer Volume",
+  "assetDetail.noActivityTitle": "No activity in the last 30 days",
+  "assetDetail.noActivityBody":
+    "Transfer volume for {asset} will appear here once this asset is sent or received.",
+  "assetDetail.chartTitle": "{asset} transfer volume",
+  "assetDetail.chartDescription":
+    "Daily transfer volume for {asset} over the last 30 days.",
+  "assetDetail.chartCaption":
+    "Transfer volume (sent + received) per day \u00b7 last 30 days \u00b7 daily buckets",
+
   // ── Watch page ────────────────────────────────────────────────────────
   "watch.backgroundNotifications": "Background notifications",
   "watch.notificationDescription":

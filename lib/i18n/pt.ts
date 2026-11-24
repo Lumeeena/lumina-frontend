@@ -467,6 +467,28 @@ const pt: MessageCatalogue = {
   "assets.description":
     "Todos os ativos que a Lumina indexa, com a oferta e o número de detentores por trás deles.",
 
+  // ── Asset detail page ─────────────────────────────────────────────────
+  "assetDetail.backToAssets": "\u2190 Voltar para Ativos",
+  "assetDetail.eyebrow": "Ativo",
+  "assetDetail.nativeAsset": "Ativo nativo",
+  "assetDetail.customAsset": "Ativo personalizado",
+  "assetDetail.nativeStellarAsset": "Ativo nativo da Stellar",
+  "assetDetail.statSupply": "Oferta",
+  "assetDetail.statHolders": "Detentores",
+  "assetDetail.stat30dVolume": "Volume 30d",
+  "assetDetail.detailsAriaLabel": "Detalhes do ativo",
+  "assetDetail.rowAssetCode": "Código do ativo",
+  "assetDetail.rowIssuer": "Emissor",
+  "assetDetail.transferVolumeHeading": "Volume de transferências",
+  "assetDetail.noActivityTitle": "Sem atividade nos últimos 30 dias",
+  "assetDetail.noActivityBody":
+    "O volume de transferências de {asset} aparecerá aqui quando este ativo for enviado ou recebido.",
+  "assetDetail.chartTitle": "Volume de transferências de {asset}",
+  "assetDetail.chartDescription":
+    "Volume de transferências diário de {asset} nos últimos 30 dias.",
+  "assetDetail.chartCaption":
+    "Volume de transferências (enviado + recebido) por dia \u00b7 últimos 30 dias \u00b7 buckets diários",
+
   // ── Watch page ────────────────────────────────────────────────────────
   "watch.backgroundNotifications": "Notificações em segundo plano",
   "watch.notificationDescription":

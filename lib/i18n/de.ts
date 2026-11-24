@@ -475,6 +475,28 @@ const de: MessageCatalogue = {
   "assets.description":
     "Jedes Asset, das Lumina indexiert, mit Angebot und Inhaberzahlen.",
 
+  // ── Asset detail page ─────────────────────────────────────────────────
+  "assetDetail.backToAssets": "\u2190 Zurück zu Assets",
+  "assetDetail.eyebrow": "Asset",
+  "assetDetail.nativeAsset": "Nativer Asset",
+  "assetDetail.customAsset": "Benutzerdefinierter Asset",
+  "assetDetail.nativeStellarAsset": "Nativer Stellar-Asset",
+  "assetDetail.statSupply": "Angebot",
+  "assetDetail.statHolders": "Inhaber",
+  "assetDetail.stat30dVolume": "30-Tage-Volumen",
+  "assetDetail.detailsAriaLabel": "Asset-Details",
+  "assetDetail.rowAssetCode": "Asset-Code",
+  "assetDetail.rowIssuer": "Emittent",
+  "assetDetail.transferVolumeHeading": "Überweisungsvolumen",
+  "assetDetail.noActivityTitle": "Keine Aktivität in den letzten 30 Tagen",
+  "assetDetail.noActivityBody":
+    "Das Überweisungsvolumen für {asset} wird hier angezeigt, sobald dieser Asset gesendet oder empfangen wurde.",
+  "assetDetail.chartTitle": "{asset} Überweisungsvolumen",
+  "assetDetail.chartDescription":
+    "Tägliches Überweisungsvolumen für {asset} in den letzten 30 Tagen.",
+  "assetDetail.chartCaption":
+    "Überweisungsvolumen (gesendet + empfangen) pro Tag \u00b7 letzte 30 Tage \u00b7 Tages-Buckets",
+
   // ── Watch page ────────────────────────────────────────────────────────
   "watch.backgroundNotifications": "Hintergrund-Benachrichtigungen",
   "watch.notificationDescription":

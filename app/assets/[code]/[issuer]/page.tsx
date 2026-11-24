@@ -20,6 +20,7 @@ import {
   withNetwork,
   type NetworkId,
 } from "@/lib/network";
+import { getServerTranslator } from "@/lib/i18n/server";
 
 const BUCKET_SECONDS = 86_400;
 
@@ -196,6 +197,7 @@ export default async function AssetDetailPage({
 }) {
   const { code, issuer } = await params;
   const { network: rawNetwork } = await searchParams;
+  const { t } = await getServerTranslator();
   const network = parseNetwork(rawNetwork) ?? DEFAULT_NETWORK;
   const decodedCode = decodeURIComponent(code);
   const decodedIssuer = decodeURIComponent(issuer);
@@ -216,6 +218,7 @@ export default async function AssetDetailPage({
   const series = asset.series;
   const allZero = isAllZero(series);
   const volume = totalVolume(series);
+  const assetLabel = asset.code ?? asset.asset;
 
   return (
     <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
@@ -223,20 +226,22 @@ export default async function AssetDetailPage({
         href={withNetwork("/assets", network)}
         className="inline-block text-[13px] font-semibold text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] mb-[18px]"
       >
-        &larr; Back to Assets
+        {t("assetDetail.backToAssets")}
       </Link>
 
       <div className="mb-7">
         <p className="text-[11px] tracking-[0.06em] uppercase text-[var(--color-text-muted)] mb-2">
-          Asset
+          {t("assetDetail.eyebrow")}
         </p>
         <div className="flex items-center gap-3 flex-wrap mb-1.5">
           <h1 className="font-extrabold text-3xl text-[var(--color-text-primary)]">
-            {asset.code ?? asset.asset}
+            {assetLabel}
           </h1>
           {asset.issuer && (
             <span className="rounded-full border border-[var(--color-border-default)] bg-[var(--color-bg-raised)] px-2.5 py-1 text-[11px] font-semibold text-[var(--color-text-secondary)]">
-              {asset.native ? "Native asset" : "Custom asset"}
+              {asset.native
+                ? t("assetDetail.nativeAsset")
+                : t("assetDetail.customAsset")}
             </span>
           )}
           <AssetActions asset={asset} />
@@ -247,7 +252,7 @@ export default async function AssetDetailPage({
           </p>
         ) : (
           <p className="text-[var(--color-text-secondary)]">
-            Native Stellar asset
+            {t("assetDetail.nativeStellarAsset")}
           </p>
         )}
       </div>
@@ -255,7 +260,7 @@ export default async function AssetDetailPage({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <div className={statCell}>
           <div className="text-[11px] uppercase tracking-[0.05em] text-[var(--color-text-muted)]">
-            Supply
+            {t("assetDetail.statSupply")}
           </div>
           <div className="mono text-base font-bold mt-1 text-[var(--color-text-primary)]">
             {formatSupply(asset.supply)}
@@ -263,7 +268,7 @@ export default async function AssetDetailPage({
         </div>
         <div className={statCell}>
           <div className="text-[11px] uppercase tracking-[0.05em] text-[var(--color-text-muted)]">
-            Holders
+            {t("assetDetail.statHolders")}
           </div>
           <div className="mono text-base font-bold mt-1 text-[var(--color-text-primary)]">
             {asset.holders.toLocaleString()}
@@ -271,7 +276,7 @@ export default async function AssetDetailPage({
         </div>
         <div className={statCell}>
           <div className="text-[11px] uppercase tracking-[0.05em] text-[var(--color-text-muted)]">
-            30d Volume
+            {t("assetDetail.stat30dVolume")}
           </div>
           <div className="mono text-base font-bold mt-1 text-[var(--color-text-primary)]">
             {volume.toLocaleString(undefined, {
@@ -283,7 +288,7 @@ export default async function AssetDetailPage({
 
       <div
         role="region"
-        aria-label="Asset details"
+        aria-label={t("assetDetail.detailsAriaLabel")}
         tabIndex={0}
         className="max-w-full rounded-xl border border-[var(--color-border-default)] overflow-x-auto mb-8 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-fill)]"
       >
@@ -291,15 +296,15 @@ export default async function AssetDetailPage({
           <tbody>
             <tr className="border-b border-[var(--color-bg-overlay)]">
               <td className="py-2.5 px-3 text-[var(--color-text-muted)] text-xs w-[140px]">
-                Asset code
+                {t("assetDetail.rowAssetCode")}
               </td>
               <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-primary)]">
-                {asset.code ?? asset.asset}
+                {assetLabel}
               </td>
             </tr>
             <tr>
               <td className="py-2.5 px-3 text-[var(--color-text-muted)] text-xs w-[140px]">
-                Issuer
+                {t("assetDetail.rowIssuer")}
               </td>
               <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-primary)] break-all">
                 {asset.issuer ? (
@@ -307,7 +312,7 @@ export default async function AssetDetailPage({
                     {truncateAddress(asset.issuer, 12)}
                   </span>
                 ) : (
-                  "—"
+                  "\u2014"
                 )}
               </td>
             </tr>
@@ -316,7 +321,7 @@ export default async function AssetDetailPage({
       </div>
 
       <h2 className="font-extrabold text-base mb-3 text-[var(--color-text-primary)]">
-        Transfer Volume
+        {t("assetDetail.transferVolumeHeading")}
       </h2>
 
       {allZero ? (
@@ -325,29 +330,28 @@ export default async function AssetDetailPage({
           style={{ minHeight: 280 }}
         >
           <p className="text-[var(--color-text-secondary)] text-sm font-semibold">
-            No activity in the last 30 days
+            {t("assetDetail.noActivityTitle")}
           </p>
           <p className="text-[var(--color-text-muted)] text-xs max-w-xs">
-            Transfer volume for {asset.code ?? asset.asset} will appear here
-            once this asset is sent or received.
+            {t("assetDetail.noActivityBody", { asset: assetLabel })}
           </p>
         </div>
       ) : (
         <AreaChart
-          title={`${asset.code ?? asset.asset} transfer volume`}
-          description={`Daily transfer volume for ${asset.code ?? asset.asset} over the last 30 days.`}
+          title={t("assetDetail.chartTitle", { asset: assetLabel })}
+          description={t("assetDetail.chartDescription", { asset: assetLabel })}
           data={series.map((bucket) => ({
             label: bucketLabel(bucket.bucketStart),
             value: parseFloat(bucket.volume),
           }))}
-          unit={` ${asset.code ?? asset.asset}`}
-          caption="Transfer volume (sent + received) per day · last 30 days · daily buckets"
+          unit={` ${assetLabel}`}
+          caption={t("assetDetail.chartCaption")}
           height={280}
         />
       )}
 
       <AssetTrustlineFeed
-        assetLabel={asset.code ?? asset.asset}
+        assetLabel={assetLabel}
         items={trustlines.items}
         unavailable={trustlines.unavailable}
         network={network}
