@@ -311,6 +311,33 @@ export interface MessageCatalogue {
   "transactions.heading": string;
   "transactions.loading": string;
 
+  // ── Transaction detail page ───────────────────────────────────────────
+  "transaction.backToTransactions": string;
+  "transaction.notFoundTitle": string;
+  "transaction.notFoundBody": string;
+  "transaction.includedInLedger": string;
+  "transaction.statStatus": string;
+  "transaction.statFee": string;
+  "transaction.statOperations": string;
+  "transaction.statTime": string;
+  "transaction.statusSuccessful": string;
+  "transaction.statusFailed": string;
+  "transaction.detailsHeading": string;
+  "transaction.sourceAccount": string;
+  "transaction.viewSourceAtLedger": string;
+  "transaction.memoType": string;
+  "transaction.memoTypeNone": string;
+  "transaction.memo": string;
+  "transaction.preconditionsHeading": string;
+  "transaction.operationsHeading": string;
+  "transaction.operationsCaption": string;
+  "transaction.opColType": string;
+  "transaction.opColFrom": string;
+  "transaction.opColTo": string;
+  "transaction.opColAmount": string;
+  "transaction.opColTime": string;
+  "transaction.noOperations": string;
+
   // ── Stats page ────────────────────────────────────────────────────────
   "stats.heading": string;
   "stats.description": string;

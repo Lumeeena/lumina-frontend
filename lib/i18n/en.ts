@@ -351,6 +351,35 @@ const en: MessageCatalogue = {
   "transactions.heading": "Transactions",
   "transactions.loading": "Loading transactions\u2026",
 
+  // ── Transaction detail page ───────────────────────────────────────────
+  "transaction.backToTransactions": "\u2190 Back to Transactions",
+  "transaction.notFoundTitle": "Transaction Not Found",
+  "transaction.notFoundBody":
+    "The transaction {hash} is not in the index \u2014 it may be too new, or it may never have been included in a ledger. Check the hash and network, then look it up again after the transaction has confirmed.",
+  "transaction.includedInLedger": "Included in ledger {ledger}",
+  "transaction.statStatus": "Status",
+  "transaction.statFee": "Fee",
+  "transaction.statOperations": "Operations",
+  "transaction.statTime": "Time",
+  "transaction.statusSuccessful": "Successful",
+  "transaction.statusFailed": "Failed",
+  "transaction.detailsHeading": "Details",
+  "transaction.sourceAccount": "Source account",
+  "transaction.viewSourceAtLedger": "View source account at ledger {ledger}",
+  "transaction.memoType": "Memo type",
+  "transaction.memoTypeNone": "none",
+  "transaction.memo": "Memo",
+  "transaction.preconditionsHeading": "Preconditions",
+  "transaction.operationsHeading": "Operations",
+  "transaction.operationsCaption": "Transaction operations",
+  "transaction.opColType": "Type",
+  "transaction.opColFrom": "From",
+  "transaction.opColTo": "To",
+  "transaction.opColAmount": "Amount",
+  "transaction.opColTime": "Time",
+  "transaction.noOperations":
+    "No operations were indexed for this transaction.",
+
   // ── Stats page ────────────────────────────────────────────────────────
   "stats.heading": "Network Stats",
   "stats.description":

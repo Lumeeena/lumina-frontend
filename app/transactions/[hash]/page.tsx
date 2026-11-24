@@ -21,6 +21,7 @@ import ViewTracker from "@/components/ViewTracker";
 import TransactionPreconditions from "@/components/TransactionPreconditions";
 import IndexingGapIndicator from "@/components/IndexingGapIndicator";
 import { TransactionActions } from "@/components/TransactionActions";
+import { getServerTranslator } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
@@ -72,7 +73,16 @@ export default async function TransactionPage({
   params: Promise<{ hash: string }>;
 }) {
   const { hash } = await params;
+  const { t } = await getServerTranslator();
   const { transaction, unavailable } = await getTransaction(hash);
+
+  const notFoundBody = t("transaction.notFoundBody", { hash: "___HASH___" });
+  const [notFoundBefore, notFoundAfter] = notFoundBody.split("___HASH___");
+
+  const includedInLedger = t("transaction.includedInLedger", {
+    ledger: "___LEDGER___",
+  });
+  const [ledgerBefore, ledgerAfter] = includedInLedger.split("___LEDGER___");
 
   return (
     <div className="max-w-[1160px] mx-auto px-4 sm:px-7 py-12">
@@ -88,23 +98,21 @@ export default async function TransactionPage({
         href="/transactions"
         className="inline-block text-[13px] font-semibold text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] mb-[18px]"
       >
-        &larr; Back to Transactions
+        {t("transaction.backToTransactions")}
       </Link>
       {unavailable ? (
         <BackendUnavailable />
       ) : !transaction ? (
         <div className="p-8 rounded-xl border border-[var(--color-error-outline)] text-center">
           <p className="text-[var(--color-error-text)] font-semibold mb-2">
-            Transaction Not Found
+            {t("transaction.notFoundTitle")}
           </p>
           <p className="text-[var(--color-text-muted)] text-sm max-w-md mx-auto">
-            The transaction{" "}
+            {notFoundBefore}
             <span className="mono text-[var(--color-text-secondary)] break-all">
               {hash}
-            </span>{" "}
-            is not in the index — it may be too new, or it may never have been
-            included in a ledger.
-            Check the hash and network, then look it up again after the transaction has confirmed.
+            </span>
+            {notFoundAfter}
           </p>
         </div>
       ) : (
@@ -117,37 +125,40 @@ export default async function TransactionPage({
             <TransactionActions transaction={transaction} />
           </div>
           <p className="text-[var(--color-text-muted)] text-[13px] mb-6">
-            Included in ledger{" "}
+            {ledgerBefore}
             <Link
               href={`/ledgers/${transaction.ledger}`}
               className="text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline"
             >
               {transaction.ledger.toLocaleString()}
             </Link>
+            {ledgerAfter}
           </p>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             <div className={stat}>
-              <div className={statLabel}>Status</div>
+              <div className={statLabel}>{t("transaction.statStatus")}</div>
               <div
                 className={`font-bold text-sm mt-1 ${transaction.successful ? "text-[var(--color-success-text)]" : "text-[var(--color-error-text)]"}`}
               >
-                {transaction.successful ? "Successful" : "Failed"}
+                {transaction.successful
+                  ? t("transaction.statusSuccessful")
+                  : t("transaction.statusFailed")}
               </div>
             </div>
             <div className={stat}>
-              <div className={statLabel}>Fee</div>
+              <div className={statLabel}>{t("transaction.statFee")}</div>
               <div className={statValue}>
                 {formatXLM((parseInt(transaction.feeCharged) / 1e7).toFixed(7))}{" "}
                 XLM
               </div>
             </div>
             <div className={stat}>
-              <div className={statLabel}>Operations</div>
+              <div className={statLabel}>{t("transaction.statOperations")}</div>
               <div className={statValue}>{transaction.operationCount}</div>
             </div>
             <div className={stat}>
-              <div className={statLabel}>Time</div>
+              <div className={statLabel}>{t("transaction.statTime")}</div>
               <div className="text-sm mt-1 text-[var(--color-text-primary)]">
                 <TimeAgo isoString={transaction.createdAt} />
               </div>
@@ -155,14 +166,14 @@ export default async function TransactionPage({
           </div>
 
           <h2 className="font-extrabold text-base mb-3 text-[var(--color-text-primary)]">
-            Details
+            {t("transaction.detailsHeading")}
           </h2>
           <div className="rounded-xl border border-[var(--color-border-default)] overflow-hidden mb-9">
             <table className="w-full text-sm border-collapse">
               <tbody>
                 <tr className="border-b border-[var(--color-bg-overlay)]">
                   <td className="py-2.5 px-3 text-[var(--color-text-muted)] text-xs w-[140px]">
-                    Source account
+                    {t("transaction.sourceAccount")}
                   </td>
                   <td className="py-2.5 px-3">
                     <Link
@@ -177,24 +188,26 @@ export default async function TransactionPage({
                       href={accountAtLedgerHref(transaction.sourceAccount, transaction.ledger)}
                       className="block mt-1 text-xs font-semibold text-[var(--color-accent-text)] hover:text-[var(--color-accent-text-hover)] hover:underline"
                     >
-                      View source account at ledger {transaction.ledger.toLocaleString()}
+                      {t("transaction.viewSourceAtLedger", {
+                        ledger: transaction.ledger.toLocaleString(),
+                      })}
                     </Link>
                   </td>
                 </tr>
                 <tr className="border-b border-[var(--color-bg-overlay)]">
                   <td className="py-2.5 px-3 text-[var(--color-text-muted)] text-xs">
-                    Memo type
+                    {t("transaction.memoType")}
                   </td>
                   <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-primary)]">
-                    {transaction.memoType ?? "none"}
+                    {transaction.memoType ?? t("transaction.memoTypeNone")}
                   </td>
                 </tr>
                 <tr>
                   <td className="py-2.5 px-3 text-[var(--color-text-muted)] text-xs">
-                    Memo
+                    {t("transaction.memo")}
                   </td>
                   <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-primary)] break-all">
-                    {transaction.memo ?? "—"}
+                    {transaction.memo ?? "\u2014"}
                   </td>
                 </tr>
               </tbody>
@@ -202,35 +215,37 @@ export default async function TransactionPage({
           </div>
 
           <h2 className="font-extrabold text-base mb-3 text-[var(--color-text-primary)]">
-            Preconditions
+            {t("transaction.preconditionsHeading")}
           </h2>
           <div className="mb-9">
             <TransactionPreconditions preconditions={null} />
           </div>
 
           <h2 className="font-extrabold text-base mb-3 text-[var(--color-text-primary)]">
-            Operations
+            {t("transaction.operationsHeading")}
           </h2>
           <div className="rounded-xl border border-[var(--color-border-default)] overflow-x-auto">
             {transaction.operations && transaction.operations.length > 0 ? (
               <table className="w-full text-sm border-collapse">
-                <caption className="sr-only">Transaction operations</caption>
+                <caption className="sr-only">
+                  {t("transaction.operationsCaption")}
+                </caption>
                 <thead>
                   <tr>
                     <th scope="col" className={th}>
-                      Type
+                      {t("transaction.opColType")}
                     </th>
                     <th scope="col" className={th}>
-                      From
+                      {t("transaction.opColFrom")}
                     </th>
                     <th scope="col" className={th}>
-                      To
+                      {t("transaction.opColTo")}
                     </th>
                     <th scope="col" className={th}>
-                      Amount
+                      {t("transaction.opColAmount")}
                     </th>
                     <th scope="col" className={th}>
-                      Time
+                      {t("transaction.opColTime")}
                     </th>
                   </tr>
                 </thead>
@@ -252,7 +267,7 @@ export default async function TransactionPage({
                             {truncateAddress(op.from, 6)}
                           </Link>
                         ) : (
-                          "—"
+                          "\u2014"
                         )}
                       </td>
                       <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-secondary)]">
@@ -264,13 +279,13 @@ export default async function TransactionPage({
                             {truncateAddress(op.to, 6)}
                           </Link>
                         ) : (
-                          "—"
+                          "\u2014"
                         )}
                       </td>
                       <td className="py-2.5 px-3 mono text-xs text-[var(--color-text-primary)]">
                         {op.amount
                           ? `${formatXLM(op.amount)} ${op.asset ?? ""}`.trim()
-                          : "—"}
+                          : "\u2014"}
                       </td>
                       <td className="py-2.5 px-3 text-xs text-[var(--color-text-faint)]">
                         <TimeAgo isoString={op.createdAt} />
@@ -281,7 +296,7 @@ export default async function TransactionPage({
               </table>
             ) : (
               <div className="p-8 text-center text-[var(--color-text-muted)] text-sm">
-                No operations were indexed for this transaction.
+                {t("transaction.noOperations")}
               </div>
             )}
           </div>

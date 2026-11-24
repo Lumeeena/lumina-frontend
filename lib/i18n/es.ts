@@ -353,6 +353,35 @@ const es: MessageCatalogue = {
   "transactions.heading": "Transacciones",
   "transactions.loading": "Cargando transacciones…",
 
+  // ── Transaction detail page ───────────────────────────────────────────
+  "transaction.backToTransactions": "\u2190 Volver a Transacciones",
+  "transaction.notFoundTitle": "Transacción no encontrada",
+  "transaction.notFoundBody":
+    "La transacción {hash} no está en el índice \u2014 puede ser demasiado reciente o nunca haber sido incluida en un ledger. Verifica el hash y la red, y búscala de nuevo después de que la transacción se haya confirmado.",
+  "transaction.includedInLedger": "Incluida en el ledger {ledger}",
+  "transaction.statStatus": "Estado",
+  "transaction.statFee": "Tarifa",
+  "transaction.statOperations": "Operaciones",
+  "transaction.statTime": "Hora",
+  "transaction.statusSuccessful": "Exitosa",
+  "transaction.statusFailed": "Fallida",
+  "transaction.detailsHeading": "Detalles",
+  "transaction.sourceAccount": "Cuenta de origen",
+  "transaction.viewSourceAtLedger": "Ver cuenta de origen en el ledger {ledger}",
+  "transaction.memoType": "Tipo de memo",
+  "transaction.memoTypeNone": "ninguno",
+  "transaction.memo": "Memo",
+  "transaction.preconditionsHeading": "Precondiciones",
+  "transaction.operationsHeading": "Operaciones",
+  "transaction.operationsCaption": "Operaciones de la transacción",
+  "transaction.opColType": "Tipo",
+  "transaction.opColFrom": "De",
+  "transaction.opColTo": "Para",
+  "transaction.opColAmount": "Cantidad",
+  "transaction.opColTime": "Hora",
+  "transaction.noOperations":
+    "No se indexaron operaciones para esta transacción.",
+
   // ── Stats page ────────────────────────────────────────────────────────
   "stats.heading": "Estadísticas de la red",
   "stats.description":
