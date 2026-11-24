@@ -74,6 +74,13 @@ Variables prefixed with `NEXT_PUBLIC_` are **baked into the JavaScript bundle at
 - **Privacy**: Stellar addresses, email addresses, IP addresses, and URL query/hash data are removed before transmission.
 - **Effect**: When set, the root reporter and route error boundaries send best-effort reports without affecting recovery UI.
 
+### NEXT_PUBLIC_VAPID_PUBLIC_KEY
+
+- **Default**: Unset. Push notifications are disabled by default.
+- **Purpose**: The VAPID public key for Web Push, used to subscribe to browser notifications.
+- **Must match backend**: The corresponding private key must be held by your push notification backend service.
+- **Effect**: When set, users can enable browser push notifications for watched activity. Without it, the UI still renders but subscriptions fail silently.
+
 ## Server-Side Variables (Runtime)
 
 Variables without the `NEXT_PUBLIC_` prefix are server-side only — they are read at runtime on the server and are not sent to the browser.
