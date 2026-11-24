@@ -13,6 +13,9 @@ ARG NEXT_PUBLIC_SOROBAN_RPC_URL
 ARG NEXT_PUBLIC_NETWORK_PASSPHRASE
 ARG NEXT_PUBLIC_REGISTRY_READ_ACCOUNT
 ARG NEXT_PUBLIC_ERROR_REPORTING_URL
+ARG NEXT_PUBLIC_SITE_URL
+ARG NEXT_PUBLIC_GRAPHQL_WS_URL
+ARG NEXT_PUBLIC_VAPID_PUBLIC_KEY
 ARG ERROR_REPORTING_URL
 ENV NEXT_PUBLIC_GRAPHQL_URL=$NEXT_PUBLIC_GRAPHQL_URL \
     NEXT_PUBLIC_REGISTRY_CONTRACT_ID=$NEXT_PUBLIC_REGISTRY_CONTRACT_ID \
@@ -20,17 +23,20 @@ ENV NEXT_PUBLIC_GRAPHQL_URL=$NEXT_PUBLIC_GRAPHQL_URL \
     NEXT_PUBLIC_NETWORK_PASSPHRASE=$NEXT_PUBLIC_NETWORK_PASSPHRASE \
     NEXT_PUBLIC_REGISTRY_READ_ACCOUNT=$NEXT_PUBLIC_REGISTRY_READ_ACCOUNT \
     NEXT_PUBLIC_ERROR_REPORTING_URL=$NEXT_PUBLIC_ERROR_REPORTING_URL \
+    NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL \
+    NEXT_PUBLIC_GRAPHQL_WS_URL=$NEXT_PUBLIC_GRAPHQL_WS_URL \
+    NEXT_PUBLIC_VAPID_PUBLIC_KEY=$NEXT_PUBLIC_VAPID_PUBLIC_KEY \
     ERROR_REPORTING_URL=$ERROR_REPORTING_URL
 RUN npm run build
 
 FROM node:20-alpine
 WORKDIR /app
 ENV NODE_ENV=production
-COPY --from=build /app/package.json /app/package-lock.json ./
-COPY --from=build /app/scripts/prepare.mjs ./scripts/prepare.mjs
-RUN npm ci --omit=dev
-COPY --from=build /app/.next ./.next
+COPY --from=build /app/.next/standalone ./
+COPY --from=build /app/.next/static ./.next/static
 COPY --from=build /app/public ./public
-COPY --from=build /app/next.config.ts ./
 EXPOSE 3000
-CMD ["npm", "start"]
+USER node
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+CMD ["node", "server.js"]
