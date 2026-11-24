@@ -12,9 +12,6 @@ export interface MessageCatalogue {
   "error.retry": string;
   "error.retrying": string;
 
-  // ── Network status ────────────────────────────────────────────────────
-  "status.offline": string;
-
   // ── 404 ───────────────────────────────────────────────────────────────
   "notFound.code": string;
   "notFound.title": string;

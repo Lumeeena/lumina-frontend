@@ -17,10 +17,6 @@ const es: MessageCatalogue = {
   "error.retry": "Reintentar",
   "error.retrying": "Reintentando…",
 
-  // ── Network status ────────────────────────────────────────────────────
-  "status.offline":
-    "Estás sin conexión. Se muestran los datos ya cargados; Lumina se actualizará cuando vuelvas a conectarte.",
-
   // ── 404 ───────────────────────────────────────────────────────────────
   "notFound.code": "404",
   "notFound.title": "Página no encontrada",

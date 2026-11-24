@@ -15,10 +15,6 @@ const en: MessageCatalogue = {
   "error.retry": "Retry",
   "error.retrying": "Retrying\u2026",
 
-  // ── Network status ────────────────────────────────────────────────────
-  "status.offline":
-    "You're offline. Showing already-loaded data; Lumina will refresh when you reconnect.",
-
   // ── 404 ───────────────────────────────────────────────────────────────
   "notFound.code": "404",
   "notFound.title": "Page not found",

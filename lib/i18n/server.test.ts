@@ -126,7 +126,6 @@ describe("concurrent Server Component rendering", () => {
       locale,
       direction,
       retryText: t("error.retry"),
-      offlineText: t("status.offline"),
     };
   }
 
@@ -162,12 +161,10 @@ describe("concurrent Server Component rendering", () => {
         expect(rendered.locale).toBe("de");
         expect(rendered.direction).toBe("ltr");
         expect(rendered.retryText).toBe("Erneut versuchen");
-        expect(rendered.offlineText).toContain("offline");
       } else {
         expect(rendered.locale).toBe("en");
         expect(rendered.direction).toBe("ltr");
         expect(rendered.retryText).toBe("Retry");
-        expect(rendered.offlineText).toContain("offline");
       }
     }
 

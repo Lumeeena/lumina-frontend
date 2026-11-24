@@ -17,10 +17,6 @@ const pt: MessageCatalogue = {
   "error.retry": "Tentar novamente",
   "error.retrying": "Tentando novamente…",
 
-  // ── Network status ────────────────────────────────────────────────────
-  "status.offline":
-    "Você está offline. Exibindo os dados já carregados; a Lumina será atualizada quando você reconectar.",
-
   // ── 404 ───────────────────────────────────────────────────────────────
   "notFound.code": "404",
   "notFound.title": "Página não encontrada",
