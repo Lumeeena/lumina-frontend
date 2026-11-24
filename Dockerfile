@@ -32,12 +32,9 @@ RUN npm run build
 FROM node:20-alpine
 WORKDIR /app
 ENV NODE_ENV=production
-COPY --from=build /app/package.json /app/package-lock.json ./
-COPY --from=build /app/scripts/prepare.mjs ./scripts/prepare.mjs
-RUN npm ci --omit=dev
-COPY --from=build /app/.next ./.next
+COPY --from=build /app/.next/standalone ./
+COPY --from=build /app/.next/static ./.next/static
 COPY --from=build /app/public ./public
-COPY --from=build /app/next.config.ts ./
 EXPOSE 3000
 USER node
-CMD ["npm", "start"]
+CMD ["node", "server.js"]

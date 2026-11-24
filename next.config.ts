@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 import path from "path";
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   // Maps support error uploads and the CI-only bundle contents inventory.
   productionBrowserSourceMaps: Boolean(
     process.env.ERROR_REPORTING_URL || process.env.BUNDLE_CONTENTS,
