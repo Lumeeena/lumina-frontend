@@ -1,4 +1,4 @@
-﻿query LatestLedger($network: Network) {
+query LatestLedger($network: Network) {
   latestLedger(network: $network) {
     sequence
     closedAt
@@ -269,6 +269,37 @@ query AccountTrades($address: String!, $limit: Int, $cursor: String, $network: N
       counterOfferId
       baseIsSeller
       price
+      transactionHash
+    }
+    pageInfo {
+      hasNextPage
+      cursor
+    }
+  }
+}
+
+query PairTrades($baseAsset: String!, $counterAsset: String!, $limit: Int, $cursor: String, $network: Network) {
+  trades(baseAsset: $baseAsset, counterAsset: $counterAsset, limit: $limit, cursor: $cursor, network: $network) {
+    items {
+      id
+      pagingToken
+      ledgerCloseTime
+      tradeType
+      baseAccount
+      baseAmount
+      baseAssetType
+      baseAssetCode
+      baseAssetIssuer
+      baseOfferId
+      counterAccount
+      counterAmount
+      counterAssetType
+      counterAssetCode
+      counterAssetIssuer
+      counterOfferId
+      baseIsSeller
+      price
+      transactionHash
     }
     pageInfo {
       hasNextPage
